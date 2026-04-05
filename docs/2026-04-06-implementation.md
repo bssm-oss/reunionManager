@@ -96,5 +96,7 @@ The final repository state was delivered through a repaired PR workflow:
 - PR #1 delivered the initial MVP branch and was self-merged.
 - PR #2 reverted a direct-to-main follow-up fix after Oracle flagged the workflow mismatch.
 - PR #3 reapplied the same final fixes through the required branch -> PR -> self-merge path.
+- PR #4 aligned the implementation notes with the final delivered state.
+- PR #5 stabilized the imported-chat analysis instrumentation wait so the final feature-test lane stayed green on CI.
 
 That leaves the current `main` state aligned with both the requested implementation and the requested delivery process.
