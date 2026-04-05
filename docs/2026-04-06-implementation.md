@@ -57,7 +57,11 @@ Current automated coverage focuses on the highest-risk behaviors:
 - Room-backed conversation import and duplicate handling
 - fake-provider behavior
 - analysis fallback behavior when no Gemini key is configured
-- instrumentation feature tests for home, import, and settings navigation
+- instrumentation feature tests for:
+  - home trust signals
+  - import navigation
+  - settings navigation
+  - imported conversation browsing through reunion-plan generation
 
 ## QA Notes
 
@@ -84,3 +88,13 @@ adb shell am start -n com.bssm.reunionmanager/.MainActivity
 - no background upload behavior
 - no multi-provider marketplace
 - no advanced analytics or dashboards
+
+## GitHub Delivery Notes
+
+The final repository state was delivered through a repaired PR workflow:
+
+- PR #1 delivered the initial MVP branch and was self-merged.
+- PR #2 reverted a direct-to-main follow-up fix after Oracle flagged the workflow mismatch.
+- PR #3 reapplied the same final fixes through the required branch -> PR -> self-merge path.
+
+That leaves the current `main` state aligned with both the requested implementation and the requested delivery process.
