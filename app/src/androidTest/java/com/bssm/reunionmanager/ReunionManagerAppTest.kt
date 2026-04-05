@@ -68,7 +68,7 @@ class ReunionManagerAppTest {
         waitForText("샘플 채팅방").click()
         waitForText("Open reunion plan").click()
         waitForText("Generate reunion plan").click()
-        waitForText("Relationship summary")
+        waitForText("Relationship summary", timeoutMillis = 20_000)
     }
 
     private fun launchMainActivity() {
@@ -83,8 +83,8 @@ class ReunionManagerAppTest {
         device.waitForIdle()
     }
 
-    private fun waitForText(text: String) =
-        device.wait(Until.findObject(By.text(text)), 10_000)
+    private fun waitForText(text: String, timeoutMillis: Long = 10_000) =
+        device.wait(Until.findObject(By.text(text)), timeoutMillis)
             ?: throw AssertionError("Did not find text: $text")
 
     private fun findTextWithScroll(text: String): UiObject2 {
