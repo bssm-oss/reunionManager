@@ -22,6 +22,7 @@ class GenerateReunionPlanUseCase(
 
         val provider: AnalysisProvider
         val providerType: String
+        // The fake provider keeps the MVP usable when no local Gemini configuration exists.
         if (settings.isConfigured) {
             provider = geminiProviderFactory(settings)
             providerType = "gemini"
