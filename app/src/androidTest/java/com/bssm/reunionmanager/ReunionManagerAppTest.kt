@@ -7,6 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
 import org.junit.Assert.assertNotNull
 import org.junit.Before
@@ -41,7 +42,7 @@ class ReunionManagerAppTest {
 
     @Test
     fun homeScreen_navigatesToSettingsScreen() {
-        waitForText("Open AI settings").click()
+        findTextWithScroll("Open AI settings").click()
 
         waitForText("Local-only configuration")
         assertNotNull(device.findObject(By.text("Gemini API key")))
@@ -63,6 +64,24 @@ class ReunionManagerAppTest {
     private fun waitForText(text: String) =
         device.wait(Until.findObject(By.text(text)), 10_000)
             ?: throw AssertionError("Did not find text: $text")
+
+    private fun findTextWithScroll(text: String): UiObject2 {
+        repeat(5) {
+            waitForTextOrNull(text)?.let { return it }
+            device.swipe(
+                device.displayWidth / 2,
+                (device.displayHeight * 0.8).toInt(),
+                device.displayWidth / 2,
+                (device.displayHeight * 0.2).toInt(),
+                20,
+            )
+            device.waitForIdle()
+        }
+        throw AssertionError("Did not find text after scrolling: $text")
+    }
+
+    private fun waitForTextOrNull(text: String): UiObject2? =
+        device.wait(Until.findObject(By.text(text)), 2_000)
 
     private fun dismissBlockingDialogsIfNeeded() {
         val waitButton = device.findObject(By.text("Wait"))
