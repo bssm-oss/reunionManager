@@ -65,7 +65,7 @@ adb shell am start -n com.bssm.reunionmanager/.MainActivity
 - `app/src/main/java/com/bssm/reunionmanager/domain` — provider contract and MVP use cases
 - `app/src/main/java/com/bssm/reunionmanager/data` — parser, Room persistence, repositories, and provider implementations
 - `docs/` — product scope and implementation documentation
-- `.github/workflows/android.yml` — CI for unit tests, lint, and debug assembly
+- `.github/workflows/android.yml` — CI for unit tests, lint, debug assembly, and emulator-backed feature tests
 
 ## Key Screens
 

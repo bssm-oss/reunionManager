@@ -98,5 +98,6 @@ The final repository state was delivered through a repaired PR workflow:
 - PR #3 reapplied the same final fixes through the required branch -> PR -> self-merge path.
 - PR #4 aligned the implementation notes with the final delivered state.
 - PR #5 stabilized the imported-chat analysis instrumentation wait so the final feature-test lane stayed green on CI.
+- PR #6 aligned the README and implementation notes with the final shipped CI scope and repaired PR history.
 
 That leaves the current `main` state aligned with both the requested implementation and the requested delivery process.
