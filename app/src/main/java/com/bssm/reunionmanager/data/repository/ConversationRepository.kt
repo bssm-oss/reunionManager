@@ -77,6 +77,8 @@ class ConversationRepository(
         rawText: String,
         sourceName: String,
     ): ImportConversationResult {
+        // Duplicate protection is based on the raw imported transcript so the same conversation is
+        // not saved twice under different filenames.
         val sourceHash = rawText.sha256()
         conversationDao.findIdBySourceHash(sourceHash)?.let { existingId ->
             return ImportConversationResult.Duplicate(existingId)
