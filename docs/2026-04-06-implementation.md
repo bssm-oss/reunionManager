@@ -1,0 +1,86 @@
+# Reunion Manager Implementation Notes
+
+## Current Vertical Slice
+
+The current MVP implementation supports one grounded local-first flow:
+
+1. The user selects a KakaoTalk `.txt` export from device storage.
+2. The app parses the supported export structure.
+3. The app stores the imported conversation locally in Room.
+4. The user opens the saved conversation list and a conversation detail view.
+5. The user generates a reunion plan.
+6. The result is saved locally and shown in the analysis screen.
+
+## Architecture
+
+### `ui`
+
+- `MainViewModel` coordinates import, analysis generation, and settings updates.
+- Navigation is single-activity Compose navigation.
+- UI screens are intentionally simple and use plain language around privacy and uncertainty.
+
+### `domain`
+
+- `AnalysisProvider` is the provider boundary.
+- `ImportConversationUseCase` parses and stores a selected file.
+- `GenerateReunionPlanUseCase` chooses the active provider and persists the result.
+
+### `data`
+
+- `KakaoTalkConversationParser` parses the supported export format.
+- Room stores:
+  - conversations
+  - participants
+  - messages
+  - analysis results
+  - provider settings
+- `FakeAnalysisProvider` keeps the MVP workflow available without remote configuration.
+- `GeminiAnalysisProvider` calls a Gemini-compatible HTTP endpoint only when the user supplies local settings.
+
+## Import Rules
+
+- duplicate protection uses a SHA-256 hash of the raw imported text
+- multiline text after a recognized message line is appended to the prior message
+- unsupported files raise a local import error and are not partially stored
+
+## Provider Rules
+
+- blank API key => fake provider
+- configured API key => Gemini-compatible provider
+- generated analysis is stored locally either way
+
+## Test Coverage
+
+Current automated coverage focuses on the highest-risk behaviors:
+
+- parser behavior for supported, multiline, and unsupported KakaoTalk text
+- Room-backed conversation import and duplicate handling
+- fake-provider behavior
+- analysis fallback behavior when no Gemini key is configured
+- instrumentation feature tests for home, import, and settings navigation
+
+## QA Notes
+
+Primary local validation commands:
+
+```bash
+./gradlew testDebugUnitTest
+./gradlew lintDebug
+./gradlew assembleDebug
+./gradlew connectedDebugAndroidTest
+```
+
+Optional device/emulator launch:
+
+```bash
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb shell am start -n com.bssm.reunionmanager/.MainActivity
+```
+
+## Known MVP Limits
+
+- only KakaoTalk `.txt` import is supported
+- no account system or sync
+- no background upload behavior
+- no multi-provider marketplace
+- no advanced analytics or dashboards
