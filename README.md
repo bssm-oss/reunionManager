@@ -88,3 +88,4 @@ GitHub Actions runs the same core validation commands used locally:
 - `./gradlew testDebugUnitTest`
 - `./gradlew lintDebug`
 - `./gradlew assembleDebug`
+- `./gradlew connectedDebugAndroidTest`
