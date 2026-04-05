@@ -10,11 +10,7 @@ class KakaoTalkConversationParser {
     private val dateDividerRegex = Regex("-+\\s*(\\d{4})년\\s*(\\d{1,2})월\\s*(\\d{1,2})일\\s*[^\\d-]+-+")
     private val messageRegex = Regex("^\\[([^]]+)] \\[([^]]+)] (.*)$")
     private val exportDateRegex = Regex("^저장한 날짜\\s*:\\s*(.+)$")
-    // KakaoTalk exports interleave system notices with user messages. These lines are skipped so
-    // they do not silently contaminate the preceding message body.
     private val systemNoticeRegex = Regex(".*(님이 들어왔습니다\\.?|님이 나갔습니다\\.?|님을 초대했습니다\\.?|불법촬영물|식별 및 게재제한 조치 안내).*")
-    // Export timestamps are local wall-clock values, so they must be preserved in the device's
-    // local zone instead of being forced into UTC at parse time.
     private val localZoneId: ZoneId = ZoneId.systemDefault()
 
     fun parse(fileName: String, rawText: String): ParsedConversation {
