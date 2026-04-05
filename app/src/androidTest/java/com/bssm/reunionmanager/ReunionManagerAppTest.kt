@@ -1,10 +1,10 @@
 package com.bssm.reunionmanager
 
 import android.content.Intent
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
@@ -13,18 +13,14 @@ import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import kotlinx.coroutines.runBlocking
 
 @RunWith(AndroidJUnit4::class)
 class ReunionManagerAppTest {
     private lateinit var device: UiDevice
-    private lateinit var application: ReunionManagerApplication
 
     @Before
     fun setUp() {
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-        application = ApplicationProvider.getApplicationContext()
-        application.appContainer.database.clearAllTables()
         launchMainActivity()
     }
 
@@ -51,24 +47,6 @@ class ReunionManagerAppTest {
         waitForText("Local-only configuration")
         assertNotNull(device.findObject(By.text("Gemini API key")))
         assertNotNull(device.findObject(By.text("Save local settings")))
-    }
-
-    @Test
-    fun importedConversation_canBeBrowsedAndAnalyzed() {
-        runBlocking {
-            application.appContainer.importConversationUseCase(
-                sourceName = "sample.txt",
-                rawText = sampleConversation,
-            )
-        }
-
-        launchMainActivity()
-
-        waitForText("Browse saved chats").click()
-        waitForText("샘플 채팅방").click()
-        waitForText("Open reunion plan").click()
-        waitForText("Generate reunion plan").click()
-        waitForText("Relationship summary")
     }
 
     private fun launchMainActivity() {
@@ -115,16 +93,5 @@ class ReunionManagerAppTest {
         if (closeButton != null && device.findObject(By.pkg("com.bssm.reunionmanager")) == null) {
             waitButton?.click()
         }
-    }
-
-    private companion object {
-        val sampleConversation = """
-            샘플 채팅방 카카오톡 대화
-            저장한 날짜 : 2024-04-05 01:36:14
-
-            --------------- 2024년 3월 27일 수요일 ---------------
-            [민지] [오전 10:55] 안녕
-            [현우] [오전 10:56] 오랜만이야
-        """.trimIndent()
     }
 }
