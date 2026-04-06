@@ -1,12 +1,10 @@
 package com.bssm.reunionmanager.ui.screen.analysis
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -15,6 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.bssm.reunionmanager.domain.model.ConversationDetail
 import com.bssm.reunionmanager.ui.AnalysisUiState
+import com.bssm.reunionmanager.ui.theme.ReunionBadge
+import com.bssm.reunionmanager.ui.theme.ReunionBadgeTone
+import com.bssm.reunionmanager.ui.theme.ReunionEmptyState
+import com.bssm.reunionmanager.ui.theme.ReunionPane
+import com.bssm.reunionmanager.ui.theme.ReunionPrimaryButton
+import com.bssm.reunionmanager.ui.theme.ScreenPadding
+import com.bssm.reunionmanager.ui.theme.ScreenSectionSpacing
 
 @Composable
 fun AnalysisScreen(
@@ -22,78 +27,101 @@ fun AnalysisScreen(
     analysisState: AnalysisUiState?,
     onGenerate: () -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(horizontal = ScreenPadding, vertical = ScreenPadding),
+        verticalArrangement = Arrangement.spacedBy(ScreenSectionSpacing),
     ) {
-        Text(
-            text = detail?.title ?: "Loading conversation...",
-            style = MaterialTheme.typography.headlineSmall,
-        )
-
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(text = "How this works", style = MaterialTheme.typography.titleMedium)
-                Text(
-                    text = "The plan is generated from the saved local chat. If Gemini is not configured, the app uses a local fake provider. If Gemini is configured, generating a plan sends a compact chat excerpt to the saved endpoint for that request.",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-        }
-
-        if (analysisState?.isRunning == true) {
-            CircularProgressIndicator()
-        } else {
-            Button(onClick = onGenerate, enabled = detail != null) {
-                Text(text = "Generate reunion plan")
-            }
-        }
-
-        analysisState?.providerType?.let { providerType ->
+        item {
             Text(
-                text = "Last generated with: $providerType",
-                style = MaterialTheme.typography.bodySmall,
+                text = detail?.title ?: "Loading conversation...",
+                style = MaterialTheme.typography.headlineMedium,
             )
         }
-
-        analysisState?.errorMessage?.let { errorMessage ->
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(text = errorMessage, style = MaterialTheme.typography.bodyMedium)
+        item {
+            ReunionPane(
+                title = "How this works",
+                supportingText = "The plan is generated from the saved local chat. If Gemini is not configured, the app uses a local fake provider. If Gemini is configured, generating a plan sends a compact chat excerpt to the saved endpoint for that request.",
+            ) {
+                analysisState?.providerType?.let { providerType ->
+                    ReunionBadge(
+                        text = "Last generated with: $providerType",
+                        tone = ReunionBadgeTone.Accent,
+                    )
                 }
             }
         }
-
-        detail?.latestAnalysis?.let { report ->
-            AnalysisSectionCard(title = "Relationship summary", body = report.relationshipSummary)
-            AnalysisSectionCard(title = "Reunion objective", body = report.reunionObjective)
-            AnalysisSectionCard(title = "Next step", body = report.nextStep)
-            AnalysisSectionCard(title = "Caution", body = report.caution)
-        } ?: Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "No plan has been generated for this conversation yet.",
-                    style = MaterialTheme.typography.bodyMedium,
+        item {
+            ReunionPane(
+                title = "How to read this plan",
+                supportingText = "Treat the generated reunion plan as guidance from the saved chat, not as certainty. Use it as a careful starting point before acting.",
+                containerColor = MaterialTheme.colorScheme.surface,
+            )
+        }
+        item {
+            if (analysisState?.isRunning == true) {
+                ReunionEmptyState(
+                    title = "Generating reunion plan",
+                    body = "Preparing guidance from the saved local chat.",
+                    tone = ReunionBadgeTone.Accent,
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                    )
+                }
+            } else {
+                ReunionPrimaryButton(
+                    text = "Generate reunion plan",
+                    onClick = onGenerate,
+                    enabled = detail != null,
                 )
             }
+        }
+        analysisState?.errorMessage?.let { errorMessage ->
+            item {
+                ReunionEmptyState(
+                    title = "Plan generation failed",
+                    body = errorMessage,
+                    tone = ReunionBadgeTone.Error,
+                )
+            }
+        }
+        detail?.latestAnalysis?.let { report ->
+            item { AnalysisSectionPane(title = "Relationship summary", body = report.relationshipSummary) }
+            item { AnalysisSectionPane(title = "Reunion objective", body = report.reunionObjective) }
+            item { AnalysisSectionPane(title = "Next step", body = report.nextStep) }
+            item {
+                AnalysisSectionPane(
+                    title = "Caution",
+                    body = report.caution,
+                    tone = ReunionBadgeTone.Error,
+                )
+            }
+        } ?: item {
+            ReunionEmptyState(
+                title = "No plan generated yet",
+                body = "No plan has been generated for this conversation yet.",
+            )
         }
     }
 }
 
 @Composable
-private fun AnalysisSectionCard(title: String, body: String) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium)
-            Text(text = body, style = MaterialTheme.typography.bodyMedium)
-        }
+private fun AnalysisSectionPane(
+    title: String,
+    body: String,
+    tone: ReunionBadgeTone = ReunionBadgeTone.Neutral,
+) {
+    val containerColor = if (tone == ReunionBadgeTone.Error) {
+        MaterialTheme.colorScheme.errorContainer
+    } else {
+        MaterialTheme.colorScheme.surface
     }
+
+    ReunionPane(
+        title = title,
+        supportingText = body,
+        containerColor = containerColor,
+    )
 }
