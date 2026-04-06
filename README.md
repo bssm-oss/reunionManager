@@ -59,6 +59,8 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb shell am start -n com.bssm.reunionmanager/.MainActivity
 ```
 
+The automated feature-test lane is intended to cover the same core MVP flow through instrumentation: home trust signals, import navigation, settings navigation, and browsing an imported conversation through reunion-plan generation.
+
 ## Project Structure
 
 - `app/src/main/java/com/bssm/reunionmanager/ui` — Compose screens, navigation, and shared view-model state
@@ -89,3 +91,9 @@ GitHub Actions runs the same core validation commands used locally:
 - `./gradlew lintDebug`
 - `./gradlew assembleDebug`
 - `./gradlew connectedDebugAndroidTest`
+
+The CI workflow also uploads `app/build/outputs/apk/debug/app-debug.apk` as a workflow artifact so each successful run keeps the built debug APK.
+
+## Releases
+
+Pushing a `v*` tag triggers the Android release workflow. That workflow builds `app/build/outputs/apk/debug/app-debug.apk`, uploads it as a workflow artifact, and attaches the same installable APK to the GitHub Release for that tag.

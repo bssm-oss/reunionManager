@@ -74,6 +74,13 @@ Primary local validation commands:
 ./gradlew connectedDebugAndroidTest
 ```
 
+The connected Android test lane is intended to exercise the core MVP user-visible flow:
+
+- home trust signals
+- import navigation
+- settings navigation
+- browsing an imported conversation through reunion-plan generation
+
 Optional device/emulator launch:
 
 ```bash
@@ -101,3 +108,9 @@ The final repository state was delivered through a repaired PR workflow:
 - PR #6 aligned the README and implementation notes with the final shipped CI scope and repaired PR history.
 
 That leaves the current `main` state aligned with both the requested implementation and the requested delivery process.
+
+## GitHub Automation
+
+- `.github/workflows/android.yml` runs `testDebugUnitTest`, `lintDebug`, `assembleDebug`, and `connectedDebugAndroidTest`
+- the same CI workflow uploads `app/build/outputs/apk/debug/app-debug.apk` as a workflow artifact
+- `.github/workflows/release.yml` runs on `v*` tags, builds `app/build/outputs/apk/debug/app-debug.apk`, uploads it as a workflow artifact, and attaches it to the matching GitHub Release
