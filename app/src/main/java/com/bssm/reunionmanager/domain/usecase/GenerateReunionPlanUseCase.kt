@@ -16,27 +16,29 @@ class GenerateReunionPlanUseCase(
     private val geminiProviderFactory: (ProviderSettings) -> GeminiAnalysisProvider,
 ) {
     suspend operator fun invoke(conversationId: Long): Result<String> {
-        val input = conversationRepository.buildAnalysisInput(conversationId)
-            ?: return Result.failure(IllegalArgumentException("Conversation not found."))
-        val settings = providerSettingsRepository.get()
+        return runCatching {
+            val input = conversationRepository.buildAnalysisInput(conversationId)
+                ?: throw IllegalArgumentException("Conversation not found.")
+            val settings = providerSettingsRepository.get()
 
-        val provider: AnalysisProvider
-        val providerType: String
-        // The fake provider keeps the MVP usable when no local Gemini configuration exists.
-        if (settings.isConfigured) {
-            provider = geminiProviderFactory(settings)
-            providerType = "gemini"
-        } else {
-            provider = fakeAnalysisProvider
-            providerType = "fake"
+            val provider: AnalysisProvider
+            val providerType: String
+            // The fake provider keeps the MVP usable when no local Gemini configuration exists.
+            if (settings.isConfigured) {
+                provider = geminiProviderFactory(settings)
+                providerType = "gemini"
+            } else {
+                provider = fakeAnalysisProvider
+                providerType = "fake"
+            }
+
+            val report = provider.analyze(input)
+            analysisRepository.saveLatest(
+                conversationId = conversationId,
+                providerType = providerType,
+                report = report,
+            )
+            providerType
         }
-
-        val report = provider.analyze(input)
-        analysisRepository.saveLatest(
-            conversationId = conversationId,
-            providerType = providerType,
-            report = report,
-        )
-        return Result.success(providerType)
     }
 }
