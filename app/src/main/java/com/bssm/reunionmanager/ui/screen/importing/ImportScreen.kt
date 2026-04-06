@@ -6,10 +6,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -17,6 +17,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.bssm.reunionmanager.ui.ImportUiState
+import com.bssm.reunionmanager.ui.theme.ReunionBadgeTone
+import com.bssm.reunionmanager.ui.theme.ReunionEmptyState
+import com.bssm.reunionmanager.ui.theme.ReunionPane
+import com.bssm.reunionmanager.ui.theme.ReunionPrimaryButton
+import com.bssm.reunionmanager.ui.theme.ReunionSecondaryButton
+import com.bssm.reunionmanager.ui.theme.ScreenPadding
+import com.bssm.reunionmanager.ui.theme.ScreenSectionSpacing
 
 @Composable
 fun ImportScreen(
@@ -33,59 +40,63 @@ fun ImportScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+            .verticalScroll(rememberScrollState())
+            .padding(ScreenPadding),
+        verticalArrangement = Arrangement.spacedBy(ScreenSectionSpacing),
     ) {
         Text(
             text = "Import a KakaoTalk export",
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.headlineMedium,
         )
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(
-                    text = "Supported file",
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Text(
-                    text = "The MVP currently supports KakaoTalk plain-text export files (.txt). The imported chat is parsed and stored only on this device.",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-        }
-        Button(
+        Text(
+            text = "Choose a supported plain-text export and keep the imported chat on this device.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        ReunionPane(
+            title = "Supported file",
+            supportingText = "The MVP currently supports KakaoTalk plain-text export files (.txt). The imported chat is parsed and stored only on this device.",
+        )
+        ReunionPrimaryButton(
+            text = if (importState.isLoading) "Importing locally..." else "Choose .txt file",
             onClick = { pickerLauncher.launch(arrayOf("text/plain")) },
-            modifier = Modifier.fillMaxWidth(),
             enabled = !importState.isLoading,
-        ) {
-            Text(text = "Choose .txt file")
-        }
+        )
+
         if (importState.isLoading) {
-            CircularProgressIndicator()
+            ReunionEmptyState(
+                title = "Import in progress",
+                body = "The selected file is being read and parsed locally on this device.",
+                tone = ReunionBadgeTone.Accent,
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                )
+            }
         }
+
         importState.message?.let { message ->
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Text(text = message, style = MaterialTheme.typography.bodyMedium)
-                    importState.importedConversationId?.let { conversationId ->
-                        Button(onClick = { onViewConversationClick(conversationId) }) {
-                            Text(text = "Open imported chat")
-                        }
-                    }
+            ReunionEmptyState(
+                title = "Import status",
+                body = message,
+                tone = ReunionBadgeTone.Success,
+            ) {
+                importState.importedConversationId?.let { conversationId ->
+                    ReunionSecondaryButton(
+                        text = "Open imported chat",
+                        onClick = { onViewConversationClick(conversationId) },
+                    )
                 }
             }
         }
+
         importState.errorMessage?.let { errorMessage ->
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(text = errorMessage, style = MaterialTheme.typography.bodyMedium)
-                }
-            }
+            ReunionEmptyState(
+                title = "Import failed",
+                body = errorMessage,
+                tone = ReunionBadgeTone.Error,
+            )
         }
     }
 }

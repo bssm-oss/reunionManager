@@ -1,28 +1,35 @@
 package com.bssm.reunionmanager.ui.navigation
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavType
 import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.navArgument
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.bssm.reunionmanager.ui.MainViewModel
 import com.bssm.reunionmanager.ui.screen.analysis.AnalysisScreen
 import com.bssm.reunionmanager.ui.screen.conversation.ConversationDetailScreen
@@ -30,6 +37,8 @@ import com.bssm.reunionmanager.ui.screen.conversation.ConversationListScreen
 import com.bssm.reunionmanager.ui.screen.home.HomeScreen
 import com.bssm.reunionmanager.ui.screen.importing.ImportScreen
 import com.bssm.reunionmanager.ui.screen.settings.SettingsScreen
+import com.bssm.reunionmanager.ui.theme.ReunionBadge
+import com.bssm.reunionmanager.ui.theme.ReunionBadgeTone
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,22 +63,65 @@ fun ReunionManagerApp() {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        contentWindowInsets = ScaffoldDefaults.contentWindowInsets,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = currentTitle,
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                },
-                navigationIcon = {
-                    if (canGoBack) {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Text(text = "←")
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.background,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            ) {
+                TopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                        actionIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    ),
+                    title = {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            if (currentRoute != ReunionDestination.Home.route) {
+                                Text(
+                                    text = ReunionDestination.Home.title,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            Text(
+                                text = currentTitle,
+                                style = MaterialTheme.typography.titleLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
                         }
-                    }
-                },
-            )
+                    },
+                    navigationIcon = {
+                        if (canGoBack) {
+                            Surface(
+                                modifier = Modifier.padding(start = 12.dp),
+                                color = MaterialTheme.colorScheme.surface,
+                                shape = MaterialTheme.shapes.small,
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                            ) {
+                                IconButton(
+                                    onClick = { navController.popBackStack() },
+                                    modifier = Modifier.size(40.dp),
+                                ) {
+                                    Text(text = "←", style = MaterialTheme.typography.titleMedium)
+                                }
+                            }
+                        }
+                    },
+                    actions = {
+                        ReunionBadge(
+                            text = if (providerSettings.isConfigured) "AI configured" else "Local provider",
+                            tone = if (providerSettings.isConfigured) ReunionBadgeTone.Accent else ReunionBadgeTone.Neutral,
+                            modifier = Modifier.padding(end = 12.dp),
+                        )
+                    },
+                )
+            }
         },
     ) { innerPadding ->
         NavHost(
