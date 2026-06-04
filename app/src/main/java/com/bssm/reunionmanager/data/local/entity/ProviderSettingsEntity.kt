@@ -9,6 +9,8 @@ data class ProviderSettingsEntity(
     val apiKey: String,
     val modelName: String,
     val endpoint: String,
+    val modelPath: String,
+    val backend: String,
 ) {
     companion object {
         const val SINGLE_ROW_ID: Int = 0

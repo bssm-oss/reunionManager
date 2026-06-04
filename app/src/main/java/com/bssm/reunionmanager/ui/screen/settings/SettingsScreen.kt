@@ -1,46 +1,43 @@
 package com.bssm.reunionmanager.ui.screen.settings
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.unit.dp
 import com.bssm.reunionmanager.domain.model.ProviderSettings
+import com.bssm.reunionmanager.ui.ModelSettingsUiState
 import com.bssm.reunionmanager.ui.theme.ReunionBadge
 import com.bssm.reunionmanager.ui.theme.ReunionBadgeTone
+import com.bssm.reunionmanager.ui.theme.ReunionEmptyState
 import com.bssm.reunionmanager.ui.theme.ReunionPane
-import com.bssm.reunionmanager.ui.theme.ReunionPrimaryButton
+import com.bssm.reunionmanager.ui.theme.ReunionSecondaryButton
 import com.bssm.reunionmanager.ui.theme.ScreenPadding
 import com.bssm.reunionmanager.ui.theme.ScreenSectionSpacing
-import com.bssm.reunionmanager.ui.theme.reunionOutlinedTextFieldColors
 
 @Composable
 fun SettingsScreen(
     providerSettings: ProviderSettings,
+    modelSettingsState: ModelSettingsUiState,
     onSave: (String, String, String) -> Unit,
+    onModelFileSelected: (Uri) -> Unit,
 ) {
-    var apiKey by rememberSaveable { mutableStateOf("") }
-    var modelName by rememberSaveable { mutableStateOf(ProviderSettings.DEFAULT_MODEL) }
-    var endpoint by rememberSaveable { mutableStateOf(ProviderSettings.DEFAULT_ENDPOINT) }
-
-    LaunchedEffect(providerSettings) {
-        apiKey = providerSettings.apiKey
-        modelName = providerSettings.modelName
-        endpoint = providerSettings.endpoint
+    val modelPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        uri?.let(onModelFileSelected)
     }
 
     Column(
@@ -51,55 +48,66 @@ fun SettingsScreen(
             .padding(ScreenPadding),
         verticalArrangement = Arrangement.spacedBy(ScreenSectionSpacing),
     ) {
-        Text(text = "Save provider settings locally.", style = MaterialTheme.typography.headlineMedium)
+        Text(text = "로컬 AI", style = MaterialTheme.typography.headlineMedium)
         Text(
-            text = "Leave the API key empty to keep using the fake local provider for the MVP flow.",
+            text = "모델 파일을 선택하면 재회 계획을 이 기기에서 만들 수 있습니다.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         ReunionPane(
-            title = "Provider status",
+            title = if (providerSettings.isConfigured) "모델 준비됨" else "모델 없음",
             supportingText = if (providerSettings.isConfigured) {
-                "Gemini-compatible analysis is configured locally on this device."
+                providerSettings.modelName
             } else {
-                "The app will continue using the fake local provider until you save an API key."
+                "모델을 선택하기 전에는 데모 모드로 흐름을 확인합니다."
             },
         ) {
             ReunionBadge(
-                text = if (providerSettings.isConfigured) "AI configured" else "Fake local provider",
+                text = if (providerSettings.isConfigured) "기기 내 실행" else "데모 모드",
                 tone = if (providerSettings.isConfigured) ReunionBadgeTone.Accent else ReunionBadgeTone.Neutral,
             )
         }
         ReunionPane(
-            title = "Local-only configuration",
-            supportingText = "These settings are stored only on this device. Leaving the API key empty keeps the app on the fake local provider. Saving a Gemini endpoint does not send chat data by itself; chat excerpts are only sent when you generate a reunion plan.",
+            title = "모델 파일",
+            supportingText = "선택한 파일은 이 기기에만 저장됩니다.",
         ) {
-            OutlinedTextField(
-                value = apiKey,
-                onValueChange = { apiKey = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Gemini API key") },
-                visualTransformation = PasswordVisualTransformation(),
-                singleLine = true,
-                colors = reunionOutlinedTextFieldColors(),
+            ReunionSecondaryButton(
+                text = if (modelSettingsState.isLoading) "모델 복사 중..." else "모델 파일 선택",
+                onClick = { modelPickerLauncher.launch(arrayOf("application/octet-stream", "*/*")) },
+                enabled = !modelSettingsState.isLoading,
             )
-            OutlinedTextField(
-                value = modelName,
-                onValueChange = { modelName = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Model name") },
-                singleLine = true,
-                colors = reunionOutlinedTextFieldColors(),
-            )
-            OutlinedTextField(
-                value = endpoint,
-                onValueChange = { endpoint = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Endpoint") },
-                singleLine = true,
-                colors = reunionOutlinedTextFieldColors(),
+            if (modelSettingsState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                )
+            }
+        }
+        modelSettingsState.message?.let { message ->
+            ReunionEmptyState(
+                title = "모델 준비 완료",
+                body = message,
+                tone = ReunionBadgeTone.Success,
             )
         }
-        ReunionPrimaryButton(text = "Save local settings", onClick = { onSave(apiKey, modelName, endpoint) })
+        modelSettingsState.errorMessage?.let { errorMessage ->
+            ReunionEmptyState(
+                title = "모델을 가져오지 못했습니다",
+                body = errorMessage,
+                tone = ReunionBadgeTone.Error,
+            )
+        }
+        if (providerSettings.isConfigured) {
+            ReunionSecondaryButton(
+                text = "데모 모드 사용",
+                onClick = {
+                    onSave(
+                        "",
+                        providerSettings.modelName,
+                        providerSettings.backend.name,
+                    )
+                },
+            )
+        }
     }
 }

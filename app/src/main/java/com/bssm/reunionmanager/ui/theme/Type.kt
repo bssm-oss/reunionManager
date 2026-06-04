@@ -13,19 +13,19 @@ val Typography = Typography(
         fontSize = 24.sp,
         lineHeight = 30.sp,
         fontWeight = FontWeight.Normal,
-        letterSpacing = (-0.28).sp,
+        letterSpacing = 0.sp,
     ),
     headlineSmall = TextStyle(
         fontSize = 20.sp,
         lineHeight = 26.sp,
         fontWeight = WeightSemibold,
-        letterSpacing = (-0.2).sp,
+        letterSpacing = 0.sp,
     ),
     titleLarge = TextStyle(
         fontSize = 18.sp,
         lineHeight = 24.sp,
         fontWeight = WeightMedium,
-        letterSpacing = (-0.12).sp,
+        letterSpacing = 0.sp,
     ),
     titleMedium = TextStyle(
         fontSize = 16.sp,
@@ -36,7 +36,7 @@ val Typography = Typography(
         fontSize = 14.sp,
         lineHeight = 20.sp,
         fontWeight = WeightMedium,
-        letterSpacing = (-0.14).sp,
+        letterSpacing = 0.sp,
     ),
     bodyLarge = TextStyle(
         fontSize = 16.sp,
@@ -47,13 +47,13 @@ val Typography = Typography(
         fontSize = 14.sp,
         lineHeight = 20.sp,
         fontWeight = FontWeight.Normal,
-        letterSpacing = (-0.12).sp,
+        letterSpacing = 0.sp,
     ),
     bodySmall = TextStyle(
         fontSize = 13.sp,
         lineHeight = 18.sp,
         fontWeight = FontWeight.Normal,
-        letterSpacing = (-0.1).sp,
+        letterSpacing = 0.sp,
     ),
     labelLarge = TextStyle(
         fontSize = 14.sp,
@@ -64,12 +64,12 @@ val Typography = Typography(
         fontSize = 12.sp,
         lineHeight = 16.sp,
         fontWeight = WeightMedium,
-        letterSpacing = 0.1.sp,
+        letterSpacing = 0.sp,
     ),
     labelSmall = TextStyle(
         fontSize = 11.sp,
         lineHeight = 14.sp,
         fontWeight = WeightMedium,
-        letterSpacing = 0.1.sp,
+        letterSpacing = 0.sp,
     ),
 )

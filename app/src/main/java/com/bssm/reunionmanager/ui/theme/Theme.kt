@@ -1,18 +1,18 @@
 package com.bssm.reunionmanager.ui.theme
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
-private val DarkColors = darkColorScheme(
+private val LightColors = lightColorScheme(
     primary = AppAccent,
-    onPrimary = AppTextPrimary,
+    onPrimary = AppPanel,
     primaryContainer = AppAccentContainer,
-    onPrimaryContainer = AppTextPrimary,
+    onPrimaryContainer = AppAccentActive,
     secondary = AppTextSecondary,
-    onSecondary = AppBackground,
+    onSecondary = AppPanel,
     tertiary = AppSuccess,
-    onTertiary = AppBackground,
+    onTertiary = AppPanel,
     background = AppBackground,
     onBackground = AppTextPrimary,
     surface = AppPanel,
@@ -29,11 +29,11 @@ private val DarkColors = darkColorScheme(
 
 @Composable
 fun ReunionManagerTheme(
-    darkTheme: Boolean = true,
+    darkTheme: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     MaterialTheme(
-        colorScheme = if (darkTheme) DarkColors else DarkColors,
+        colorScheme = LightColors,
         typography = Typography,
         shapes = Shapes,
         content = content,

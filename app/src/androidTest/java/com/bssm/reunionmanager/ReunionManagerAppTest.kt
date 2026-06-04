@@ -6,6 +6,7 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.uiautomator.By
+import androidx.test.uiautomator.StaleObjectException
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
@@ -30,27 +31,27 @@ class ReunionManagerAppTest {
 
     @Test
     fun homeScreen_showsCoreTrustSignals() {
-        waitForText("Reunion Manager")
-        assertNotNull(device.findObject(By.text("Local data only")))
-        assertNotNull(device.findObject(By.text("Provider status")))
-        assertNotNull(device.findObject(By.text("Import KakaoTalk .txt")))
+        waitForText("재회 매니저")
+        assertNotNull(device.findObject(By.text("내 기기에서 보관")))
+        assertNotNull(device.findObject(By.text("결과")))
+        assertNotNull(device.findObject(By.text("카카오톡 대화 가져오기")))
     }
 
     @Test
     fun homeScreen_navigatesToImportScreen() {
-        waitForText("Import KakaoTalk .txt").click()
+        clickText("카카오톡 대화 가져오기")
 
-        waitForText("Import a KakaoTalk export")
-        assertNotNull(device.findObject(By.text("Choose .txt file")))
+        waitForText("카카오톡 대화 가져오기")
+        assertNotNull(device.findObject(By.text("대화 파일 선택")))
     }
 
     @Test
     fun homeScreen_navigatesToSettingsScreen() {
-        findTextWithScroll("Open AI settings").click()
+        clickTextWithScroll("로컬 AI 설정")
 
-        waitForText("Local-only configuration")
-        assertNotNull(device.findObject(By.text("Gemini API key")))
-        assertNotNull(device.findObject(By.text("Save local settings")))
+        waitForText("모델 파일")
+        assertNotNull(device.findObject(By.text("모델 파일 선택")))
+        assertNotNull(device.findObject(By.text("데모 모드")))
     }
 
     @Test
@@ -64,11 +65,13 @@ class ReunionManagerAppTest {
 
         launchMainActivity()
 
-        waitForText("Browse saved chats").click()
-        waitForText("샘플 채팅방").click()
-        waitForText("Open reunion plan").click()
-        waitForText("Generate reunion plan").click()
-        waitForText("Relationship summary", timeoutMillis = 20_000)
+        clickText("저장한 대화 보기")
+        clickText("샘플 채팅방")
+        clickText("재회 계획 만들기")
+        waitForText("행동 전 확인")
+        waitForText("아직 만든 계획이 없습니다")
+        clickText("재회 계획 만들기")
+        waitForText("첫 연락 문장", timeoutMillis = 20_000)
     }
 
     private fun launchMainActivity() {
@@ -100,6 +103,43 @@ class ReunionManagerAppTest {
             device.waitForIdle()
         }
         throw AssertionError("Did not find text after scrolling: $text")
+    }
+
+    private fun clickText(text: String, timeoutMillis: Long = 10_000) {
+        repeat(3) {
+            val target = waitForText(text, timeoutMillis)
+            if (clickObject(target)) return
+            device.waitForIdle()
+        }
+        throw AssertionError("Could not click text: $text")
+    }
+
+    private fun clickTextWithScroll(text: String) {
+        repeat(5) {
+            waitForTextOrNull(text)?.let { target ->
+                if (clickObject(target)) return
+            }
+            device.swipe(
+                device.displayWidth / 2,
+                (device.displayHeight * 0.8).toInt(),
+                device.displayWidth / 2,
+                (device.displayHeight * 0.2).toInt(),
+                20,
+            )
+            device.waitForIdle()
+        }
+        throw AssertionError("Could not click text after scrolling: $text")
+    }
+
+    private fun clickObject(target: UiObject2): Boolean {
+        return try {
+            val bounds = target.visibleBounds
+            device.click(bounds.centerX(), bounds.centerY())
+            device.waitForIdle()
+            true
+        } catch (_: StaleObjectException) {
+            false
+        }
     }
 
     private fun waitForTextOrNull(text: String): UiObject2? =

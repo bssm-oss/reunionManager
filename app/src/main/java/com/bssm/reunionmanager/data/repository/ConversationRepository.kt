@@ -151,6 +151,9 @@ class ConversationRepository(
             relationshipSummary = relationshipSummary,
             reunionObjective = reunionObjective,
             nextStep = nextStep,
+            messageDraft = messageDraft.ifBlank {
+                "오랜만이야. 부담 주려는 건 아니고, 괜찮다면 한 번 차분하게 이야기해보고 싶어."
+            },
             caution = caution,
         )
     }

@@ -46,6 +46,34 @@ class KakaoTalkConversationParserTest {
     }
 
     @Test
+    fun parse_supportsPcCsvExportWithDateUserMessageColumns() {
+        val parsed = parser.parse(
+            fileName = "pc-export.csv",
+            rawText = pcCsvConversation,
+        )
+
+        assertEquals("pc-export", parsed.title)
+        assertEquals(listOf("민지", "현우"), parsed.participants)
+        assertEquals(4, parsed.messages.size)
+        assertEquals("오랜만이야. 잘 지냈어?", parsed.messages[0].content)
+        assertEquals("사진", parsed.messages[2].content)
+        assertTrue(parsed.messages[3].content.contains("줄바꿈까지"))
+    }
+
+    @Test
+    fun parse_supportsCorpusStyleMessengerLines() {
+        val parsed = parser.parse(
+            fileName = "public-corpus-format.txt",
+            rawText = corpusStyleConversation,
+        )
+
+        assertEquals("public-corpus-format", parsed.title)
+        assertEquals(listOf("P1", "P2"), parsed.participants)
+        assertEquals(4, parsed.messages.size)
+        assertEquals("이모티콘", parsed.messages[1].content)
+    }
+
+    @Test
     fun parse_usesLocalTimezoneForExportedAndMessageTimes() {
         val parsed = parser.parse(
             fileName = "sample.txt",
@@ -96,6 +124,22 @@ class KakaoTalkConversationParserTest {
             [가나다] [오전 10:55] 첫 번째 메시지
             홍길동님이 나갔습니다.
             [ABC] [오전 10:56] 두 번째 메시지
+        """.trimIndent()
+
+        val pcCsvConversation = """
+            Date,User,Message
+            2024-03-27 10:55:00,민지,오랜만이야. 잘 지냈어?
+            2024-03-27 10:56:00,현우,응 잘 지냈어
+            2024-03-27 10:57:00,민지,사진
+            2024-03-27 10:58:00,현우,"나도 가끔 생각났어
+            줄바꿈까지 있는 메시지야"
+        """.trimIndent()
+
+        val corpusStyleConversation = """
+            2019-11-04 22:25:00 , P1 : 콜라잇오
+            2019-11-04 22:25:00 , P1 : 이모티콘
+            2019-11-04 22:25:00 , P2 : ㅋㄱㅋㄱㅋㄱㅋ콜라
+            2019-11-04 22:26:00 , P1 : 사진
         """.trimIndent()
     }
 }

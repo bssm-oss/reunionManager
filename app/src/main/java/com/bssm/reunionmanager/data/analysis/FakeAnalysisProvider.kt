@@ -10,11 +10,12 @@ class FakeAnalysisProvider : AnalysisProvider {
         delay(50)
         val participantLabel = if (input.participantNames.isEmpty()) "대화 참여자" else input.participantNames.joinToString()
         return AnalysisReport(
-            headline = "${input.conversationTitle} 대화 기반 재회 초안",
-            relationshipSummary = "총 ${input.messageCount}개의 메시지를 기준으로 보면 $participantLabel 사이의 대화 흐름을 차분히 다시 정리할 필요가 있습니다.",
-            reunionObjective = "감정 해석을 단정하지 않고, 다시 연락하기 전에 최근 대화 맥락과 상대 반응 패턴을 먼저 점검하는 것이 MVP의 기본 목표입니다.",
-            nextStep = "최근 메시지에서 감정이 높아진 지점을 두세 개 추려 메모한 뒤, 짧고 압박이 적은 안부 메시지 초안을 준비해 보세요.",
-            caution = "이 결과는 로컬 테스트용 가이드입니다. 실제 의도나 관계 상태를 확정적으로 판단하지 마세요.",
+            headline = "${input.conversationTitle}에서 바로 할 수 있는 첫 단계",
+            relationshipSummary = "총 ${input.messageCount}개의 메시지를 보면 $participantLabel 사이에 다시 말을 꺼낼 여지는 있지만, 감정을 단정하기보다 대화의 온도를 먼저 낮추는 편이 안전합니다.",
+            reunionObjective = "상대의 반응을 확인하는 짧은 안부로 시작하고, 바로 관계 회복을 요구하지 않는 것이 목표입니다.",
+            nextStep = "오늘은 긴 설명을 보내지 말고, 최근 대화를 한 번 읽은 뒤 부담 없는 한 문장만 준비하세요.",
+            messageDraft = "오랜만이야. 갑자기 부담 주려는 건 아니고, 괜찮다면 한 번 차분하게 이야기해보고 싶어.",
+            caution = "답을 재촉하거나 지난 일을 한 번에 정리하려고 하면 부담이 커질 수 있습니다. 답장이 없으면 기다리는 쪽이 더 안전합니다.",
         )
     }
 }

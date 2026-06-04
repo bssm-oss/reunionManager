@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.bssm.reunionmanager.domain.model.ConversationSummary
-import com.bssm.reunionmanager.ui.theme.ReunionBadge
 import com.bssm.reunionmanager.ui.theme.ReunionEmptyState
 import com.bssm.reunionmanager.ui.theme.ReunionPane
 import com.bssm.reunionmanager.ui.theme.ScreenPadding
@@ -33,8 +32,8 @@ fun ConversationListScreen(
             verticalArrangement = Arrangement.spacedBy(ScreenSectionSpacing),
         ) {
             ReunionEmptyState(
-                title = "No chats saved yet.",
-                body = "Import a KakaoTalk .txt export first. Saved chats remain local to this device.",
+                title = "저장한 대화가 없습니다.",
+                body = "먼저 카카오톡 대화 파일을 가져오세요.",
             )
         }
         return
@@ -47,27 +46,19 @@ fun ConversationListScreen(
     ) {
         item {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(text = "Saved chats", style = MaterialTheme.typography.headlineMedium)
+                Text(text = "저장한 대화", style = MaterialTheme.typography.headlineMedium)
                 Text(
-                    text = "Review saved conversations on this device and reopen a chat when you need it.",
+                    text = "대화를 눌러 메시지와 재회 계획을 확인하세요.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-            }
-        }
-        item {
-            ReunionPane(
-                title = "Local chat library",
-                supportingText = "Saved chats remain local to this device.",
-            ) {
-                ReunionBadge(text = "${conversations.size} stored chat(s)")
             }
         }
         items(conversations, key = { it.id }) { conversation ->
             ReunionPane(
                 modifier = Modifier.clickable { onConversationClick(conversation.id) },
                 title = conversation.title,
-                supportingText = "${conversation.participantCount} participant(s) · ${conversation.messageCount} message(s)",
+                supportingText = "참여자 ${conversation.participantCount}명 · 메시지 ${conversation.messageCount}개",
             ) {
                 Text(
                     text = conversation.sourceName,

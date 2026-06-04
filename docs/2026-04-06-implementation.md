@@ -4,12 +4,12 @@
 
 The current MVP implementation supports one grounded local-first flow:
 
-1. The user selects a KakaoTalk `.txt` export from device storage.
+1. The user selects a KakaoTalk `.txt` or supported `.csv`-style export from device storage.
 2. The app parses the supported export structure.
 3. The app stores the imported conversation locally in Room.
 4. The user opens the saved conversation list and a conversation detail view.
 5. The user generates a reunion plan.
-6. The result is saved locally and shown in the analysis screen.
+6. The result is saved locally and shown as a Korean action plan with a next step, first-contact message draft, conversation summary, goal, and caution.
 
 ## Architecture
 
@@ -17,7 +17,7 @@ The current MVP implementation supports one grounded local-first flow:
 
 - `MainViewModel` coordinates import, analysis generation, and settings updates.
 - Navigation is single-activity Compose navigation.
-- UI screens are intentionally simple and use plain language around privacy and uncertainty.
+- UI screens are intentionally simple, Korean-first, and use plain language around privacy and uncertainty.
 
 ### `domain`
 
@@ -35,19 +35,23 @@ The current MVP implementation supports one grounded local-first flow:
   - analysis results
   - provider settings
 - `FakeAnalysisProvider` keeps the MVP workflow available without remote configuration.
-- `GeminiAnalysisProvider` calls a Gemini-compatible HTTP endpoint only when the user supplies local settings.
+- `Gemma4AnalysisProvider` runs a configured Gemma 4 `.litertlm` model on-device through LiteRT-LM.
 
 ## Import Rules
 
 - duplicate protection uses a SHA-256 hash of the raw imported text
 - multiline text after a recognized message line is appended to the prior message
+- PC CSV-style rows with date/user/message columns are supported
+- anonymized corpus-style rows like `YYYY-MM-DD HH:mm:ss , P1 : message` are supported
 - unsupported files raise a local import error and are not partially stored
 
 ## Provider Rules
 
-- blank API key => fake provider
-- configured API key => Gemini-compatible provider
+- blank model path => fake provider
+- configured model path => Gemma 4 on-device provider
+- model settings can copy a selected `.litertlm` file into app-private storage before saving its filesystem path
 - generated analysis is stored locally either way
+- generated analysis includes a `messageDraft` field so the user has a concrete first-contact sentence, not just abstract advice
 
 ## Test Coverage
 
@@ -56,12 +60,13 @@ Current automated coverage focuses on the highest-risk behaviors:
 - parser behavior for supported, multiline, and unsupported KakaoTalk text
 - Room-backed conversation import and duplicate handling
 - fake-provider behavior
-- analysis fallback behavior when no Gemini key is configured
+- analysis fallback behavior when no Gemma model path is configured
+- persisted first-contact draft behavior
 - instrumentation feature tests for:
   - home trust signals
   - import navigation
   - settings navigation
-  - imported conversation browsing through reunion-plan generation
+  - imported conversation browsing through reunion-plan generation and first-message display
 
 ## QA Notes
 
@@ -80,6 +85,7 @@ The connected Android test lane is intended to exercise the core MVP user-visibl
 - import navigation
 - settings navigation
 - browsing an imported conversation through reunion-plan generation
+- first-contact draft display
 
 Optional device/emulator launch:
 
@@ -90,7 +96,7 @@ adb shell am start -n com.bssm.reunionmanager/.MainActivity
 
 ## Known MVP Limits
 
-- only KakaoTalk `.txt` import is supported
+- imports are limited to KakaoTalk mobile text, PC CSV-style, and anonymized corpus-style text exports
 - no account system or sync
 - no background upload behavior
 - no multi-provider marketplace
