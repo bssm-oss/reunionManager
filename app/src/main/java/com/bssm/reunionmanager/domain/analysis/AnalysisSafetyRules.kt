@@ -33,6 +33,19 @@ object AnalysisSafetyRules {
         "끝이야",
         "끝내자",
         "끝났",
+        "각자 잘 지내",
+        "각자 지내",
+        "친구로 지내",
+        "연애 감정 없",
+        "좋은 사람 만났",
+        "새로 만나는 사람",
+        "새로운 사람",
+        "만나는 사람 있어",
+        "나중에 내가 연락",
+        "내가 연락할게",
+        "시간이 필요",
+        "생각할 시간이 필요",
+        "기다려줘",
         "정리하자",
         "정리하고 싶",
         "관계 정리",
@@ -105,7 +118,16 @@ object AnalysisSafetyRules {
         "모레",
         "이번 주",
         "이번주",
+        "다음 주",
+        "다음주",
         "주말",
+        "월요일",
+        "화요일",
+        "수요일",
+        "목요일",
+        "금요일",
+        "토요일",
+        "일요일",
         "오전",
         "오후",
         "시",
@@ -210,6 +232,9 @@ object AnalysisSafetyRules {
             lastMessage.hasConcreteScheduleSignal() -> {
                 "${opening}좋아, 약속한 시간에 맞춰 갈게. 고마워."
             }
+            lastMessage.hasScheduleQuestionSignal() -> {
+                "${opening}좋아, 가능한지 확인해서 시간 맞춰볼게."
+            }
             containsAny(lastMessage, "천천히", "괜찮다면", "이야기", "얘기", "대화", "통화") -> {
                 "${opening}고마워. 나도 부담 없이 천천히 이야기하고 싶어."
             }
@@ -229,6 +254,12 @@ object AnalysisSafetyRules {
                 counterpartReplyDraft(input),
                 "${opening}좋아, 그때 보자. 고마워.",
                 "${opening}확인했어. 늦지 않게 갈게.",
+            )
+        } else if (input.lastRecentMessageContent().hasScheduleQuestionSignal()) {
+            listOf(
+                counterpartReplyDraft(input),
+                "${opening}좋아, 가능한 시간 확인해서 알려줄게.",
+                "${opening}괜찮다면 시간 맞춰보자. 고마워.",
             )
         } else {
             listOf(
@@ -401,7 +432,28 @@ object AnalysisSafetyRules {
     private fun String.hasConcreteScheduleSignal(): Boolean {
         val normalized = lowercase()
         return scheduleTimePhrases.any { phrase -> normalized.contains(phrase) } &&
-            scheduleActionPhrases.any { phrase -> normalized.contains(phrase) }
+            scheduleActionPhrases.any { phrase -> normalized.contains(phrase) } &&
+            !hasScheduleQuestionSignal()
+    }
+
+    private fun String.hasScheduleQuestionSignal(): Boolean {
+        val normalized = lowercase()
+        if (!scheduleTimePhrases.any { phrase -> normalized.contains(phrase) }) {
+            return false
+        }
+        return containsAny(
+            normalized,
+            "시간 돼",
+            "시간 되",
+            "시간 가능",
+            "가능해",
+            "가능할",
+            "괜찮아",
+            "괜찮을",
+            "될까",
+            "볼 수",
+            "언제",
+        )
     }
 
     private fun hasBoundarySignal(input: AnalysisInput): Boolean {

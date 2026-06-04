@@ -357,6 +357,57 @@ class GenerateReunionPlanUseCaseTest {
     }
 
     @Test
+    fun invoke_guardrailsConfiguredGemmaProviderWhenCounterpartHasMovedOn() = runTest {
+        val importedId = (conversationRepository.importConversation(
+            parsedConversation = movedOnConversation,
+            rawText = "configured moved on raw text",
+            sourceName = "configured-moved-on.txt",
+        ) as ImportConversationResult.Imported).conversationId
+        providerSettingsRepository.save(
+            ProviderSettings(
+                modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",
+                modelName = "gemma-4-E4B-it.litertlm",
+                backend = GemmaBackend.CPU,
+                userDisplayName = "현우",
+            ),
+        )
+
+        val useCase = GenerateReunionPlanUseCase(
+            conversationRepository = conversationRepository,
+            analysisRepository = analysisRepository,
+            providerSettingsRepository = providerSettingsRepository,
+            fakeAnalysisProvider = FakeAnalysisProvider(),
+            gemmaProviderFactory = {
+                StaticAnalysisProvider(
+                    AnalysisReport(
+                        headline = "Mock Gemma optimistic headline",
+                        contactReadiness = "아주 가볍게 가능",
+                        evidence = "Mock Gemma missed moved-on context",
+                        relationshipSummary = "Mock Gemma summary",
+                        reunionObjective = "지금 안부를 보내 반응을 확인합니다.",
+                        nextStep = "지금 짧게 연락하세요.",
+                        messageDraft = "오랜만이야. 괜찮다면 짧게 안부만 묻고 싶어.",
+                        alternativeDrafts = "오랜만이야\n잘 지내?\n잠깐 얘기할 수 있어?",
+                        caution = "Mock Gemma caution",
+                    ),
+                )
+            },
+        )
+
+        val result = useCase(importedId)
+
+        assertTrue(result.isSuccess)
+        val detail = conversationRepository.observeConversationDetail(importedId).first()
+        requireNotNull(detail)
+        val report = requireNotNull(detail.latestAnalysis)
+        assertEquals("지금은 보류", report.contactReadiness)
+        assertTrue(report.evidence.contains("규칙 보정"))
+        assertTrue(report.evidence.contains("새로 만나는 사람"))
+        assertTrue(report.messageDraft.contains("보내지 않습니다"))
+        assertFalse(report.messageDraft.contains("안부"))
+    }
+
+    @Test
     fun invoke_guardrailsConfiguredGemmaProviderWhenChatLooksTechnicalOrGroup() = runTest {
         val importedId = (conversationRepository.importConversation(
             parsedConversation = technicalGroupConversation,
@@ -738,6 +789,57 @@ class GenerateReunionPlanUseCaseTest {
     }
 
     @Test
+    fun invoke_guardrailsConfiguredGemmaProviderAnswersScheduleQuestion() = runTest {
+        val importedId = (conversationRepository.importConversation(
+            parsedConversation = counterpartScheduleQuestionConversation,
+            rawText = "counterpart schedule question raw text",
+            sourceName = "counterpart-schedule-question.txt",
+        ) as ImportConversationResult.Imported).conversationId
+        providerSettingsRepository.save(
+            ProviderSettings(
+                modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",
+                modelName = "gemma-4-E4B-it.litertlm",
+                backend = GemmaBackend.CPU,
+                userDisplayName = "현우",
+            ),
+        )
+
+        val useCase = GenerateReunionPlanUseCase(
+            conversationRepository = conversationRepository,
+            analysisRepository = analysisRepository,
+            providerSettingsRepository = providerSettingsRepository,
+            fakeAnalysisProvider = FakeAnalysisProvider(),
+            gemmaProviderFactory = {
+                StaticAnalysisProvider(
+                    AnalysisReport(
+                        headline = "Mock Gemma first contact",
+                        contactReadiness = "아주 가볍게 가능",
+                        evidence = "Mock Gemma evidence",
+                        relationshipSummary = "Mock Gemma relationship summary",
+                        reunionObjective = "새 연락을 시작합니다.",
+                        nextStep = "지금 안부를 보냅니다.",
+                        messageDraft = "오랜만이야. 잘 지냈어?",
+                        alternativeDrafts = "오랜만이야\n잘 지내?\n잠깐 얘기할 수 있어?",
+                        caution = "Mock Gemma caution",
+                    ),
+                )
+            },
+        )
+
+        val result = useCase(importedId)
+
+        assertTrue(result.isSuccess)
+        val detail = conversationRepository.observeConversationDetail(importedId).first()
+        requireNotNull(detail)
+        val report = requireNotNull(detail.latestAnalysis)
+        assertEquals("아주 가볍게 가능", report.contactReadiness)
+        assertTrue(report.messageDraft.contains("가능한지 확인"))
+        assertTrue(report.alternativeDrafts.contains("가능한 시간 확인"))
+        assertFalse(report.messageDraft.contains("오랜만이야"))
+        assertFalse(report.messageDraft.contains("약속한 시간"))
+    }
+
+    @Test
     fun invoke_returnsFailureWhenConfiguredGemmaProviderErrors() = runTest {
         val importedId = importSampleConversation()
         providerSettingsRepository.save(
@@ -858,6 +960,29 @@ class GenerateReunionPlanUseCaseTest {
             ),
         )
 
+        val movedOnConversation = ParsedConversation(
+            title = "상대 거리두기 테스트",
+            exportedAtEpochMillis = null,
+            participants = listOf("민지", "현우"),
+            messages = listOf(
+                ParsedMessage(
+                    senderName = "현우",
+                    sentAtEpochMillis = 1_710_000_000_000,
+                    content = "오랜만이야. 괜찮다면 한 번 이야기할 수 있을까?",
+                ),
+                ParsedMessage(
+                    senderName = "민지",
+                    sentAtEpochMillis = 1_710_000_060_000,
+                    content = "나 새로 만나는 사람 있어",
+                ),
+                ParsedMessage(
+                    senderName = "민지",
+                    sentAtEpochMillis = 1_710_000_120_000,
+                    content = "우리도 이제 각자 잘 지내자",
+                ),
+            ),
+        )
+
         val technicalGroupConversation = ParsedConversation(
             title = "LLM 프로젝트 회의",
             exportedAtEpochMillis = null,
@@ -959,6 +1084,24 @@ class GenerateReunionPlanUseCaseTest {
                     senderName = "민지",
                     sentAtEpochMillis = 1_710_000_060_000,
                     content = "내일 7시에 카페에서 보자",
+                ),
+            ),
+        )
+
+        val counterpartScheduleQuestionConversation = ParsedConversation(
+            title = "상대 일정 질문 테스트",
+            exportedAtEpochMillis = null,
+            participants = listOf("민지", "현우"),
+            messages = listOf(
+                ParsedMessage(
+                    senderName = "현우",
+                    sentAtEpochMillis = 1_710_000_000_000,
+                    content = "괜찮다면 짧게 얼굴 볼 수 있을까?",
+                ),
+                ParsedMessage(
+                    senderName = "민지",
+                    sentAtEpochMillis = 1_710_000_060_000,
+                    content = "토요일 저녁에 시간 돼?",
                 ),
             ),
         )

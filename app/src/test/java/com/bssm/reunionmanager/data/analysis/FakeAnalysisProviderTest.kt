@@ -94,6 +94,22 @@ class FakeAnalysisProviderTest {
     }
 
     @Test
+    fun analyze_recommendsWaitingWhenCounterpartHasMovedOn() = runTest {
+        val result = FakeAnalysisProvider().analyze(
+            inputWithSignals(
+                recentExcerpt = "Minji: 나 새로 만나는 사람 있어\nMinji: 우리도 이제 각자 잘 지내자",
+                signalExcerpt = "Minji: 나 새로 만나는 사람 있어\nMinji: 우리도 이제 각자 잘 지내자",
+                statsSummary = "마지막 메시지: 우리도 이제 각자 잘 지내자\n마지막 발신자의 연속 발화: 2개",
+                perspectiveSummary = "내 카톡 이름: Alex\n상대 후보: Minji\n마지막 메시지 발신자 역할: 상대\n상대 마지막 연속 발화: 2개",
+            ),
+        )
+
+        assertTrue(result.contactReadiness.contains("보류"))
+        assertTrue(result.messageDraft.contains("보내지 않습니다"))
+        assertFalse(result.messageDraft.contains("안부"))
+    }
+
+    @Test
     fun analyze_doesNotTreatNoPressurePhraseAsBoundarySignal() = runTest {
         val result = FakeAnalysisProvider().analyze(
             inputWithSignals(
@@ -224,6 +240,23 @@ class FakeAnalysisProviderTest {
         assertTrue(result.messageDraft.contains("약속한 시간"))
         assertTrue(result.messageDraft.contains("고마워"))
         assertTrue(result.alternativeDrafts.contains("그때 보자"))
+        assertFalse(result.messageDraft.contains("안부부터"))
+    }
+
+    @Test
+    fun analyze_answersScheduleQuestionWithoutPretendingItIsConfirmed() = runTest {
+        val result = FakeAnalysisProvider().analyze(
+            inputWithSignals(
+                recentExcerpt = "Alex: 괜찮다면 짧게 얼굴 볼 수 있을까?\nMinji: 토요일 저녁에 시간 돼?",
+                signalExcerpt = "Minji: 토요일 저녁에 시간 돼?",
+                statsSummary = "마지막 메시지: 토요일 저녁에 시간 돼?\n마지막 발신자의 연속 발화: 1개",
+                perspectiveSummary = "내 카톡 이름: Alex\n상대 후보: Minji\n마지막 메시지 발신자 역할: 상대\n마지막 연속 발화 역할: 상대 1개\n내 최근 메시지: 괜찮다면 짧게 얼굴 볼 수 있을까?\n상대 최근 메시지: 토요일 저녁에 시간 돼?\n내 마지막 연속 발화: 0개\n상대 마지막 연속 발화: 1개",
+            ),
+        )
+
+        assertTrue(result.contactReadiness.contains("가볍게"))
+        assertTrue(result.messageDraft.contains("가능한지 확인"))
+        assertFalse(result.messageDraft.contains("약속한 시간"))
         assertFalse(result.messageDraft.contains("안부부터"))
     }
 
