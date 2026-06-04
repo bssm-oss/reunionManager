@@ -26,5 +26,6 @@ data class AnalysisResultEntity(
     val relationshipSummary: String,
     val reunionObjective: String,
     val nextStep: String,
+    val messageDraft: String,
     val caution: String,
 )

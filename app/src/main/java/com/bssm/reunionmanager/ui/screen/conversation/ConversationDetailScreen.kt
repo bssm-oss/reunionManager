@@ -36,8 +36,8 @@ fun ConversationDetailScreen(
                 .padding(ScreenPadding),
         ) {
             ReunionEmptyState(
-                title = "Loading conversation...",
-                body = "Preparing the saved local chat.",
+                title = "대화를 불러오는 중",
+                body = "저장한 대화를 준비하고 있습니다.",
             )
         }
         return
@@ -60,25 +60,25 @@ fun ConversationDetailScreen(
         }
         item {
             ReunionPane(
-                title = "Conversation summary",
-                supportingText = "${detail.participantNames.size} participant(s) · ${detail.messages.size} message(s)",
+                title = "대화 요약",
+                supportingText = "참여자 ${detail.participantNames.size}명 · 메시지 ${detail.messages.size}개",
             ) {
-                ReunionBadge(text = "Stored locally")
+                ReunionBadge(text = "기기 내 저장")
             }
         }
         item {
             ReunionPane(
-                title = "Participants",
-                supportingText = detail.participantNames.joinToString().ifBlank { "Unknown participants" },
+                title = "참여자",
+                supportingText = detail.participantNames.joinToString().ifBlank { "알 수 없음" },
             )
         }
         item {
-            ReunionPrimaryButton(text = "Open reunion plan", onClick = onOpenAnalysis)
+            ReunionPrimaryButton(text = "재회 계획 만들기", onClick = onOpenAnalysis)
         }
         detail.latestAnalysis?.let { report ->
             item {
                 ReunionPane(
-                    title = "Latest saved guidance",
+                    title = "최근 계획",
                     supportingText = report.headline,
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
                 ) {
@@ -91,7 +91,7 @@ fun ConversationDetailScreen(
             }
         }
         item {
-            Text(text = "Messages", style = MaterialTheme.typography.titleLarge)
+            Text(text = "메시지", style = MaterialTheme.typography.titleLarge)
         }
         items(detail.messages, key = { it.id }) { message ->
             ReunionPane(

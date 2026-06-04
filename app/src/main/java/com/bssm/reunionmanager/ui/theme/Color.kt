@@ -2,25 +2,25 @@ package com.bssm.reunionmanager.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val AppBackground = Color(0xFF08090A)
-val AppPanel = Color(0xFF0F1011)
-val AppSurface = Color(0xFF141516)
-val AppSurfaceHigh = Color(0xFF191A1B)
-val AppSurfaceAccent = Color(0xFF171A31)
+val AppBackground = Color(0xFFF7F6F1)
+val AppPanel = Color(0xFFFFFFFF)
+val AppSurface = Color(0xFFFAF9F5)
+val AppSurfaceHigh = Color(0xFFECE7DD)
+val AppSurfaceAccent = Color(0xFFF4DED5)
 
-val AppTextPrimary = Color(0xFFF7F8F8)
-val AppTextSecondary = Color(0xFFD0D6E0)
-val AppTextMuted = Color(0xFF8A8F98)
-val AppTextFaint = Color(0xFF62666D)
+val AppTextPrimary = Color(0xFF171513)
+val AppTextSecondary = Color(0xFF5E5A52)
+val AppTextMuted = Color(0xFF817B70)
+val AppTextFaint = Color(0xFFA29B90)
 
-val AppAccent = Color(0xFF5E6AD2)
-val AppAccentActive = Color(0xFF7170FF)
-val AppAccentContainer = Color(0xFF1A1F3D)
+val AppAccent = Color(0xFFC96442)
+val AppAccentActive = Color(0xFF99482F)
+val AppAccentContainer = Color(0xFFF1D6CB)
 
-val AppSuccess = Color(0xFF10B981)
-val AppSuccessContainer = Color(0xFF10261F)
-val AppError = Color(0xFFE06D6D)
-val AppErrorContainer = Color(0xFF30181C)
+val AppSuccess = Color(0xFF2F7D5B)
+val AppSuccessContainer = Color(0xFFDFF1E8)
+val AppError = Color(0xFFB53333)
+val AppErrorContainer = Color(0xFFF5DAD7)
 
-val AppBorderSubtle = Color(0x0DFFFFFF)
-val AppBorder = Color(0x14FFFFFF)
+val AppBorderSubtle = Color(0xFFE8E2D7)
+val AppBorder = Color(0xFFD7CEC0)

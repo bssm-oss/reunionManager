@@ -92,6 +92,8 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
+    implementation(libs.google.ai.edge.litertlm.android)
+
     testImplementation(libs.junit4)
     testImplementation(libs.org.jetbrains.kotlinx.coroutines.test)
     testImplementation(libs.androidx.test.core)

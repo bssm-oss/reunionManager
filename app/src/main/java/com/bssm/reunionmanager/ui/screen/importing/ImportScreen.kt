@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import com.bssm.reunionmanager.ui.ImportUiState
 import com.bssm.reunionmanager.ui.theme.ReunionBadgeTone
 import com.bssm.reunionmanager.ui.theme.ReunionEmptyState
-import com.bssm.reunionmanager.ui.theme.ReunionPane
 import com.bssm.reunionmanager.ui.theme.ReunionPrimaryButton
 import com.bssm.reunionmanager.ui.theme.ReunionSecondaryButton
 import com.bssm.reunionmanager.ui.theme.ScreenPadding
@@ -29,7 +28,7 @@ import com.bssm.reunionmanager.ui.theme.ScreenSectionSpacing
 fun ImportScreen(
     importState: ImportUiState,
     onImportClick: (Uri) -> Unit,
-    onViewConversationClick: (Long) -> Unit,
+    onOpenPlanClick: (Long) -> Unit,
 ) {
     val pickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
@@ -45,28 +44,34 @@ fun ImportScreen(
         verticalArrangement = Arrangement.spacedBy(ScreenSectionSpacing),
     ) {
         Text(
-            text = "Import a KakaoTalk export",
+            text = "카카오톡 대화 가져오기",
             style = MaterialTheme.typography.headlineMedium,
         )
         Text(
-            text = "Choose a supported plain-text export and keep the imported chat on this device.",
+            text = ".txt 또는 .csv 내보내기 파일을 선택하세요. 대화는 이 기기에만 저장됩니다.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        ReunionPane(
-            title = "Supported file",
-            supportingText = "The MVP currently supports KakaoTalk plain-text export files (.txt). The imported chat is parsed and stored only on this device.",
-        )
         ReunionPrimaryButton(
-            text = if (importState.isLoading) "Importing locally..." else "Choose .txt file",
-            onClick = { pickerLauncher.launch(arrayOf("text/plain")) },
+            text = if (importState.isLoading) "가져오는 중..." else "대화 파일 선택",
+            onClick = {
+                pickerLauncher.launch(
+                    arrayOf(
+                        "text/plain",
+                        "text/csv",
+                        "application/csv",
+                        "application/vnd.ms-excel",
+                        "*/*",
+                    ),
+                )
+            },
             enabled = !importState.isLoading,
         )
 
         if (importState.isLoading) {
             ReunionEmptyState(
-                title = "Import in progress",
-                body = "The selected file is being read and parsed locally on this device.",
+                title = "가져오는 중",
+                body = "선택한 파일을 이 기기에서 읽고 있습니다.",
                 tone = ReunionBadgeTone.Accent,
             ) {
                 CircularProgressIndicator(
@@ -78,14 +83,14 @@ fun ImportScreen(
 
         importState.message?.let { message ->
             ReunionEmptyState(
-                title = "Import status",
+                title = "가져오기 완료",
                 body = message,
                 tone = ReunionBadgeTone.Success,
             ) {
                 importState.importedConversationId?.let { conversationId ->
                     ReunionSecondaryButton(
-                        text = "Open imported chat",
-                        onClick = { onViewConversationClick(conversationId) },
+                        text = "재회 계획 만들기",
+                        onClick = { onOpenPlanClick(conversationId) },
                     )
                 }
             }
@@ -93,7 +98,7 @@ fun ImportScreen(
 
         importState.errorMessage?.let { errorMessage ->
             ReunionEmptyState(
-                title = "Import failed",
+                title = "가져오지 못했습니다",
                 body = errorMessage,
                 tone = ReunionBadgeTone.Error,
             )

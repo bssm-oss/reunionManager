@@ -20,6 +20,7 @@ class FakeAnalysisProviderTest {
         )
 
         assertTrue(result.headline.contains("Spring meetup"))
-        assertTrue(result.caution.contains("확정적으로 판단하지 마세요"))
+        assertTrue(result.messageDraft.contains("오랜만이야"))
+        assertTrue(result.caution.contains("답을 재촉"))
     }
 }

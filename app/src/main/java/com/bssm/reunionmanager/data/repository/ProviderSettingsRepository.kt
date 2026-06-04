@@ -2,6 +2,7 @@ package com.bssm.reunionmanager.data.repository
 
 import com.bssm.reunionmanager.data.local.dao.ProviderSettingsDao
 import com.bssm.reunionmanager.data.local.entity.ProviderSettingsEntity
+import com.bssm.reunionmanager.domain.model.GemmaBackend
 import com.bssm.reunionmanager.domain.model.ProviderSettings
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -22,18 +23,20 @@ class ProviderSettingsRepository(
     suspend fun save(settings: ProviderSettings) {
         providerSettingsDao.upsert(
             ProviderSettingsEntity(
-                apiKey = settings.apiKey,
+                apiKey = "",
                 modelName = settings.modelName,
-                endpoint = settings.endpoint,
+                endpoint = "",
+                modelPath = settings.modelPath,
+                backend = settings.backend.name,
             ),
         )
     }
 
     private fun ProviderSettingsEntity.toDomainModel(): ProviderSettings {
         return ProviderSettings(
-            apiKey = apiKey,
+            modelPath = modelPath,
             modelName = modelName,
-            endpoint = endpoint,
+            backend = GemmaBackend.fromStoredValue(backend),
         )
     }
 }

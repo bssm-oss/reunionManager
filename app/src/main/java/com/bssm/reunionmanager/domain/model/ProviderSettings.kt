@@ -1,14 +1,25 @@
 package com.bssm.reunionmanager.domain.model
 
 data class ProviderSettings(
-    val apiKey: String = "",
+    val modelPath: String = "",
     val modelName: String = DEFAULT_MODEL,
-    val endpoint: String = DEFAULT_ENDPOINT,
+    val backend: GemmaBackend = GemmaBackend.CPU,
 ) {
-    val isConfigured: Boolean = apiKey.isNotBlank()
+    val isConfigured: Boolean = modelPath.isNotBlank()
 
     companion object {
-        const val DEFAULT_MODEL: String = "gemini-2.0-flash"
-        const val DEFAULT_ENDPOINT: String = "https://generativelanguage.googleapis.com/v1beta"
+        const val DEFAULT_MODEL: String = "gemma-4-E4B-it.litertlm"
+    }
+}
+
+enum class GemmaBackend {
+    CPU,
+    GPU,
+    ;
+
+    companion object {
+        fun fromStoredValue(value: String): GemmaBackend {
+            return entries.firstOrNull { it.name.equals(value.trim(), ignoreCase = true) } ?: CPU
+        }
     }
 }

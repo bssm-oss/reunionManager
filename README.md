@@ -1,48 +1,51 @@
-# Reunion Manager
+# 재회 매니저
 
-Reunion Manager is a local-first Android MVP for importing a KakaoTalk conversation export, reviewing the saved chat on-device, and generating a structured reunion plan.
+재회 매니저는 카카오톡 대화 내보내기 파일을 가져와 대화를 기기 안에서 정리하고, 부담 없는 다음 행동과 첫 연락 문장, 주의할 점을 만들어 주는 로컬 우선 Android 앱입니다.
 
-## MVP Status
+## 현재 상태
 
-This repository now contains a working single-module Android app with the following end-to-end MVP flow:
+이 저장소는 단일 Android 앱 모듈로 구성되어 있으며, 현재 다음 흐름을 지원합니다.
 
-- import a KakaoTalk plain-text export (`.txt`)
-- parse the conversation locally
-- store the conversation, participants, messages, analysis results, and provider settings on-device with Room
-- browse saved conversations and inspect recent messages
-- generate a structured reunion plan
-- use a fake local analysis provider when Gemini is not configured
-- optionally call a Gemini-compatible endpoint when the user provides local settings
+- 카카오톡 대화 내보내기 파일 가져오기 (`.txt` 또는 지원되는 `.csv` 계열 텍스트)
+- 대화 내용 로컬 파싱
+- 대화, 참여자, 메시지, 분석 결과, 로컬 AI 설정을 Room에 저장
+- 저장한 대화 목록과 최근 메시지 확인
+- 오늘 할 일, 첫 연락 문장, 대화 흐름, 목표, 주의할 점으로 구성된 재회 계획 생성
+- Gemma 모델 파일이 없을 때도 전체 흐름을 확인할 수 있는 데모 분석 모드
+- Gemma 4 `.litertlm` 모델 파일을 선택하면 LiteRT-LM으로 기기 내 분석 실행
 
-## Product Constraints
+## 제품 원칙
 
-- local storage only for MVP data
-- no login, logout, or member management
-- no cloud sync, analytics, or bundled secrets
-- single Android app module
-- internal `ui`, `domain`, and `data` package split
+- 가져온 대화와 분석 결과는 기기 안에만 저장합니다.
+- 로그인, 로그아웃, 회원 관리 기능은 넣지 않습니다.
+- 클라우드 동기화, 분석 추적, 원격 업로드, 내장 비밀키는 사용하지 않습니다.
+- 앱 모듈은 하나로 유지합니다.
+- 내부 패키지는 `ui`, `domain`, `data` 경계를 유지합니다.
 
-The canonical scope contract lives in `docs/2026-04-06-mvp-scope.md`.
+상세 범위는 [docs/2026-04-06-mvp-scope.md](docs/2026-04-06-mvp-scope.md)에 정리되어 있습니다.
 
-## Supported KakaoTalk Import Format
+## 지원하는 카카오톡 가져오기 형식
 
-The MVP supports KakaoTalk plain-text exports whose structure matches the observed desktop/mobile export pattern:
+현재 파서는 실제 공개 자료에서 확인되는 모바일 텍스트, PC CSV, 익명 말뭉치형 텍스트 패턴을 지원합니다.
 
-- title/header line near the top
+- 상단의 대화방 제목 또는 헤더
 - `저장한 날짜 : yyyy-MM-dd HH:mm:ss`
-- date divider lines like `--------------- 2024년 3월 27일 수요일 ---------------`
-- message lines like `[이름] [오전 10:55] 메시지`
-- multiline continuations appended to the prior message
+- `--------------- 2024년 3월 27일 수요일 ---------------` 같은 날짜 구분선
+- `[이름] [오전 10:55] 메시지` 형태의 모바일 텍스트 메시지
+- 이전 메시지에 이어지는 여러 줄 메시지
+- `Date,User,Message` 형태의 PC CSV 계열 행
+- `2019-11-04 22:25:00 , P1 : 메시지` 형태의 익명 말뭉치형 행
 
-If a selected file does not match the supported format, the app fails with a clear local error instead of saving partial data.
+지원하지 않는 파일은 일부만 저장하지 않고 명확한 가져오기 오류를 보여줍니다.
 
-## Analysis Behavior
+## 분석 동작
 
-- if no Gemini API key is stored locally, the app uses a fake local provider so the full workflow remains usable
-- if a Gemini-compatible API key, model, and endpoint are stored locally, the app can call the configured provider
-- generated results are stored locally and shown as a structured plan with bounded, non-certain language
+- Gemma 4 모델 경로가 비어 있으면 데모 분석 provider를 사용합니다.
+- Gemma 4 `.litertlm` 파일 경로가 저장되어 있으면 LiteRT-LM provider가 기기 안에서 모델을 실행합니다.
+- 모델 파일은 APK에 포함하지 않습니다. 앱의 로컬 AI 설정에서 `gemma-4-E4B-it.litertlm` 같은 모델 파일을 선택하면 앱 전용 저장소로 복사합니다.
+- 분석 결과는 로컬에 저장되며, 확정적인 판단 대신 짧고 조심스러운 한국어 행동 계획으로 표시됩니다.
 
-## Local Validation
+## 로컬 검증
 
 ```bash
 ./gradlew testDebugUnitTest
@@ -50,50 +53,52 @@ If a selected file does not match the supported format, the app fails with a cle
 ./gradlew assembleDebug
 ```
 
-## Optional Emulator QA
+에뮬레이터가 준비되어 있다면 사용자 흐름까지 확인할 수 있습니다.
 
-If you have a local emulator configured, you can launch the app after building:
+```bash
+./gradlew connectedDebugAndroidTest
+```
+
+직접 실행하려면 debug APK를 설치한 뒤 앱을 시작합니다.
 
 ```bash
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb shell am start -n com.bssm.reunionmanager/.MainActivity
 ```
 
-The automated feature-test lane is intended to cover the same core MVP flow through instrumentation: home trust signals, import navigation, settings navigation, and browsing an imported conversation through reunion-plan generation.
+## 주요 화면
 
-## Project Structure
+- 홈 화면
+- 카카오톡 대화 가져오기
+- 저장한 대화 목록
+- 대화 상세 보기
+- 첫 연락 문장이 포함된 재회 계획
+- 로컬 AI 설정
 
-- `app/src/main/java/com/bssm/reunionmanager/ui` — Compose screens, navigation, and shared view-model state
-- `app/src/main/java/com/bssm/reunionmanager/domain` — provider contract and MVP use cases
-- `app/src/main/java/com/bssm/reunionmanager/data` — parser, Room persistence, repositories, and provider implementations
-- `docs/` — product scope and implementation documentation
-- `.github/workflows/android.yml` — CI for unit tests, lint, debug assembly, and emulator-backed feature tests
+## 프로젝트 구조
 
-## Key Screens
+- `app/src/main/java/com/bssm/reunionmanager/ui` - Compose 화면, 내비게이션, ViewModel 상태
+- `app/src/main/java/com/bssm/reunionmanager/domain` - use case와 분석 provider 계약
+- `app/src/main/java/com/bssm/reunionmanager/data` - 파서, Room 저장소, repository, provider 구현
+- `docs/` - 제품 범위와 구현 문서
+- `.github/workflows/android.yml` - 유닛 테스트, lint, debug 빌드, 에뮬레이터 기능 테스트
 
-- home
-- import
-- saved conversation list
-- conversation detail
-- reunion plan
-- AI settings
+## 문서
 
-## Documentation
-
-- `docs/2026-04-06-mvp-scope.md` — locked MVP scope and deferred items
-- `docs/2026-04-06-implementation.md` — implementation details, architecture, and QA notes
+- [docs/2026-04-06-mvp-scope.md](docs/2026-04-06-mvp-scope.md) - MVP 범위와 제외 항목
+- [docs/2026-04-06-implementation.md](docs/2026-04-06-implementation.md) - 구현 구조와 QA 기록
 
 ## CI
 
-GitHub Actions runs the same core validation commands used locally:
+GitHub Actions는 다음 검증을 실행합니다.
 
 - `./gradlew testDebugUnitTest`
 - `./gradlew lintDebug`
 - `./gradlew assembleDebug`
 - `./gradlew connectedDebugAndroidTest`
 
-The CI workflow also uploads `app/build/outputs/apk/debug/app-debug.apk` as a workflow artifact so each successful run keeps the built debug APK.
+성공한 실행에서는 `app/build/outputs/apk/debug/app-debug.apk`가 workflow artifact로 업로드됩니다.
 
-## Releases
+## 릴리스
 
-Pushing a `v*` tag triggers the Android release workflow. That workflow builds `app/build/outputs/apk/debug/app-debug.apk`, uploads it as a workflow artifact, and attaches the same installable APK to the GitHub Release for that tag.
+`v*` 태그를 push하면 Android release workflow가 실행됩니다. 이 workflow는 debug APK를 빌드하고 artifact로 업로드한 뒤, 같은 APK를 GitHub Release에 첨부합니다.

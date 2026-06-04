@@ -33,41 +33,41 @@ fun HomeScreen(
             .padding(ScreenPadding),
         verticalArrangement = Arrangement.spacedBy(ScreenSectionSpacing),
     ) {
-        ReunionBadge(text = "Local-only workflow")
+        ReunionBadge(text = "내 기기에서 보관")
         Text(
-            text = "Review KakaoTalk chats locally and build a careful reunion plan.",
+            text = "다시 연락하기 전, 한 번만 더 정리하세요.",
             style = MaterialTheme.typography.headlineMedium,
         )
         Text(
-            text = "Import a KakaoTalk chat, keep it on-device, and build a careful reunion plan from the saved conversation.",
+            text = "카카오톡 대화를 가져오면 부담 없는 첫 연락 문장과 주의할 점을 바로 정리해 줍니다.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        ReunionPrimaryButton(text = "카카오톡 대화 가져오기", onClick = onImportClick)
+        ReunionSecondaryButton(text = "저장한 대화 보기", onClick = onConversationsClick)
+        ReunionSecondaryButton(text = "로컬 AI 설정", onClick = onSettingsClick)
         ReunionPane(
-            title = "Local data only",
-            supportingText = "Imported chats and provider settings stay on this device. If you later run analysis with a configured AI endpoint, the app sends a compact chat excerpt only for that request.",
+            title = "결과",
+            supportingText = "오늘 할 일, 첫 연락 문장, 대화 흐름, 주의할 점만 보여줍니다.",
         )
         ReunionPane(
-            title = "Provider status",
+            title = "AI 모드",
             supportingText = if (providerConfigured) {
-                "Gemini-compatible analysis is configured locally. No chat content is sent unless you explicitly generate a reunion plan."
+                "계획 생성이 이 기기에서 실행됩니다."
             } else {
-                "AI is not configured yet. You can still import and review chats, and the app will use a local fake provider for the MVP analysis flow."
+                "모델을 선택하기 전에는 데모 계획으로 흐름을 확인할 수 있습니다."
             },
         ) {
             ReunionBadge(
-                text = if (providerConfigured) "AI configured" else "Using local provider",
+                text = if (providerConfigured) "기기 내 실행" else "데모 모드",
                 tone = if (providerConfigured) ReunionBadgeTone.Accent else ReunionBadgeTone.Neutral,
             )
         }
         ReunionPane(
-            title = "Saved chats",
-            supportingText = "$conversationCount conversation(s) are currently stored locally.",
+            title = "저장한 대화",
+            supportingText = "${conversationCount}개의 대화가 저장되어 있습니다.",
         ) {
-            ReunionBadge(text = "$conversationCount saved")
+            ReunionBadge(text = "${conversationCount}개 저장")
         }
-        ReunionPrimaryButton(text = "Import KakaoTalk .txt", onClick = onImportClick)
-        ReunionSecondaryButton(text = "Browse saved chats", onClick = onConversationsClick)
-        ReunionSecondaryButton(text = "Open AI settings", onClick = onSettingsClick)
     }
 }

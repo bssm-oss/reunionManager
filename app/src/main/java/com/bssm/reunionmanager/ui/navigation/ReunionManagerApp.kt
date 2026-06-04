@@ -49,6 +49,7 @@ fun ReunionManagerApp() {
     val providerSettings by viewModel.providerSettings.collectAsStateWithLifecycle()
     val importState by viewModel.importState.collectAsStateWithLifecycle()
     val analysisStates by viewModel.analysisStates.collectAsStateWithLifecycle()
+    val modelSettingsState by viewModel.modelSettingsState.collectAsStateWithLifecycle()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val currentTitle = when {
@@ -115,7 +116,7 @@ fun ReunionManagerApp() {
                     },
                     actions = {
                         ReunionBadge(
-                            text = if (providerSettings.isConfigured) "AI configured" else "Local provider",
+                            text = if (providerSettings.isConfigured) "기기 내 실행" else "데모 모드",
                             tone = if (providerSettings.isConfigured) ReunionBadgeTone.Accent else ReunionBadgeTone.Neutral,
                             modifier = Modifier.padding(end = 12.dp),
                         )
@@ -142,9 +143,9 @@ fun ReunionManagerApp() {
                 ImportScreen(
                     importState = importState,
                     onImportClick = viewModel::importConversation,
-                    onViewConversationClick = { conversationId ->
+                    onOpenPlanClick = { conversationId ->
                         viewModel.clearImportMessage()
-                        navController.navigate(ReunionDestination.ConversationDetail.createRoute(conversationId))
+                        navController.navigate(ReunionDestination.Analysis.createRoute(conversationId))
                     },
                 )
             }
@@ -159,7 +160,9 @@ fun ReunionManagerApp() {
             composable(route = ReunionDestination.Settings.route) {
                 SettingsScreen(
                     providerSettings = providerSettings,
+                    modelSettingsState = modelSettingsState,
                     onSave = viewModel::saveProviderSettings,
+                    onModelFileSelected = viewModel::importGemmaModel,
                 )
             }
             composable(

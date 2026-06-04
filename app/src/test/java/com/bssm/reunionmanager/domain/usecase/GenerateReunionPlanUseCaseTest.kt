@@ -3,30 +3,30 @@ package com.bssm.reunionmanager.domain.usecase
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.bssm.reunionmanager.data.analysis.FakeAnalysisProvider
-import com.bssm.reunionmanager.data.analysis.GeminiAnalysisProvider
 import com.bssm.reunionmanager.data.importer.ParsedConversation
 import com.bssm.reunionmanager.data.importer.ParsedMessage
 import com.bssm.reunionmanager.data.local.ReunionManagerDatabase
 import com.bssm.reunionmanager.data.repository.AnalysisRepository
 import com.bssm.reunionmanager.data.repository.ConversationRepository
 import com.bssm.reunionmanager.data.repository.ProviderSettingsRepository
-import com.bssm.reunionmanager.domain.model.ProviderSettings
+import com.bssm.reunionmanager.domain.analysis.AnalysisProvider
+import com.bssm.reunionmanager.domain.model.AnalysisInput
+import com.bssm.reunionmanager.domain.model.AnalysisReport
+import com.bssm.reunionmanager.domain.model.GemmaBackend
 import com.bssm.reunionmanager.domain.model.ImportConversationResult
+import com.bssm.reunionmanager.domain.model.ProviderSettings
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertFalse
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import org.robolectric.RobolectricTestRunner
-import java.net.ServerSocket
-import java.io.OutputStreamWriter
-import kotlin.concurrent.thread
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
@@ -60,7 +60,7 @@ class GenerateReunionPlanUseCaseTest {
     }
 
     @Test
-    fun invoke_usesFakeProviderWhenApiKeyIsMissing() = runTest {
+    fun invoke_usesFakeProviderWhenModelPathIsMissing() = runTest {
         val importedId = (conversationRepository.importConversation(
             parsedConversation = sampleParsedConversation,
             rawText = "analysis raw text",
@@ -72,7 +72,7 @@ class GenerateReunionPlanUseCaseTest {
             analysisRepository = analysisRepository,
             providerSettingsRepository = providerSettingsRepository,
             fakeAnalysisProvider = FakeAnalysisProvider(),
-            geminiProviderFactory = { settings -> GeminiAnalysisProvider(settings) },
+            gemmaProviderFactory = { error("Gemma provider should not be used without a model path.") },
         )
 
         val result = useCase(importedId)
@@ -83,98 +83,82 @@ class GenerateReunionPlanUseCaseTest {
         val detail = conversationRepository.observeConversationDetail(importedId).first()
         requireNotNull(detail)
         assertTrue(detail.latestAnalysis != null)
-        assertTrue(detail.latestAnalysis!!.headline.contains("재회 초안"))
+        assertTrue(detail.latestAnalysis!!.headline.contains("첫 단계"))
+        assertTrue(detail.latestAnalysis!!.messageDraft.contains("오랜만이야"))
     }
 
     @Test
-    fun invoke_usesGeminiProviderWhenSettingsAreConfigured() = runTest {
+    fun invoke_usesGemmaProviderWhenModelPathIsConfigured() = runTest {
         val importedId = importSampleConversation()
-        val response = """
-            {
-              "candidates": [
-                {
-                  "content": {
-                    "parts": [
-                      {
-                        "text": "{\"headline\":\"Mock Gemini headline\",\"relationshipSummary\":\"Mock Gemini relationship summary\",\"reunionObjective\":\"Mock Gemini reunion objective\",\"nextStep\":\"Mock Gemini next step\",\"caution\":\"Mock Gemini caution\"}"
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-        """.trimIndent()
-        val serverSocket = ServerSocket(0)
-        val serverThread = startMockGeminiServer(serverSocket, 200, response)
+        providerSettingsRepository.save(
+            ProviderSettings(
+                modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",
+                modelName = "gemma-4-E4B-it.litertlm",
+                backend = GemmaBackend.GPU,
+            ),
+        )
 
-        try {
-            providerSettingsRepository.save(
-                ProviderSettings(
-                    apiKey = "test-key",
-                    modelName = "mock-model",
-                    endpoint = "http://127.0.0.1:${serverSocket.localPort}/v1beta",
-                ),
-            )
+        val useCase = GenerateReunionPlanUseCase(
+            conversationRepository = conversationRepository,
+            analysisRepository = analysisRepository,
+            providerSettingsRepository = providerSettingsRepository,
+            fakeAnalysisProvider = FakeAnalysisProvider(),
+            gemmaProviderFactory = { settings ->
+                assertEquals("/data/local/tmp/gemma-4-E4B-it.litertlm", settings.modelPath)
+                assertEquals(GemmaBackend.GPU, settings.backend)
+                StaticAnalysisProvider(
+                    AnalysisReport(
+                        headline = "Mock Gemma headline",
+                        relationshipSummary = "Mock Gemma relationship summary",
+                        reunionObjective = "Mock Gemma reunion objective",
+                        nextStep = "Mock Gemma next step",
+                        messageDraft = "Mock Gemma message draft",
+                        caution = "Mock Gemma caution",
+                    ),
+                )
+            },
+        )
 
-            val useCase = GenerateReunionPlanUseCase(
-                conversationRepository = conversationRepository,
-                analysisRepository = analysisRepository,
-                providerSettingsRepository = providerSettingsRepository,
-                fakeAnalysisProvider = FakeAnalysisProvider(),
-                geminiProviderFactory = { settings -> GeminiAnalysisProvider(settings) },
-            )
+        val result = useCase(importedId)
 
-            val result = useCase(importedId)
+        assertTrue(result.isSuccess)
+        assertEquals("gemma4", result.getOrNull())
 
-            assertTrue(result.isSuccess)
-            assertEquals("gemini", result.getOrNull())
-
-            val detail = conversationRepository.observeConversationDetail(importedId).first()
-            requireNotNull(detail)
-            assertNotNull(detail.latestAnalysis)
-            assertEquals("Mock Gemini headline", detail.latestAnalysis!!.headline)
-            assertEquals("Mock Gemini relationship summary", detail.latestAnalysis!!.relationshipSummary)
-        } finally {
-            serverSocket.close()
-            serverThread.join(1_000)
-        }
+        val detail = conversationRepository.observeConversationDetail(importedId).first()
+        requireNotNull(detail)
+        assertNotNull(detail.latestAnalysis)
+        assertEquals("Mock Gemma headline", detail.latestAnalysis!!.headline)
+        assertEquals("Mock Gemma relationship summary", detail.latestAnalysis!!.relationshipSummary)
+        assertEquals("Mock Gemma message draft", detail.latestAnalysis!!.messageDraft)
     }
 
     @Test
-    fun invoke_returnsFailureWhenConfiguredGeminiProviderErrors() = runTest {
+    fun invoke_returnsFailureWhenConfiguredGemmaProviderErrors() = runTest {
         val importedId = importSampleConversation()
-        val serverSocket = ServerSocket(0)
-        val serverThread = startMockGeminiServer(serverSocket, 503, "temporary failure")
-
-        try {
-            providerSettingsRepository.save(
-                ProviderSettings(
-                    apiKey = "test-key",
-                    modelName = "mock-model",
-                    endpoint = "http://127.0.0.1:${serverSocket.localPort}/v1beta",
-                ),
+        providerSettingsRepository.save(
+            ProviderSettings(
+                modelPath = "/data/local/tmp/missing-gemma-4-E4B-it.litertlm",
+                modelName = "gemma-4-E4B-it.litertlm",
+                backend = GemmaBackend.CPU,
             )
+        )
 
-            val useCase = GenerateReunionPlanUseCase(
-                conversationRepository = conversationRepository,
-                analysisRepository = analysisRepository,
-                providerSettingsRepository = providerSettingsRepository,
-                fakeAnalysisProvider = FakeAnalysisProvider(),
-                geminiProviderFactory = { settings -> GeminiAnalysisProvider(settings) },
-            )
+        val useCase = GenerateReunionPlanUseCase(
+            conversationRepository = conversationRepository,
+            analysisRepository = analysisRepository,
+            providerSettingsRepository = providerSettingsRepository,
+            fakeAnalysisProvider = FakeAnalysisProvider(),
+            gemmaProviderFactory = { FailingAnalysisProvider("모델 파일을 찾을 수 없습니다.") },
+        )
 
-            val result = useCase(importedId)
+        val result = useCase(importedId)
 
-            assertTrue(result.isFailure)
-            assertTrue(result.exceptionOrNull()!!.message!!.contains("Gemini analysis failed with HTTP 503"))
+        assertTrue(result.isFailure)
+        assertTrue(result.exceptionOrNull()!!.message!!.contains("모델 파일을 찾을 수 없습니다."))
 
-            val detail = conversationRepository.observeConversationDetail(importedId).first()
-            requireNotNull(detail)
-            assertFalse(detail.latestAnalysis != null)
-        } finally {
-            serverSocket.close()
-            serverThread.join(1_000)
-        }
+        val detail = conversationRepository.observeConversationDetail(importedId).first()
+        requireNotNull(detail)
+        assertFalse(detail.latestAnalysis != null)
     }
 
     private suspend fun importSampleConversation(): Long {
@@ -185,32 +169,17 @@ class GenerateReunionPlanUseCaseTest {
         ) as ImportConversationResult.Imported).conversationId
     }
 
-    private fun startMockGeminiServer(
-        serverSocket: ServerSocket,
-        statusCode: Int,
-        responseBody: String,
-    ) = thread(start = true) {
-        serverSocket.use { socketServer ->
-            socketServer.accept().use { socket ->
-                val input = socket.getInputStream().bufferedReader()
-                while (true) {
-                    val line = input.readLine() ?: break
-                    if (line.isBlank()) break
-                }
+    private class StaticAnalysisProvider(
+        private val report: AnalysisReport,
+    ) : AnalysisProvider {
+        override suspend fun analyze(input: AnalysisInput): AnalysisReport = report
+    }
 
-                val responseBytes = responseBody.toByteArray()
-                val statusText = if (statusCode in 200..299) "OK" else "Service Unavailable"
-                val output = socket.getOutputStream()
-                val writer = OutputStreamWriter(output)
-                writer.write("HTTP/1.1 $statusCode $statusText\r\n")
-                writer.write("Content-Type: application/json\r\n")
-                writer.write("Content-Length: ${responseBytes.size}\r\n")
-                writer.write("Connection: close\r\n")
-                writer.write("\r\n")
-                writer.flush()
-                output.write(responseBytes)
-                output.flush()
-            }
+    private class FailingAnalysisProvider(
+        private val message: String,
+    ) : AnalysisProvider {
+        override suspend fun analyze(input: AnalysisInput): AnalysisReport {
+            error(message)
         }
     }
 

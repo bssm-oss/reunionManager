@@ -21,6 +21,7 @@ class AnalysisRepository(
                 relationshipSummary = report.relationshipSummary,
                 reunionObjective = report.reunionObjective,
                 nextStep = report.nextStep,
+                messageDraft = report.messageDraft,
                 caution = report.caution,
             ),
         )
