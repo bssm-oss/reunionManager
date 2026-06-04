@@ -18,10 +18,13 @@ class AnalysisRepository(
                 providerType = providerType,
                 createdAtEpochMillis = System.currentTimeMillis(),
                 headline = report.headline,
+                contactReadiness = report.contactReadiness,
+                evidence = report.evidence,
                 relationshipSummary = report.relationshipSummary,
                 reunionObjective = report.reunionObjective,
                 nextStep = report.nextStep,
                 messageDraft = report.messageDraft,
+                alternativeDrafts = report.alternativeDrafts,
                 caution = report.caution,
             ),
         )

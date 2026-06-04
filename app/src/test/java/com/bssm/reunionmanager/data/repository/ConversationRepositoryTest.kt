@@ -83,6 +83,87 @@ class ConversationRepositoryTest {
         assertTrue(result is ImportConversationResult.Duplicate)
     }
 
+    @Test
+    fun buildAnalysisInput_includesRecentSignalsAndStats() = runTest {
+        val result = repository.importConversation(
+            parsedConversation = signalHeavyConversation,
+            rawText = "signal raw text",
+            sourceName = "signal.txt",
+        )
+        val importedId = (result as ImportConversationResult.Imported).conversationId
+
+        val input = repository.buildAnalysisInput(importedId)
+        requireNotNull(input)
+
+        assertEquals(18, input.messageCount)
+        assertTrue(input.excerpt.contains("[최근 대화]"))
+        assertTrue(input.signalExcerpt.contains("부담"))
+        assertTrue(input.statsSummary.contains("마지막 메시지 발신자: 현우"))
+        assertTrue(input.statsSummary.contains("마지막 발신자의 연속 발화: 2개"))
+        assertTrue(input.statsSummary.contains("대화 기간:"))
+        assertTrue(input.statsSummary.contains("마지막 메시지 전 공백:"))
+        assertTrue(input.statsSummary.contains("마지막 메시지 이후 경과: 알 수 없음"))
+        assertTrue(input.statsSummary.contains("6시간 이상 긴 공백"))
+        assertTrue(input.perspectiveSummary.contains("마지막 메시지 발신자 역할: 알 수 없음"))
+        assertTrue(input.perspectiveSummary.contains("내 카톡 이름: 설정되지 않음"))
+        assertTrue(input.perspectiveSummary.contains("관점 주의"))
+    }
+
+    @Test
+    fun buildAnalysisInput_includesElapsedTimeAfterLastMessageWhenExportTimeExists() = runTest {
+        val baseTime = 1_710_000_000_000L
+        val result = repository.importConversation(
+            parsedConversation = ParsedConversation(
+                title = "내보내기 시간 테스트",
+                exportedAtEpochMillis = baseTime + 3 * 24 * 60 * 60 * 1000L,
+                participants = listOf("민지", "현우"),
+                messages = listOf(
+                    ParsedMessage(
+                        senderName = "현우",
+                        sentAtEpochMillis = baseTime,
+                        content = "잘 지냈어?",
+                    ),
+                    ParsedMessage(
+                        senderName = "민지",
+                        sentAtEpochMillis = baseTime + 60_000L,
+                        content = "응, 잘 지내?",
+                    ),
+                ),
+            ),
+            rawText = "export elapsed raw text",
+            sourceName = "export-elapsed.txt",
+        )
+        val importedId = (result as ImportConversationResult.Imported).conversationId
+
+        val input = repository.buildAnalysisInput(importedId)
+
+        requireNotNull(input)
+        assertTrue(input.statsSummary.contains("마지막 메시지 이후 경과: 2일 23시간"))
+    }
+
+    @Test
+    fun buildAnalysisInput_marksLastSenderRoleWhenUserDisplayNameIsKnown() = runTest {
+        val result = repository.importConversation(
+            parsedConversation = signalHeavyConversation,
+            rawText = "signal raw text with user",
+            sourceName = "signal-user.txt",
+        )
+        val importedId = (result as ImportConversationResult.Imported).conversationId
+
+        val input = repository.buildAnalysisInput(
+            conversationId = importedId,
+            userDisplayName = "현우",
+        )
+        requireNotNull(input)
+
+        assertTrue(input.perspectiveSummary.contains("내 카톡 이름: 현우"))
+        assertTrue(input.perspectiveSummary.contains("상대 후보: 민지"))
+        assertTrue(input.perspectiveSummary.contains("마지막 메시지 발신자 역할: 나"))
+        assertTrue(input.perspectiveSummary.contains("내 최근 메시지: 오늘은 여기까지만 하자"))
+        assertTrue(input.perspectiveSummary.contains("상대 최근 메시지: 그때는 내가 너무 부담스럽게 말했던 것 같아"))
+        assertTrue(input.perspectiveSummary.contains("내 마지막 연속 발화: 2개"))
+    }
+
     private companion object {
         val sampleParsedConversation = ParsedConversation(
             title = "테스트 대화",
@@ -98,6 +179,35 @@ class ConversationRepositoryTest {
                     senderName = "현우",
                     sentAtEpochMillis = 1_710_000_060_000,
                     content = "오랜만이야",
+                ),
+            ),
+        )
+
+        val signalHeavyConversation = ParsedConversation(
+            title = "신호 테스트",
+            exportedAtEpochMillis = null,
+            participants = listOf("민지", "현우"),
+            messages = (0 until 15).map { index ->
+                ParsedMessage(
+                    senderName = if (index % 2 == 0) "민지" else "현우",
+                    sentAtEpochMillis = 1_710_000_000_000 + index * 60_000L,
+                    content = "일상 메시지 $index",
+                )
+            } + listOf(
+                ParsedMessage(
+                    senderName = "민지",
+                    sentAtEpochMillis = 1_710_000_900_000,
+                    content = "그때는 내가 너무 부담스럽게 말했던 것 같아",
+                ),
+                ParsedMessage(
+                    senderName = "현우",
+                    sentAtEpochMillis = 1_710_030_000_000,
+                    content = "조금 천천히 얘기하고 싶어",
+                ),
+                ParsedMessage(
+                    senderName = "현우",
+                    sentAtEpochMillis = 1_710_030_060_000,
+                    content = "오늘은 여기까지만 하자",
                 ),
             ),
         )

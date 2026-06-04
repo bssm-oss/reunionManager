@@ -9,14 +9,20 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.bssm.reunionmanager.domain.model.AnalysisReport
 import com.bssm.reunionmanager.domain.model.ConversationDetail
 import com.bssm.reunionmanager.ui.AnalysisUiState
 import com.bssm.reunionmanager.ui.theme.ReunionBadgeTone
 import com.bssm.reunionmanager.ui.theme.ReunionEmptyState
 import com.bssm.reunionmanager.ui.theme.ReunionPane
 import com.bssm.reunionmanager.ui.theme.ReunionPrimaryButton
+import com.bssm.reunionmanager.ui.theme.ReunionSecondaryButton
 import com.bssm.reunionmanager.ui.theme.ScreenPadding
 import com.bssm.reunionmanager.ui.theme.ScreenSectionSpacing
 
@@ -24,8 +30,15 @@ import com.bssm.reunionmanager.ui.theme.ScreenSectionSpacing
 fun AnalysisScreen(
     detail: ConversationDetail?,
     analysisState: AnalysisUiState?,
+    userDisplayNameConfigured: Boolean = true,
+    providerConfigured: Boolean = true,
     onGenerate: () -> Unit,
+    onOpenSettings: () -> Unit = {},
 ) {
+    val needsPerspectiveSetup = (detail?.participantNames?.size ?: 0) >= 2 && !userDisplayNameConfigured
+    val report = detail?.latestAnalysis
+    var showDetails by remember(report) { mutableStateOf(false) }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = ScreenPadding, vertical = ScreenPadding),
@@ -40,7 +53,7 @@ fun AnalysisScreen(
         item {
             if (analysisState?.isRunning == true) {
                 ReunionEmptyState(
-                    title = "재회 계획을 만드는 중",
+                    title = if (providerConfigured) "재회 계획을 만드는 중" else "데모 계획을 만드는 중",
                     body = "저장한 대화에서 부담 없는 다음 행동을 정리하고 있습니다.",
                     tone = ReunionBadgeTone.Accent,
                 ) {
@@ -49,20 +62,24 @@ fun AnalysisScreen(
                         strokeWidth = 2.dp,
                     )
                 }
+            } else if (needsPerspectiveSetup) {
+                ReunionPane(
+                    title = "내 이름 확인",
+                    supportingText = "내 카톡 이름을 저장한 뒤 분석하세요.",
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                ) {
+                    ReunionPrimaryButton(
+                        text = "내 카톡 이름 설정하기",
+                        onClick = onOpenSettings,
+                    )
+                }
             } else {
                 ReunionPrimaryButton(
-                    text = "재회 계획 만들기",
+                    text = if (providerConfigured) "재회 계획 만들기" else "데모 계획 만들기",
                     onClick = onGenerate,
                     enabled = detail != null,
                 )
             }
-        }
-        item {
-            ReunionPane(
-                title = "행동 전 확인",
-                supportingText = "상대의 마음을 확정하지 말고, 답을 재촉하지 않는 계획으로만 사용하세요.",
-                containerColor = MaterialTheme.colorScheme.surface,
-            )
         }
         analysisState?.errorMessage?.let { errorMessage ->
             item {
@@ -73,23 +90,45 @@ fun AnalysisScreen(
                 )
             }
         }
-        detail?.latestAnalysis?.let { report ->
-            item { AnalysisSectionPane(title = "오늘 할 일", body = report.nextStep, tone = ReunionBadgeTone.Accent) }
-            item { AnalysisSectionPane(title = "첫 연락 문장", body = report.messageDraft) }
-            item { AnalysisSectionPane(title = "대화 흐름", body = report.relationshipSummary) }
-            item { AnalysisSectionPane(title = "목표", body = report.reunionObjective) }
+        report?.let { currentReport ->
+            val messageTitle = currentReport.messageSectionTitle()
+            item { AnalysisSectionPane(title = "연락 판단", body = currentReport.contactReadiness, tone = ReunionBadgeTone.Accent) }
+            item { AnalysisSectionPane(title = "오늘 할 일", body = currentReport.nextStep, tone = ReunionBadgeTone.Accent) }
+            item { AnalysisSectionPane(title = messageTitle, body = currentReport.messageDraft) }
             item {
-                AnalysisSectionPane(
-                    title = "주의할 점",
-                    body = report.caution,
-                    tone = ReunionBadgeTone.Error,
+                ReunionSecondaryButton(
+                    text = if (showDetails) "상세 닫기" else "판단 근거 보기",
+                    onClick = { showDetails = !showDetails },
                 )
             }
-        } ?: item {
-            ReunionEmptyState(
-                title = "아직 만든 계획이 없습니다",
-                body = "준비되면 재회 계획을 만들어 보세요.",
-            )
+            if (showDetails) {
+                item {
+                    AnalysisSectionPane(
+                        title = currentReport.summaryTitle(),
+                        body = currentReport.summaryBody(),
+                    )
+                }
+                if (currentReport.alternativeDrafts.isNotBlank()) {
+                    item { AnalysisSectionPane(title = currentReport.alternativeSectionTitle(), body = currentReport.alternativeDrafts) }
+                }
+                item { AnalysisSectionPane(title = "판단 근거", body = currentReport.evidenceBody()) }
+                item {
+                    AnalysisSectionPane(
+                        title = "주의할 점",
+                        body = currentReport.caution,
+                        tone = ReunionBadgeTone.Error,
+                    )
+                }
+            }
+        } ?: run {
+            if (!needsPerspectiveSetup) {
+                item {
+                    ReunionEmptyState(
+                        title = "아직 만든 계획이 없습니다",
+                        body = "준비되면 재회 계획을 만들어 보세요.",
+                    )
+                }
+            }
         }
     }
 }
@@ -113,4 +152,58 @@ private fun AnalysisSectionPane(
         supportingText = body,
         containerColor = containerColor,
     )
+}
+
+internal fun AnalysisReport.messageSectionTitle(): String {
+    return when {
+        contactReadiness == "지금은 보류" -> "보내지 않기"
+        contactReadiness == "정보 부족" -> "확인할 일"
+        isCheckOnlyResult() -> "확인할 일"
+        nextStep.contains("상대의 마지막 메시지") || reunionObjective.contains("상대가 남긴 말") -> "답장 문장"
+        else -> "첫 연락 문장"
+    }
+}
+
+internal fun AnalysisReport.alternativeSectionTitle(): String {
+    return when {
+        contactReadiness == "지금은 보류" || contactReadiness == "정보 부족" || isCheckOnlyResult() -> "다음 선택지"
+        messageSectionTitle() == "답장 문장" -> "다른 답장 후보"
+        else -> "다른 문장 후보"
+    }
+}
+
+private fun AnalysisReport.isCheckOnlyResult(): Boolean {
+    return messageDraft.contains("보낼 문장을 만들지 않습니다") ||
+        alternativeDrafts.contains("내 카톡 이름 저장하기") ||
+        alternativeDrafts.contains("대화가 1:1 개인 관계인지 확인하기") ||
+        headline.contains("관계 맥락") ||
+        headline.contains("내 이름 확인")
+}
+
+internal fun AnalysisReport.summaryTitle(): String {
+    return headline.trim().ifBlank { "요약" }.limitForUi(maxLength = 32)
+}
+
+internal fun AnalysisReport.summaryBody(): String {
+    val lines = listOf(
+        relationshipSummary.trim(),
+        reunionObjective.trim().takeIf { it.isNotBlank() }?.let { "목표: $it" }.orEmpty(),
+    ).filter { it.isNotBlank() }
+    return lines.joinToString(separator = "\n")
+        .ifBlank { "최근 대화 흐름을 기준으로 다음 행동만 간단히 정리했습니다." }
+        .limitForUi(maxLength = 180)
+}
+
+internal fun AnalysisReport.evidenceBody(): String {
+    return evidence.lineSequence()
+        .map { line -> line.trim() }
+        .filter { line -> line.isNotBlank() }
+        .take(3)
+        .joinToString(separator = "\n")
+        .ifBlank { "최근 대화 흐름과 마지막 발신자 기준으로 판단했습니다." }
+        .limitForUi(maxLength = 220)
+}
+
+private fun String.limitForUi(maxLength: Int): String {
+    return if (length <= maxLength) this else take(maxLength - 1).trimEnd() + "…"
 }

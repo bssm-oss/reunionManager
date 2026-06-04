@@ -4,6 +4,7 @@ data class ProviderSettings(
     val modelPath: String = "",
     val modelName: String = DEFAULT_MODEL,
     val backend: GemmaBackend = GemmaBackend.CPU,
+    val userDisplayName: String = "",
 ) {
     val isConfigured: Boolean = modelPath.isNotBlank()
 

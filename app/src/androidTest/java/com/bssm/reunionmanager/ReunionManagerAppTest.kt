@@ -10,7 +10,9 @@ import androidx.test.uiautomator.StaleObjectException
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
+import com.bssm.reunionmanager.domain.model.ProviderSettings
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -47,15 +49,16 @@ class ReunionManagerAppTest {
 
     @Test
     fun homeScreen_navigatesToSettingsScreen() {
-        clickTextWithScroll("로컬 AI 설정")
+        clickTextWithScroll("분석 설정")
 
+        waitForText("내 카톡 이름")
         waitForText("모델 파일")
         assertNotNull(device.findObject(By.text("모델 파일 선택")))
         assertNotNull(device.findObject(By.text("데모 모드")))
     }
 
     @Test
-    fun importedConversation_canBeBrowsedAndAnalyzed() {
+    fun importedConversation_requiresUserNameBeforeAnalysis() {
         runBlocking {
             application.appContainer.importConversationUseCase(
                 sourceName = "sample.txt",
@@ -68,10 +71,33 @@ class ReunionManagerAppTest {
         clickText("저장한 대화 보기")
         clickText("샘플 채팅방")
         clickText("재회 계획 만들기")
-        waitForText("행동 전 확인")
-        waitForText("아직 만든 계획이 없습니다")
+        waitForText("내 이름 확인")
+        waitForText("내 카톡 이름 설정하기")
+        assertNull(device.findObject(By.text("오랜만이야. 괜찮다면 짧게 안부만 묻고 싶어.")))
+    }
+
+    @Test
+    fun importedConversation_canBeBrowsedAndAnalyzedAfterUserNameIsSaved() {
+        runBlocking {
+            application.appContainer.providerSettingsRepository.save(
+                ProviderSettings(userDisplayName = "현우"),
+            )
+            application.appContainer.importConversationUseCase(
+                sourceName = "sample.txt",
+                rawText = sampleConversation,
+            )
+        }
+
+        launchMainActivity()
+
+        clickText("저장한 대화 보기")
+        clickText("샘플 채팅방")
         clickText("재회 계획 만들기")
-        waitForText("첫 연락 문장", timeoutMillis = 20_000)
+        waitForText("데모 계획 만들기")
+        clickText("데모 계획 만들기")
+        waitForText("연락 판단", timeoutMillis = 20_000)
+        waitForText("아주 가볍게 가능", timeoutMillis = 20_000)
+        waitForText("답장 문장", timeoutMillis = 20_000)
     }
 
     private fun launchMainActivity() {
@@ -163,8 +189,9 @@ class ReunionManagerAppTest {
             저장한 날짜 : 2024-04-05 01:36:14
 
             --------------- 2024년 3월 27일 수요일 ---------------
-            [민지] [오전 10:55] 안녕
-            [현우] [오전 10:56] 오랜만이야
+            [현우] [오전 10:55] 오랜만이야
+            [민지] [오전 10:56] 나도 가끔 생각났어
+            [민지] [오전 10:57] 괜찮다면 천천히 이야기해도 돼
         """.trimIndent()
     }
 }

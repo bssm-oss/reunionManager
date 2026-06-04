@@ -91,13 +91,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _importState.value = ImportUiState()
     }
 
-    fun saveProviderSettings(modelPath: String, modelName: String, backend: String) {
+    fun saveProviderSettings(
+        modelPath: String,
+        modelName: String,
+        backend: String,
+        userDisplayName: String,
+    ) {
         viewModelScope.launch {
             appContainer.providerSettingsRepository.save(
                 ProviderSettings(
                     modelPath = modelPath.trim(),
                     modelName = modelName.trim().ifBlank { ProviderSettings.DEFAULT_MODEL },
                     backend = GemmaBackend.fromStoredValue(backend),
+                    userDisplayName = userDisplayName.trim(),
                 ),
             )
         }
@@ -119,6 +125,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         modelPath = destination.absolutePath,
                         modelName = sourceName,
                         backend = currentSettings.backend,
+                        userDisplayName = currentSettings.userDisplayName,
                     ),
                 )
                 sourceName

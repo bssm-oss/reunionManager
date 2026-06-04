@@ -28,6 +28,7 @@ class ProviderSettingsRepository(
                 endpoint = "",
                 modelPath = settings.modelPath,
                 backend = settings.backend.name,
+                userDisplayName = settings.userDisplayName,
             ),
         )
     }
@@ -37,6 +38,7 @@ class ProviderSettingsRepository(
             modelPath = modelPath,
             modelName = modelName,
             backend = GemmaBackend.fromStoredValue(backend),
+            userDisplayName = userDisplayName,
         )
     }
 }

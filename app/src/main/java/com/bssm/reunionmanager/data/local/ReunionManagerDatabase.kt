@@ -25,7 +25,7 @@ import com.bssm.reunionmanager.data.local.entity.ProviderSettingsEntity
         AnalysisResultEntity::class,
         ProviderSettingsEntity::class,
     ],
-    version = 3,
+    version = 5,
     exportSchema = false,
 )
 abstract class ReunionManagerDatabase : RoomDatabase() {
@@ -42,7 +42,7 @@ abstract class ReunionManagerDatabase : RoomDatabase() {
                 ReunionManagerDatabase::class.java,
                 RoomConfig.DATABASE_NAME,
             )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .build()
         }
 
@@ -56,6 +56,20 @@ abstract class ReunionManagerDatabase : RoomDatabase() {
         private val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE analysis_results ADD COLUMN messageDraft TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE analysis_results ADD COLUMN contactReadiness TEXT NOT NULL DEFAULT '정보 부족'")
+                db.execSQL("ALTER TABLE analysis_results ADD COLUMN evidence TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE analysis_results ADD COLUMN alternativeDrafts TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE provider_settings ADD COLUMN userDisplayName TEXT NOT NULL DEFAULT ''")
             }
         }
     }

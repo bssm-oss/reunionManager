@@ -5,4 +5,8 @@ data class AnalysisInput(
     val participantNames: List<String>,
     val messageCount: Int,
     val excerpt: String,
+    val recentExcerpt: String,
+    val signalExcerpt: String,
+    val statsSummary: String,
+    val perspectiveSummary: String,
 )

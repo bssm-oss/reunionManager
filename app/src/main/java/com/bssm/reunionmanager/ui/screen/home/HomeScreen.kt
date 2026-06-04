@@ -35,27 +35,27 @@ fun HomeScreen(
     ) {
         ReunionBadge(text = "내 기기에서 보관")
         Text(
-            text = "다시 연락하기 전, 한 번만 더 정리하세요.",
+            text = "연락 전, 한 번만 정리하세요.",
             style = MaterialTheme.typography.headlineMedium,
         )
         Text(
-            text = "카카오톡 대화를 가져오면 부담 없는 첫 연락 문장과 주의할 점을 바로 정리해 줍니다.",
+            text = "카카오톡 대화를 가져오면 연락 판단과 첫 문장만 간단히 정리합니다.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         ReunionPrimaryButton(text = "카카오톡 대화 가져오기", onClick = onImportClick)
         ReunionSecondaryButton(text = "저장한 대화 보기", onClick = onConversationsClick)
-        ReunionSecondaryButton(text = "로컬 AI 설정", onClick = onSettingsClick)
+        ReunionSecondaryButton(text = "분석 설정", onClick = onSettingsClick)
         ReunionPane(
             title = "결과",
-            supportingText = "오늘 할 일, 첫 연락 문장, 대화 흐름, 주의할 점만 보여줍니다.",
+            supportingText = "연락 판단, 오늘 할 일, 보낼 문장만 먼저 보여줍니다.",
         )
         ReunionPane(
             title = "AI 모드",
             supportingText = if (providerConfigured) {
                 "계획 생성이 이 기기에서 실행됩니다."
             } else {
-                "모델을 선택하기 전에는 데모 계획으로 흐름을 확인할 수 있습니다."
+                "모델이 없으면 데모 계획으로 확인합니다."
             },
         ) {
             ReunionBadge(

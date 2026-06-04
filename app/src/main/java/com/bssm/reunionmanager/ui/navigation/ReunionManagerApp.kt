@@ -188,7 +188,10 @@ fun ReunionManagerApp() {
                 AnalysisScreen(
                     detail = detail,
                     analysisState = analysisState,
+                    userDisplayNameConfigured = providerSettings.userDisplayName.isNotBlank(),
+                    providerConfigured = providerSettings.isConfigured,
                     onGenerate = { viewModel.generateAnalysis(conversationId) },
+                    onOpenSettings = { navController.navigate(ReunionDestination.Settings.route) },
                 )
             }
         }
