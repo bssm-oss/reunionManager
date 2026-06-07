@@ -10,13 +10,14 @@ class FakeAnalysisProvider : AnalysisProvider {
     override suspend fun analyze(input: AnalysisInput): AnalysisReport {
         delay(50)
         val participantLabel = if (input.participantNames.isEmpty()) "대화 참여자" else input.participantNames.joinToString()
-        val readiness = input.inferReadiness()
+        val decision = AnalysisSafetyRules.evaluate(input)
+        val readiness = input.inferReadiness(decision)
         val evidence = input.buildEvidence()
-        val counterpartIsWaiting = AnalysisSafetyRules.counterpartFinalRunCount(input) > 0
+        val counterpartIsWaiting = decision.action == AnalysisSafetyRules.AnalysisAction.ReplyToCounterpart
         val longGap = AnalysisSafetyRules.hasLongLastGap(input)
         val veryLongGap = AnalysisSafetyRules.hasVeryLongLastGap(input)
-        val weakContext = AnalysisSafetyRules.hasWeakReunionContext(input)
-        val needsPerspectiveSetup = AnalysisSafetyRules.needsUserPerspective(input)
+        val weakContext = decision.action == AnalysisSafetyRules.AnalysisAction.CheckContext
+        val needsPerspectiveSetup = decision.action == AnalysisSafetyRules.AnalysisAction.RequirePerspective
         val counterpartRecentMessage = input.perspectiveValue("상대 최근 메시지:")
         return AnalysisReport(
             headline = when (readiness) {
@@ -122,12 +123,12 @@ class FakeAnalysisProvider : AnalysisProvider {
         )
     }
 
-    private fun AnalysisInput.inferReadiness(): String {
+    private fun AnalysisInput.inferReadiness(decision: AnalysisSafetyRules.AnalysisDecision): String {
         val combined = "${signalExcerpt}\n${recentExcerpt}\n${statsSummary}\n${perspectiveSummary}"
         return when {
-            AnalysisSafetyRules.requiresHold(this) -> "지금은 보류"
-            AnalysisSafetyRules.needsUserPerspective(this) -> "정보 부족"
-            AnalysisSafetyRules.hasWeakReunionContext(this) -> "정보 부족"
+            decision.action == AnalysisSafetyRules.AnalysisAction.RequirePerspective -> "정보 부족"
+            decision.action == AnalysisSafetyRules.AnalysisAction.HoldContact -> "지금은 보류"
+            decision.action == AnalysisSafetyRules.AnalysisAction.CheckContext -> "정보 부족"
             AnalysisSafetyRules.counterpartFinalRunCount(this) > 0 &&
                 AnalysisSafetyRules.containsAny(
                     combined,

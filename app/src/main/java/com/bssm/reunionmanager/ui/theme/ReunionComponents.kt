@@ -21,9 +21,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 val ScreenPadding = 16.dp
-val ScreenSectionSpacing = 12.dp
-private val CardContentPadding = 14.dp
-private val CardItemSpacing = 8.dp
+val ScreenSectionSpacing = 14.dp
+private val CardContentPadding = 16.dp
+private val CardItemSpacing = 10.dp
 
 enum class ReunionBadgeTone {
     Neutral,
@@ -56,7 +56,7 @@ fun ReunionPane(
             title?.let {
                 Text(
                     text = it,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
             }
@@ -119,7 +119,7 @@ fun ReunionPrimaryButton(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .defaultMinSize(minHeight = 48.dp),
+            .defaultMinSize(minHeight = 46.dp),
         enabled = enabled,
         shape = MaterialTheme.shapes.small,
         colors = ButtonDefaults.buttonColors(
@@ -144,7 +144,7 @@ fun ReunionSecondaryButton(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .defaultMinSize(minHeight = 48.dp),
+            .defaultMinSize(minHeight = 46.dp),
         enabled = enabled,
         shape = MaterialTheme.shapes.small,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),

@@ -48,7 +48,7 @@ fun ConversationListScreen(
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(text = "저장한 대화", style = MaterialTheme.typography.headlineMedium)
                 Text(
-                    text = "대화를 눌러 메시지와 재회 계획을 확인하세요.",
+                    text = "대화를 눌러 메시지와 다음 행동을 확인하세요.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

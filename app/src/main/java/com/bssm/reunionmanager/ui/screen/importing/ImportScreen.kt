@@ -89,7 +89,7 @@ fun ImportScreen(
             ) {
                 importState.importedConversationId?.let { conversationId ->
                     ReunionSecondaryButton(
-                        text = "재회 계획 만들기",
+                        text = "다음 행동 정리하기",
                         onClick = { onOpenPlanClick(conversationId) },
                     )
                 }

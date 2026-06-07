@@ -37,8 +37,8 @@ class FakeAnalysisProviderTest {
             ),
         )
 
-        assertTrue(result.contactReadiness.contains("보류"))
-        assertTrue(result.messageDraft.contains("보내지 않습니다"))
+        assertTrue(result.contactReadiness.contains("정보 부족"))
+        assertTrue(result.messageDraft.contains("내 카톡 이름"))
         assertFalse(result.messageDraft.contains("오랜만이야"))
     }
 

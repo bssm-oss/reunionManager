@@ -53,8 +53,8 @@ fun AnalysisScreen(
         item {
             if (analysisState?.isRunning == true) {
                 ReunionEmptyState(
-                    title = if (providerConfigured) "재회 계획을 만드는 중" else "데모 계획을 만드는 중",
-                    body = "저장한 대화에서 부담 없는 다음 행동을 정리하고 있습니다.",
+                    title = if (providerConfigured) "다음 행동을 정리하는 중" else "데모로 정리하는 중",
+                    body = "저장한 대화에서 부담 없는 한 걸음을 고르고 있습니다.",
                     tone = ReunionBadgeTone.Accent,
                 ) {
                     CircularProgressIndicator(
@@ -75,7 +75,7 @@ fun AnalysisScreen(
                 }
             } else {
                 ReunionPrimaryButton(
-                    text = if (providerConfigured) "재회 계획 만들기" else "데모 계획 만들기",
+                    text = if (providerConfigured) "다음 행동 정리하기" else "데모로 정리하기",
                     onClick = onGenerate,
                     enabled = detail != null,
                 )
@@ -124,8 +124,8 @@ fun AnalysisScreen(
             if (!needsPerspectiveSetup) {
                 item {
                     ReunionEmptyState(
-                        title = "아직 만든 계획이 없습니다",
-                        body = "준비되면 재회 계획을 만들어 보세요.",
+                        title = "아직 정리한 내용이 없습니다",
+                        body = "준비되면 다음 행동만 차분히 정리해 보세요.",
                     )
                 }
             }

@@ -70,7 +70,7 @@ class ReunionManagerAppTest {
 
         clickText("저장한 대화 보기")
         clickText("샘플 채팅방")
-        clickText("재회 계획 만들기")
+        clickText("다음 행동 정리하기")
         waitForText("내 이름 확인")
         waitForText("내 카톡 이름 설정하기")
         assertNull(device.findObject(By.text("오랜만이야. 괜찮다면 짧게 안부만 묻고 싶어.")))
@@ -92,9 +92,9 @@ class ReunionManagerAppTest {
 
         clickText("저장한 대화 보기")
         clickText("샘플 채팅방")
-        clickText("재회 계획 만들기")
-        waitForText("데모 계획 만들기")
-        clickText("데모 계획 만들기")
+        clickText("다음 행동 정리하기")
+        waitForText("데모로 정리하기")
+        clickText("데모로 정리하기")
         waitForText("연락 판단", timeoutMillis = 20_000)
         waitForText("아주 가볍게 가능", timeoutMillis = 20_000)
         waitForText("답장 문장", timeoutMillis = 20_000)

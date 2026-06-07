@@ -35,11 +35,11 @@ fun HomeScreen(
     ) {
         ReunionBadge(text = "내 기기에서 보관")
         Text(
-            text = "연락 전, 한 번만 정리하세요.",
+            text = "보내기 전, 차분히 정리해요.",
             style = MaterialTheme.typography.headlineMedium,
         )
         Text(
-            text = "카카오톡 대화를 가져오면 연락 판단과 첫 문장만 간단히 정리합니다.",
+            text = "카카오톡 대화에서 연락 판단, 오늘 할 일, 보낼 문장만 조용히 정리합니다.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -53,9 +53,9 @@ fun HomeScreen(
         ReunionPane(
             title = "AI 모드",
             supportingText = if (providerConfigured) {
-                "계획 생성이 이 기기에서 실행됩니다."
+                "분석과 초안 생성이 이 기기에서 실행됩니다."
             } else {
-                "모델이 없으면 데모 계획으로 확인합니다."
+                "모델이 없으면 참고용 데모로 확인합니다."
             },
         ) {
             ReunionBadge(

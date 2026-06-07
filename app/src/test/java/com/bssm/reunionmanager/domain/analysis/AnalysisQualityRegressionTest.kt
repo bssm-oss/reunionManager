@@ -1,0 +1,185 @@
+package com.bssm.reunionmanager.domain.analysis
+
+import com.bssm.reunionmanager.domain.model.AnalysisInput
+import com.bssm.reunionmanager.domain.model.AnalysisReport
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class AnalysisQualityRegressionTest {
+    @Test
+    fun finalizeReport_handlesRealisticKakaoQualityCases() {
+        val cases = listOf(
+            qualityCase("name missing", missingPerspective(), "정보 부족", "내 카톡 이름", "오랜만이야"),
+            qualityCase("user sent three unanswered messages", userUnansweredRun(), "지금은 보류", "보내지 않습니다", "오랜만이야"),
+            qualityCase("counterpart says do not contact", counterpartBoundary("이제 연락하지 말아줘"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart says stop", counterpartBoundary("그만 보내줘"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart says uncomfortable", counterpartBoundary("이런 연락은 불편해"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart says not okay", counterpartBoundary("지금은 괜찮지 않아"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart moved on", counterpartBoundary("나 새로 만나는 사람 있어"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart says each move on", counterpartBoundary("우리 이제 각자 잘 지내자"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart asks friend only", counterpartBoundary("친구로 지내는 게 좋겠어"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart says no romantic feeling", counterpartBoundary("연애 감정은 없어"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart will contact later", counterpartBoundary("나중에 내가 연락할게"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart asks time", counterpartBoundary("생각할 시간이 필요해"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart asks to wait", counterpartBoundary("조금 기다려줘"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("relationship cleanup", counterpartBoundary("우리 관계는 정리하자"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("breakup", counterpartBoundary("이제 헤어지자"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("final end", counterpartBoundary("우리 끝이야"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("no pressure phrase", counterpartReply("부담 없으면 천천히 답해도 돼"), "아주 가볍게 가능", "메시지 봤어", "오랜만이야"),
+            qualityCase("not trying to pressure", counterpartReply("부담 주려는 건 아니고 잘 지내는지만 궁금했어"), "아주 가볍게 가능", "메시지 봤어", "오랜만이야"),
+            qualityCase("well-being reply", counterpartReply("잘 지내?"), "아주 가볍게 가능", "나는 잘 지내고 있어", "오랜만이야"),
+            qualityCase("schedule question", counterpartReply("토요일 저녁에 시간 돼?"), "아주 가볍게 가능", "가능한지 확인", "약속한 시간"),
+            qualityCase("concrete meeting", counterpartReply("내일 7시에 카페에서 보자"), "아주 가볍게 가능", "약속한 시간", "안부부터"),
+            qualityCase("technical group chat", technicalGroup(), "정보 부족", "보낼 문장을 만들지 않습니다", "오랜만이야"),
+            qualityCase("two-person work chat", technicalTwoPerson(), "정보 부족", "보낼 문장을 만들지 않습니다", "오랜만이야"),
+            qualityCase("light positive signal", lightPositive(), "아주 가볍게 가능", "짧게", "보내지 않습니다"),
+        )
+
+        assertEquals(24, cases.size)
+        cases.forEach { case ->
+            val report = AnalysisSafetyRules.finalizeReport(optimisticGemmaReport, case.input)
+
+            assertEquals(case.name, case.expectedReadiness, report.contactReadiness)
+            assertTrue(case.name, report.messageDraft.contains(case.messageMustContain))
+            case.messageMustNotContain?.let { forbidden ->
+                assertFalse(case.name, report.messageDraft.contains(forbidden))
+            }
+            assertFalse(case.name, report.messageDraft.contains("당장"))
+            assertFalse(case.name, report.messageDraft.contains("집 앞"))
+        }
+    }
+
+    private data class QualityCase(
+        val name: String,
+        val input: AnalysisInput,
+        val expectedReadiness: String,
+        val messageMustContain: String,
+        val messageMustNotContain: String?,
+    )
+
+    private fun qualityCase(
+        name: String,
+        input: AnalysisInput,
+        expectedReadiness: String,
+        messageMustContain: String,
+        messageMustNotContain: String? = null,
+    ): QualityCase {
+        return QualityCase(
+            name = name,
+            input = input,
+            expectedReadiness = expectedReadiness,
+            messageMustContain = messageMustContain,
+            messageMustNotContain = messageMustNotContain,
+        )
+    }
+
+    private fun missingPerspective(): AnalysisInput {
+        return input(
+            recentExcerpt = "현우: 오랜만이야\n민지: 나도 가끔 생각났어",
+            signalExcerpt = "민지: 나도 가끔 생각났어",
+            perspectiveSummary = "내 카톡 이름: 설정되지 않음\n마지막 메시지 발신자 역할: 알 수 없음\n관점 주의: 내 카톡 이름이 설정되지 않아 마지막 발신자가 사용자인지 상대인지 확정할 수 없습니다.",
+        )
+    }
+
+    private fun counterpartBoundary(message: String): AnalysisInput {
+        return input(
+            recentExcerpt = "현우: 잠깐 이야기할 수 있을까?\n민지: $message",
+            signalExcerpt = "민지: $message",
+            perspectiveSummary = configuredPerspective("상대", counterpartFinalRun = 1, counterpartRecent = message),
+        )
+    }
+
+    private fun userUnansweredRun(): AnalysisInput {
+        return input(
+            recentExcerpt = "현우: 혹시 잠깐 괜찮아?\n현우: 답 없어서 다시 남겨\n현우: 미안해. 오늘은 더 보내지 않을게",
+            signalExcerpt = "현우: 미안해. 오늘은 더 보내지 않을게",
+            perspectiveSummary = configuredPerspective("나", myFinalRun = 3),
+        )
+    }
+
+    private fun counterpartReply(message: String): AnalysisInput {
+        return input(
+            recentExcerpt = "현우: 괜찮다면 짧게 이야기할 수 있을까?\n민지: $message",
+            signalExcerpt = "민지: $message",
+            perspectiveSummary = configuredPerspective("상대", counterpartFinalRun = 1, counterpartRecent = message),
+        )
+    }
+
+    private fun technicalGroup(): AnalysisInput {
+        return input(
+            participants = listOf("현우", "민지", "준호"),
+            recentExcerpt = "준호: RAG 테스트 결과 공유할게\n민지: LLM 모델 API 응답이 느려",
+            signalExcerpt = "",
+            perspectiveSummary = configuredPerspective("상대", counterpartFinalRun = 1, counterpartRecent = "LLM 모델 API 응답이 느려"),
+        )
+    }
+
+    private fun technicalTwoPerson(): AnalysisInput {
+        return input(
+            recentExcerpt = "현우: 배포 로그 봤어?\n민지: API 테스트 자료 먼저 볼게",
+            signalExcerpt = "",
+            perspectiveSummary = configuredPerspective("상대", counterpartFinalRun = 1, counterpartRecent = "API 테스트 자료 먼저 볼게"),
+        )
+    }
+
+    private fun lightPositive(): AnalysisInput {
+        return input(
+            recentExcerpt = "민지: 나도 가끔 생각났어\n현우: 잘 지내는지 궁금했어",
+            signalExcerpt = "민지: 나도 가끔 생각났어",
+            perspectiveSummary = configuredPerspective("나", myFinalRun = 1),
+        )
+    }
+
+    private fun configuredPerspective(
+        lastSenderRole: String,
+        myFinalRun: Int = if (lastSenderRole == "나") 1 else 0,
+        counterpartFinalRun: Int = if (lastSenderRole == "상대") 1 else 0,
+        counterpartRecent: String = "나도 가끔 생각났어",
+    ): String {
+        return """
+            내 카톡 이름: 현우
+            상대 후보: 민지
+            마지막 메시지 발신자 역할: $lastSenderRole
+            마지막 연속 발화 역할: $lastSenderRole ${maxOf(myFinalRun, counterpartFinalRun)}개
+            내 최근 메시지: 오랜만이야
+            상대 최근 메시지: $counterpartRecent
+            내 마지막 연속 발화: ${myFinalRun}개
+            상대 마지막 연속 발화: ${counterpartFinalRun}개
+        """.trimIndent()
+    }
+
+    private fun input(
+        participants: List<String> = listOf("민지", "현우"),
+        recentExcerpt: String,
+        signalExcerpt: String,
+        perspectiveSummary: String,
+    ): AnalysisInput {
+        val lastMessage = recentExcerpt.lineSequence().lastOrNull()?.substringAfter(": ") ?: ""
+        return AnalysisInput(
+            conversationTitle = "카카오톡 대화",
+            participantNames = participants,
+            messageCount = 12,
+            excerpt = recentExcerpt,
+            recentExcerpt = recentExcerpt,
+            signalExcerpt = signalExcerpt,
+            statsSummary = "마지막 메시지: $lastMessage\n마지막 발신자의 연속 발화: 1개\n마지막 메시지 이후 경과: 알 수 없음",
+            perspectiveSummary = perspectiveSummary,
+        )
+    }
+
+    private companion object {
+        val optimisticGemmaReport = AnalysisReport(
+            headline = "가벼운 안부",
+            contactReadiness = "아주 가볍게 가능",
+            evidence = "모델이 가볍게 가능하다고 판단했습니다.",
+            relationshipSummary = "대화가 완전히 닫히지 않았다고 보았습니다.",
+            reunionObjective = "짧은 안부로 반응을 확인합니다.",
+            nextStep = "지금 짧게 연락하세요.",
+            messageDraft = "오랜만이야. 괜찮다면 짧게 안부만 묻고 싶어.",
+            alternativeDrafts = "오랜만이야\n잘 지내?\n잠깐 얘기할 수 있어?",
+            caution = "답을 재촉하지 마세요.",
+        )
+    }
+}

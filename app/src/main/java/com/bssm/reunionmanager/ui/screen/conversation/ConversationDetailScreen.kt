@@ -73,12 +73,12 @@ fun ConversationDetailScreen(
             )
         }
         item {
-            ReunionPrimaryButton(text = "재회 계획 만들기", onClick = onOpenAnalysis)
+            ReunionPrimaryButton(text = "다음 행동 정리하기", onClick = onOpenAnalysis)
         }
         detail.latestAnalysis?.let { report ->
             item {
                 ReunionPane(
-                    title = "최근 계획",
+                    title = "최근 정리",
                     supportingText = report.headline,
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
                 ) {

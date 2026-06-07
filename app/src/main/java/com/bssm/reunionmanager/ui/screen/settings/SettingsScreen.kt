@@ -93,7 +93,7 @@ fun SettingsScreen(
             supportingText = if (providerSettings.isConfigured) {
                 providerSettings.modelName
             } else {
-                "모델을 선택하기 전에는 참고용 데모 계획으로 확인합니다."
+                "모델을 선택하기 전에는 참고용 데모로 확인합니다."
             },
         ) {
             ReunionBadge(

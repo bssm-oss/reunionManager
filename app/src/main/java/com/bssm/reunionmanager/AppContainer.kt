@@ -3,6 +3,7 @@ package com.bssm.reunionmanager
 import android.content.Context
 import com.bssm.reunionmanager.data.analysis.FakeAnalysisProvider
 import com.bssm.reunionmanager.data.analysis.Gemma4AnalysisProvider
+import com.bssm.reunionmanager.data.analysis.LocalAnalysisSwarmProvider
 import com.bssm.reunionmanager.data.importer.KakaoTalkConversationParser
 import com.bssm.reunionmanager.data.local.ReunionManagerDatabase
 import com.bssm.reunionmanager.data.repository.AnalysisRepository
@@ -55,7 +56,12 @@ class AppContainer(context: Context) {
             analysisRepository = analysisRepository,
             providerSettingsRepository = providerSettingsRepository,
             fakeAnalysisProvider = fakeAnalysisProvider,
-            gemmaProviderFactory = { settings -> Gemma4AnalysisProvider(applicationContext, settings) },
+            gemmaProviderFactory = { settings ->
+                LocalAnalysisSwarmProvider(
+                    draftProvider = Gemma4AnalysisProvider(applicationContext, settings),
+                    baselineProvider = fakeAnalysisProvider,
+                )
+            },
         )
     }
 }

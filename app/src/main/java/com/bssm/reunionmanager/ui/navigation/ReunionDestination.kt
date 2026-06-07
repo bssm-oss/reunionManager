@@ -18,7 +18,7 @@ sealed class ReunionDestination(
 
     data object Analysis : ReunionDestination(
         route = "analysis/{conversationId}",
-        title = "재회 계획",
+        title = "다음 행동",
     ) {
         fun createRoute(conversationId: Long): String = "analysis/$conversationId"
     }
