@@ -257,6 +257,28 @@ object AnalysisSafetyRules {
         "잠이 안와",
         "충동적으로",
     )
+    private val unansweredPressurePhrases = listOf(
+        "읽씹",
+        "안읽씹",
+        "왜 답",
+        "답 왜",
+        "왜 답장",
+        "답장 왜",
+        "왜 대답",
+        "대답 왜",
+        "답이 없",
+        "답장 없",
+        "답 안해",
+        "답 안 하",
+        "답장 안해",
+        "답장 안 하",
+        "대답 안해",
+        "대답 안 하",
+        "왜 읽",
+        "읽었는데 왜",
+        "봤는데 왜",
+        "무시하",
+    )
 
     enum class AnalysisAction {
         RequirePerspective,
@@ -279,6 +301,7 @@ object AnalysisSafetyRules {
         val needsPerspectiveSetup = needsUserPerspective(input)
         val requiresHold = hasBoundarySignal(input) ||
             hasImpairedTimingSignal(input) ||
+            hasUnansweredPressureSignal(input) ||
             userFinalRunCount(input) >= 2 ||
             unknownFinalRunCount(input) >= 3
         val hasWeakContext = hasWeakReunionContext(input)
@@ -371,6 +394,7 @@ object AnalysisSafetyRules {
             input.perspectiveSummary.lineSequence().firstOrNull { it.startsWith("내 마지막 연속 발화:") },
             firstBoundaryLine(input)?.let { "신호: $it" },
             impairedTimingEvidence(input),
+            unansweredPressureEvidence(input),
         ).joinToString(separator = "\n")
     }
 
@@ -886,6 +910,25 @@ object AnalysisSafetyRules {
     private fun String.hasImpairedTimingPhrase(): Boolean {
         val normalized = replace(Regex("\\s+"), " ").trim().lowercase()
         return impairedTimingPhrases.any { phrase -> normalized.contains(phrase) }
+    }
+
+    private fun hasUnansweredPressureSignal(input: AnalysisInput): Boolean {
+        val lastSenderRole = input.perspectiveValue("마지막 메시지 발신자 역할:")
+        return (lastSenderRole == "나" || lastSenderRole == "알 수 없음") &&
+            input.lastRecentMessageContent().hasUnansweredPressurePhrase()
+    }
+
+    private fun unansweredPressureEvidence(input: AnalysisInput): String? {
+        return if (hasUnansweredPressureSignal(input)) {
+            "무응답 압박: 마지막 메시지가 답장을 재촉하거나 읽씹을 추궁하는 표현이라 보류했습니다."
+        } else {
+            null
+        }
+    }
+
+    private fun String.hasUnansweredPressurePhrase(): Boolean {
+        val normalized = replace(Regex("\\s+"), " ").trim().lowercase()
+        return unansweredPressurePhrases.any { phrase -> normalized.contains(phrase) }
     }
 
     private fun String.hasBoundaryPhrase(): Boolean {
