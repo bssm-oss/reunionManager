@@ -87,7 +87,7 @@ fun ConversationDetailScreen(
                     )
                 }
                 ReunionPrimaryButton(
-                    text = if (detail.latestAnalysis == null) "다음 행동 정리하기" else "다시 정리하기",
+                    text = detail.analysisEntryButtonText(),
                     onClick = onOpenAnalysis,
                 )
             }
@@ -155,6 +155,10 @@ internal fun List<ConversationMessage>.messagePreviewSummary(showAllMessages: Bo
 private fun ConversationDetail.infoSummary(): String {
     val participants = participantNames.joinToString().ifBlank { "알 수 없음" }
     return "참여자 $participants\n메시지 ${messages.size}개"
+}
+
+internal fun ConversationDetail.analysisEntryButtonText(): String {
+    return if (latestAnalysis == null) "다음 행동 정리하기" else "정리 결과 보기"
 }
 
 private fun AnalysisReport.detailReadinessTone(): ReunionBadgeTone {

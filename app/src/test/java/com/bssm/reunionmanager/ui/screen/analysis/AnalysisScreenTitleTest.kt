@@ -203,6 +203,26 @@ class AnalysisScreenTitleTest {
         assertTrue(note.endsWith("…"))
     }
 
+    @Test
+    fun analysisGenerateButtonText_separatesInitialDraftFromRegeneration() {
+        assertEquals(
+            "다음 행동 정리하기",
+            analysisGenerateButtonText(providerConfigured = true, hasReport = false),
+        )
+        assertEquals(
+            "데모로 정리하기",
+            analysisGenerateButtonText(providerConfigured = false, hasReport = false),
+        )
+        assertEquals(
+            "다시 정리하기",
+            analysisGenerateButtonText(providerConfigured = true, hasReport = true),
+        )
+        assertEquals(
+            "다시 정리하기",
+            analysisGenerateButtonText(providerConfigured = false, hasReport = true),
+        )
+    }
+
     private fun report(
         headline: String = "테스트",
         contactReadiness: String = "아주 가볍게 가능",

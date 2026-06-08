@@ -81,7 +81,10 @@ fun AnalysisScreen(
                 }
             } else {
                 ReunionPrimaryButton(
-                    text = if (providerConfigured) "다음 행동 정리하기" else "데모로 정리하기",
+                    text = analysisGenerateButtonText(
+                        providerConfigured = providerConfigured,
+                        hasReport = report != null,
+                    ),
                     onClick = onGenerate,
                     enabled = detail != null,
                 )
@@ -257,6 +260,14 @@ internal fun AnalysisReport.copySafetyNote(): String {
         .orEmpty()
         .ifBlank { "답이 없어도 다시 보내지 마세요." }
         .limitForUi(maxLength = 44)
+}
+
+internal fun analysisGenerateButtonText(providerConfigured: Boolean, hasReport: Boolean): String {
+    return when {
+        hasReport -> "다시 정리하기"
+        providerConfigured -> "다음 행동 정리하기"
+        else -> "데모로 정리하기"
+    }
 }
 
 @Composable
