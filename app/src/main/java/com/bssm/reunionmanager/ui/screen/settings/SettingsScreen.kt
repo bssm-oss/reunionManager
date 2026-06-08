@@ -65,11 +65,7 @@ fun SettingsScreen(
         providerSettings.isModelVerified -> "${providerSettings.modelName} 모델을 이 기기에서 실행 확인했습니다."
         else -> "${providerSettings.modelName} 모델은 저장됐지만, 점검 전에는 데모로 정리합니다."
     }
-    val modelMessageTitle = if (providerSettings.isModelVerified) {
-        "모델 실행 확인됨"
-    } else {
-        "모델 파일 저장됨"
-    }
+    val modelMessageTitle = modelMessageTitle(providerSettings, modelSettingsState.message)
     val modelMessageTone = if (providerSettings.isModelVerified) {
         ReunionBadgeTone.Success
     } else {
@@ -172,7 +168,7 @@ fun SettingsScreen(
         }
         if (providerSettings.isConfigured) {
             ReunionSecondaryButton(
-                text = "데모 모드 사용",
+                text = "모델 파일 제거",
                 onClick = {
                     providerSettings.demoModeSaveRequest(userDisplayName).dispatchTo(onSave)
                 },
@@ -204,6 +200,17 @@ internal fun ProviderSettings.demoModeSaveRequest(userDisplayName: String): Prov
         backend = backend.name,
         userDisplayName = userDisplayName,
     )
+}
+
+internal fun modelMessageTitle(
+    providerSettings: ProviderSettings,
+    message: String?,
+): String {
+    return when {
+        message?.contains("제거") == true -> "모델 파일 제거됨"
+        providerSettings.isModelVerified -> "모델 실행 확인됨"
+        else -> "모델 파일 저장됨"
+    }
 }
 
 private fun ProviderSettingsSaveRequest.dispatchTo(

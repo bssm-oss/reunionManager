@@ -8,6 +8,7 @@ import android.provider.OpenableColumns
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.bssm.reunionmanager.ReunionManagerApplication
+import com.bssm.reunionmanager.data.analysis.LocalModelFileStore
 import com.bssm.reunionmanager.data.importer.KakaoTalkExportTextDecoder
 import com.bssm.reunionmanager.domain.model.ConversationDetail
 import com.bssm.reunionmanager.domain.model.ConversationSummary
@@ -119,6 +120,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     verifiedAtEpochMillis = if (preservesVerifiedModel) currentSettings.verifiedAtEpochMillis else null,
                 ),
             )
+            if (nextModelPath.isBlank()) {
+                deleteCopiedModelFile(currentSettings.modelPath)
+                if (currentSettings.isConfigured) {
+                    _modelSettingsState.value = ModelSettingsUiState(
+                        message = "모델 파일을 제거하고 데모 모드로 전환했습니다.",
+                    )
+                }
+            }
         }
     }
 
@@ -139,6 +148,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         userDisplayName = currentSettings.userDisplayName,
                     ),
                 )
+                if (currentSettings.modelPath != destination.absolutePath) {
+                    deleteCopiedModelFile(currentSettings.modelPath)
+                }
                 sourceName
             }.onSuccess { modelName ->
                 _modelSettingsState.value = ModelSettingsUiState(
@@ -210,10 +222,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private suspend fun copyModelToAppStorage(uri: Uri, sourceName: String): File = withContext(Dispatchers.IO) {
-        val modelsDir = File(getApplication<Application>().filesDir, "models").apply { mkdirs() }
-        val safeName = sourceName.replace(Regex("[^A-Za-z0-9._-]"), "_")
-        val destination = File(modelsDir, safeName)
-        val tempDestination = File(modelsDir, "$safeName.tmp")
+        val filesDir = getApplication<Application>().filesDir
+        LocalModelFileStore.modelsDir(filesDir).mkdirs()
+        val destination = LocalModelFileStore.modelFile(filesDir, sourceName)
+        val tempDestination = LocalModelFileStore.tempModelFile(filesDir, sourceName)
 
         if (tempDestination.exists()) {
             tempDestination.delete()
@@ -237,6 +249,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             throw it
         }
         destination
+    }
+
+    private suspend fun deleteCopiedModelFile(modelPath: String) = withContext(Dispatchers.IO) {
+        LocalModelFileStore.deleteCopiedModelFile(
+            filesDir = getApplication<Application>().filesDir,
+            modelPath = modelPath,
+        )
     }
 }
 

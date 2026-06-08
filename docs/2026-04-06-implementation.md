@@ -57,6 +57,7 @@ The current MVP implementation supports one grounded local-first flow:
 - blank model path or unchecked model file => fake provider
 - verified model path, backend, and execution timestamp => Gemma 4 on-device provider behind the local swarm provider
 - model settings can copy a selected `.litertlm` file into app-private storage before saving its filesystem path, but analysis keeps using the fake provider until the smoke check succeeds
+- clearing the model setting or replacing a copied model deletes only the app-private `files/models` copy, never an external source path
 - generated analysis is stored locally either way
 - generated analysis includes a `messageDraft` field so the user has either a concrete first-contact sentence or a clear no-send action, not just abstract advice
 - generated analysis includes contact readiness, evidence, and alternative first-contact candidates so a small local model is less dependent on generic advice
