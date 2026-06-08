@@ -108,6 +108,7 @@ object AnalysisSafetyRules {
         "연락 안해줬으면",
         "연락 오는 거",
         "연락 오는게",
+        "집착",
         "괜찮지 않아",
         "끝이야",
         "끝내자",
@@ -140,6 +141,12 @@ object AnalysisSafetyRules {
         "결혼",
         "나중에 내가 연락",
         "내가 연락할게",
+        "놔줘",
+        "내버려 둬",
+        "내버려둬",
+        "혼자 있고 싶",
+        "혼자 있고싶",
+        "혼자 두",
         "시간이 필요",
         "생각할 시간이 필요",
         "기다려줘",
@@ -161,6 +168,20 @@ object AnalysisSafetyRules {
         "불편하지 않",
         "불편한 건 아니",
         "불편한건 아니",
+        "불쾌하지 않",
+        "불쾌하지는",
+        "불쾌한 건 아니",
+        "불쾌한건 아니",
+        "힘들지 않",
+        "힘들지는",
+        "지치지 않",
+        "지치지는",
+        "괴롭지 않",
+        "괴롭지는",
+        "무섭지 않",
+        "무섭지는",
+        "불안하지 않",
+        "불안하지는",
     )
     private val burdenBoundaryPatterns = listOf(
         Regex("부담\\s*(돼|되|스럽|스러|이야|이에요|입니다|느껴|감)"),
@@ -168,6 +189,26 @@ object AnalysisSafetyRules {
     )
     private val discomfortBoundaryPatterns = listOf(
         Regex("불편\\s*(해|하|했|합니다|해요|해서|한|해져)"),
+    )
+    private val contactDistressBoundaryPatterns = listOf(
+        Regex("(연락|메시지|카톡|문자|전화).{0,10}(힘들|지치|지쳐|괴롭|괴로|불쾌|무섭|무서|불안|싫)"),
+        Regex("(힘들|지치|지쳐|괴롭|괴로|불쾌|무섭|무서|불안|싫).{0,10}(연락|메시지|카톡|문자|전화)"),
+    )
+    private val userSelfStopPhrases = listOf(
+        "연락 안 할게",
+        "연락 안할게",
+        "연락하지 않을게",
+        "더 연락 안",
+        "더는 연락 안",
+        "다시는 연락 안",
+        "그만 연락할게",
+        "그만 보낼게",
+        "더 안 보낼게",
+        "더는 안 보낼게",
+        "이제 안 보낼게",
+        "방해 안 할게",
+        "더 방해 안",
+        "그만할게",
     )
     private val strongPersonalSignalPhrases = listOf(
         "미안",
@@ -336,6 +377,7 @@ object AnalysisSafetyRules {
     fun evaluate(input: AnalysisInput): AnalysisDecision {
         val needsPerspectiveSetup = needsUserPerspective(input)
         val requiresHold = hasBoundarySignal(input) ||
+            hasUserSelfStopSignal(input) ||
             hasImpairedTimingSignal(input) ||
             hasUnansweredPressureSignal(input) ||
             userFinalRunCount(input) >= 2 ||
@@ -438,6 +480,7 @@ object AnalysisSafetyRules {
             input.perspectiveSummary.lineSequence().firstOrNull { it.startsWith("마지막 메시지 발신자 역할:") },
             input.perspectiveSummary.lineSequence().firstOrNull { it.startsWith("내 마지막 연속 발화:") },
             firstBoundaryLine(input)?.let { "신호: $it" },
+            userSelfStopEvidence(input),
             impairedTimingEvidence(input),
             unansweredPressureEvidence(input),
         ).joinToString(separator = "\n")
@@ -1090,6 +1133,25 @@ object AnalysisSafetyRules {
         return unansweredPressurePhrases.any { phrase -> normalized.contains(phrase) }
     }
 
+    private fun hasUserSelfStopSignal(input: AnalysisInput): Boolean {
+        val lastSenderRole = input.perspectiveValue("마지막 메시지 발신자 역할:")
+        return (lastSenderRole == "나" || lastSenderRole == "알 수 없음") &&
+            input.lastRecentMessageContent().hasUserSelfStopPhrase()
+    }
+
+    private fun userSelfStopEvidence(input: AnalysisInput): String? {
+        return if (hasUserSelfStopSignal(input)) {
+            "자제 약속: 마지막 메시지에서 더 연락하지 않겠다고 말해 보류했습니다."
+        } else {
+            null
+        }
+    }
+
+    private fun String.hasUserSelfStopPhrase(): Boolean {
+        val normalized = replace(Regex("\\s+"), " ").trim().lowercase()
+        return userSelfStopPhrases.any { phrase -> normalized.contains(phrase) }
+    }
+
     private fun String.hasBoundaryPhrase(): Boolean {
         val normalized = replace(Regex("\\s+"), " ").trim().lowercase()
         if (hardBoundaryPhrases.any { phrase -> normalized.contains(phrase) }) {
@@ -1099,7 +1161,8 @@ object AnalysisSafetyRules {
             return false
         }
         return burdenBoundaryPatterns.any { pattern -> pattern.containsMatchIn(normalized) } ||
-            discomfortBoundaryPatterns.any { pattern -> pattern.containsMatchIn(normalized) }
+            discomfortBoundaryPatterns.any { pattern -> pattern.containsMatchIn(normalized) } ||
+            contactDistressBoundaryPatterns.any { pattern -> pattern.containsMatchIn(normalized) }
     }
 
     private fun String.extractCountAfter(label: String): Int {

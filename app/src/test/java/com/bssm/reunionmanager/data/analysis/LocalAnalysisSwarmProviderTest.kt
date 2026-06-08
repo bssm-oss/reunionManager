@@ -28,6 +28,50 @@ class LocalAnalysisSwarmProviderTest {
     }
 
     @Test
+    fun analyze_usesBaselineWithoutCallingDraftWhenCounterpartContactDistressRequiresHold() = runTest {
+        val draftProvider = CountingProvider(optimisticDraft)
+        val provider = LocalAnalysisSwarmProvider(
+            draftProvider = draftProvider,
+            baselineProvider = StaticProvider(optimisticDraft),
+        )
+
+        val result = provider.analyze(
+            input(
+                recentExcerpt = "현우: 잠깐 이야기할 수 있을까?\n민지: 네 연락 때문에 힘들어",
+                signalExcerpt = "민지: 네 연락 때문에 힘들어",
+                perspectiveSummary = configuredPerspective(lastSenderRole = "상대", counterpartFinalRun = 1),
+            ),
+        )
+
+        assertEquals(0, draftProvider.callCount)
+        assertEquals("지금은 보류", result.contactReadiness)
+        assertTrue(result.messageDraft.contains("보내지 않습니다"))
+        assertTrue(result.evidence.contains("로컬 병렬 검수"))
+    }
+
+    @Test
+    fun analyze_usesBaselineWithoutCallingDraftWhenUserPromisedNoMoreContact() = runTest {
+        val draftProvider = CountingProvider(optimisticDraft)
+        val provider = LocalAnalysisSwarmProvider(
+            draftProvider = draftProvider,
+            baselineProvider = StaticProvider(optimisticDraft),
+        )
+
+        val result = provider.analyze(
+            input(
+                recentExcerpt = "민지: 잘 지내?\n현우: 이제 연락 안 할게",
+                signalExcerpt = "현우: 이제 연락 안 할게",
+                perspectiveSummary = configuredPerspective(lastSenderRole = "나", myFinalRun = 1),
+            ),
+        )
+
+        assertEquals(0, draftProvider.callCount)
+        assertEquals("지금은 보류", result.contactReadiness)
+        assertTrue(result.evidence.contains("자제 약속"))
+        assertTrue(result.messageDraft.contains("보내지 않습니다"))
+    }
+
+    @Test
     fun analyze_replacesInvalidDraftReadinessWithBaselineReport() = runTest {
         val provider = LocalAnalysisSwarmProvider(
             draftProvider = StaticProvider(
