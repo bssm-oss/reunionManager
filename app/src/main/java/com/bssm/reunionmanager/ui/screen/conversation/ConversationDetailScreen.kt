@@ -19,6 +19,9 @@ import androidx.compose.ui.unit.dp
 import com.bssm.reunionmanager.domain.model.AnalysisReport
 import com.bssm.reunionmanager.domain.model.ConversationDetail
 import com.bssm.reunionmanager.domain.model.ConversationMessage
+import com.bssm.reunionmanager.ui.screen.common.needsPerspectiveSetup
+import com.bssm.reunionmanager.ui.screen.common.perspectiveNameButtonText
+import com.bssm.reunionmanager.ui.screen.common.perspectiveNameOptions
 import com.bssm.reunionmanager.ui.theme.ReunionBadge
 import com.bssm.reunionmanager.ui.theme.ReunionBadgeTone
 import com.bssm.reunionmanager.ui.theme.ReunionEmptyState
@@ -33,7 +36,9 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ConversationDetailScreen(
     detail: ConversationDetail?,
+    userDisplayName: String = "",
     onOpenAnalysis: () -> Unit,
+    onSaveUserDisplayName: (String) -> Unit = {},
     onDeleteConversation: () -> Unit = {},
 ) {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
@@ -55,6 +60,11 @@ fun ConversationDetailScreen(
     var showAllMessages by remember(detail.id) { mutableStateOf(false) }
     var isConfirmingDelete by remember(detail.id) { mutableStateOf(false) }
     val visibleMessages = detail.messages.visibleMessagePreview(showAllMessages)
+    val perspectiveOptions = perspectiveNameOptions(detail.participantNames)
+    val showPerspectivePicker = needsPerspectiveSetup(
+        participantNames = detail.participantNames,
+        userDisplayName = userDisplayName,
+    ) && perspectiveOptions.isNotEmpty()
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -100,6 +110,22 @@ fun ConversationDetailScreen(
                 supportingText = detail.infoSummary(),
             ) {
                 ReunionBadge(text = "기기 내 저장")
+            }
+        }
+        if (showPerspectivePicker) {
+            item {
+                ReunionPane(
+                    title = "내 이름 선택",
+                    supportingText = "대화방에서 내 이름을 고르면 분석이 정확해져요.",
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                ) {
+                    perspectiveOptions.forEach { participantName ->
+                        ReunionSecondaryButton(
+                            text = perspectiveNameButtonText(participantName),
+                            onClick = { onSaveUserDisplayName(participantName) },
+                        )
+                    }
+                }
             }
         }
         item {

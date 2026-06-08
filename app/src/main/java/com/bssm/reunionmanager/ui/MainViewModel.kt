@@ -131,6 +131,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun saveUserDisplayName(userDisplayName: String) {
+        viewModelScope.launch {
+            val currentSettings = appContainer.providerSettingsRepository.get()
+            appContainer.providerSettingsRepository.save(
+                currentSettings.copy(userDisplayName = userDisplayName.trim()),
+            )
+        }
+    }
+
     fun importGemmaModel(uri: Uri) {
         viewModelScope.launch {
             _modelSettingsState.value = ModelSettingsUiState(isLoading = true)

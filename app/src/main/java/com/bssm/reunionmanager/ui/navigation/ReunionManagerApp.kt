@@ -176,9 +176,11 @@ fun ReunionManagerApp() {
                 val detail by viewModel.observeConversationDetail(conversationId).collectAsStateWithLifecycle(initialValue = null)
                 ConversationDetailScreen(
                     detail = detail,
+                    userDisplayName = providerSettings.userDisplayName,
                     onOpenAnalysis = {
                         navController.navigate(ReunionDestination.Analysis.createRoute(conversationId))
                     },
+                    onSaveUserDisplayName = viewModel::saveUserDisplayName,
                     onDeleteConversation = {
                         viewModel.deleteConversation(conversationId)
                         navController.popBackStack()
@@ -199,6 +201,7 @@ fun ReunionManagerApp() {
                     providerConfigured = providerSettings.isModelVerified,
                     onGenerate = { viewModel.generateAnalysis(conversationId) },
                     onOpenSettings = { navController.navigate(ReunionDestination.Settings.route) },
+                    onSaveUserDisplayName = viewModel::saveUserDisplayName,
                 )
             }
         }

@@ -62,6 +62,7 @@ The current MVP implementation supports one grounded local-first flow:
 - generated analysis includes a `messageDraft` field so the user has either a concrete first-contact sentence or a clear no-send action, not just abstract advice
 - generated analysis includes contact readiness, evidence, and alternative first-contact candidates so a small local model is less dependent on generic advice
 - generated analysis uses the local user display name when available so unanswered user messages and counterpart reply opportunities do not collapse into the same advice
+- detail and analysis screens can save the local user display name directly from small participant lists, while larger or ambiguous rooms still fall back to manual settings input
 
 ## Test Coverage
 

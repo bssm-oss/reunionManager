@@ -21,6 +21,10 @@ import androidx.compose.ui.unit.dp
 import com.bssm.reunionmanager.domain.model.AnalysisReport
 import com.bssm.reunionmanager.domain.model.ConversationDetail
 import com.bssm.reunionmanager.ui.AnalysisUiState
+import com.bssm.reunionmanager.ui.screen.common.needsPerspectiveSetup as needsPerspectiveSetupCommon
+import com.bssm.reunionmanager.ui.screen.common.perspectiveNameButtonText
+import com.bssm.reunionmanager.ui.screen.common.perspectiveNameOptions
+import com.bssm.reunionmanager.ui.screen.common.perspectiveSetupSupportingText as perspectiveSetupSupportingTextCommon
 import com.bssm.reunionmanager.ui.theme.ReunionBadge
 import com.bssm.reunionmanager.ui.theme.ReunionBadgeTone
 import com.bssm.reunionmanager.ui.theme.ReunionEmptyState
@@ -38,10 +42,12 @@ fun AnalysisScreen(
     providerConfigured: Boolean = true,
     onGenerate: () -> Unit,
     onOpenSettings: () -> Unit = {},
+    onSaveUserDisplayName: (String) -> Unit = {},
 ) {
     val needsPerspectiveSetup = detail?.participantNames
         ?.let { participantNames -> needsPerspectiveSetupForAnalysis(participantNames, userDisplayName) }
         ?: false
+    val perspectiveOptions = perspectiveNameOptions(detail?.participantNames.orEmpty())
     val report = detail?.latestAnalysis
     val clipboardManager = LocalClipboardManager.current
     var showDetails by remember(report) { mutableStateOf(false) }
@@ -79,10 +85,24 @@ fun AnalysisScreen(
                     ),
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                 ) {
-                    ReunionPrimaryButton(
-                        text = "내 카톡 이름 설정하기",
-                        onClick = onOpenSettings,
-                    )
+                    perspectiveOptions.forEach { participantName ->
+                        ReunionSecondaryButton(
+                            text = perspectiveNameButtonText(participantName),
+                            onClick = { onSaveUserDisplayName(participantName) },
+                        )
+                    }
+                    val directInputButtonText = "직접 입력하기"
+                    if (perspectiveOptions.isEmpty()) {
+                        ReunionPrimaryButton(
+                            text = directInputButtonText,
+                            onClick = onOpenSettings,
+                        )
+                    } else {
+                        ReunionSecondaryButton(
+                            text = directInputButtonText,
+                            onClick = onOpenSettings,
+                        )
+                    }
                 }
             } else {
                 ReunionPrimaryButton(
@@ -285,22 +305,14 @@ internal fun needsPerspectiveSetupForAnalysis(
     participantNames: List<String>,
     userDisplayName: String,
 ): Boolean {
-    val normalizedName = userDisplayName.trim()
-    return participantNames.size >= 2 && (normalizedName.isBlank() || normalizedName !in participantNames)
+    return needsPerspectiveSetupCommon(participantNames, userDisplayName)
 }
 
 internal fun perspectiveSetupSupportingText(
     participantNames: List<String>,
     userDisplayName: String,
 ): String {
-    val normalizedName = userDisplayName.trim()
-    return when {
-        normalizedName.isBlank() -> "내 카톡 이름을 저장한 뒤 분석하세요."
-        participantNames.size >= 2 && normalizedName !in participantNames -> {
-            "저장한 이름이 이 대화에 없어요. 카카오톡에 보이는 이름으로 고친 뒤 분석하세요."
-        }
-        else -> "내 카톡 이름을 저장한 뒤 분석하세요."
-    }
+    return perspectiveSetupSupportingTextCommon(participantNames, userDisplayName)
 }
 
 internal fun copyPromptText(copied: Boolean, safetyNote: String): String {

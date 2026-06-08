@@ -1,6 +1,8 @@
 package com.bssm.reunionmanager.ui.screen.analysis
 
 import com.bssm.reunionmanager.domain.model.AnalysisReport
+import com.bssm.reunionmanager.ui.screen.common.perspectiveNameButtonText
+import com.bssm.reunionmanager.ui.screen.common.perspectiveNameOptions
 import com.bssm.reunionmanager.ui.theme.ReunionBadgeTone
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -278,6 +280,23 @@ class AnalysisScreenTitleTest {
             "저장한 이름이 이 대화에 없어요. 카카오톡에 보이는 이름으로 고친 뒤 분석하세요.",
             perspectiveSetupSupportingText(participantNames = listOf("민지", "현우"), userDisplayName = "현우님"),
         )
+    }
+
+    @Test
+    fun perspectiveNameOptions_keepsSimpleParticipantPickerSmall() {
+        assertEquals(
+            listOf("민지", "현우"),
+            perspectiveNameOptions(listOf(" 민지 ", "현우", "현우", "")),
+        )
+        assertEquals(
+            emptyList<String>(),
+            perspectiveNameOptions(listOf("A", "B", "C", "D", "E")),
+        )
+    }
+
+    @Test
+    fun perspectiveNameButtonText_keepsActionDirect() {
+        assertEquals("현우 선택", perspectiveNameButtonText(" 현우 "))
     }
 
     private fun report(
