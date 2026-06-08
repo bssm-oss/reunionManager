@@ -1,6 +1,7 @@
 package com.bssm.reunionmanager.ui.screen.analysis
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -20,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.bssm.reunionmanager.domain.model.AnalysisReport
 import com.bssm.reunionmanager.domain.model.ConversationDetail
 import com.bssm.reunionmanager.ui.AnalysisUiState
+import com.bssm.reunionmanager.ui.theme.ReunionBadge
 import com.bssm.reunionmanager.ui.theme.ReunionBadgeTone
 import com.bssm.reunionmanager.ui.theme.ReunionEmptyState
 import com.bssm.reunionmanager.ui.theme.ReunionPane
@@ -96,8 +98,7 @@ fun AnalysisScreen(
         }
         report?.let { currentReport ->
             val messageTitle = currentReport.messageSectionTitle()
-            item { AnalysisSectionPane(title = "연락 판단", body = currentReport.contactReadiness, tone = ReunionBadgeTone.Accent) }
-            item { AnalysisSectionPane(title = "오늘 할 일", body = currentReport.nextStep, tone = ReunionBadgeTone.Accent) }
+            item { AnalysisConclusionPane(currentReport) }
             item {
                 AnalysisMessagePane(
                     title = messageTitle,
@@ -150,6 +151,36 @@ fun AnalysisScreen(
 }
 
 @Composable
+private fun AnalysisConclusionPane(report: AnalysisReport) {
+    val tone = report.readinessTone()
+    val containerColor = when (tone) {
+        ReunionBadgeTone.Error -> MaterialTheme.colorScheme.errorContainer
+        ReunionBadgeTone.Success -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.16f)
+        ReunionBadgeTone.Accent -> MaterialTheme.colorScheme.primaryContainer
+        ReunionBadgeTone.Neutral -> MaterialTheme.colorScheme.surface
+    }
+
+    ReunionPane(
+        title = "오늘의 결론",
+        containerColor = containerColor,
+    ) {
+        ReunionBadge(text = report.contactReadiness, tone = tone)
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(
+                text = report.conclusionHeadline(),
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = report.nextStep.limitForUi(maxLength = 96),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
 private fun AnalysisSectionPane(
     title: String,
     body: String,
@@ -177,6 +208,25 @@ internal fun AnalysisReport.messageSectionTitle(): String {
         isCheckOnlyResult() -> "확인할 일"
         nextStep.contains("상대의 마지막 메시지") || reunionObjective.contains("상대가 남긴 말") -> "답장 문장"
         else -> "첫 연락 문장"
+    }
+}
+
+internal fun AnalysisReport.readinessTone(): ReunionBadgeTone {
+    return when (contactReadiness) {
+        "지금은 보류" -> ReunionBadgeTone.Error
+        "아주 가볍게 가능" -> ReunionBadgeTone.Success
+        "먼저 사과 필요" -> ReunionBadgeTone.Accent
+        else -> ReunionBadgeTone.Neutral
+    }
+}
+
+internal fun AnalysisReport.conclusionHeadline(): String {
+    return when {
+        contactReadiness == "지금은 보류" -> "오늘은 보내지 않는 쪽이 안전합니다."
+        contactReadiness == "정보 부족" || isCheckOnlyResult() -> "먼저 확인할 정보가 있습니다."
+        messageSectionTitle() == "답장 문장" -> "새 연락보다 짧은 답장이 자연스럽습니다."
+        contactReadiness == "먼저 사과 필요" -> "재회보다 짧은 인정이 먼저입니다."
+        else -> "짧고 부담 없는 한 문장만 준비하세요."
     }
 }
 

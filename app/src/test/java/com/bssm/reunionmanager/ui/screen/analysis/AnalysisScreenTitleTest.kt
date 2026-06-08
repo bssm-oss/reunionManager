@@ -1,6 +1,7 @@
 package com.bssm.reunionmanager.ui.screen.analysis
 
 import com.bssm.reunionmanager.domain.model.AnalysisReport
+import com.bssm.reunionmanager.ui.theme.ReunionBadgeTone
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -91,6 +92,37 @@ class AnalysisScreenTitleTest {
         val report = report()
 
         assertEquals("다른 문장 후보", report.alternativeSectionTitle())
+    }
+
+    @Test
+    fun readinessTone_mapsJudgmentToQuietUiTones() {
+        assertEquals(ReunionBadgeTone.Error, report(contactReadiness = "지금은 보류").readinessTone())
+        assertEquals(ReunionBadgeTone.Success, report(contactReadiness = "아주 가볍게 가능").readinessTone())
+        assertEquals(ReunionBadgeTone.Accent, report(contactReadiness = "먼저 사과 필요").readinessTone())
+        assertEquals(ReunionBadgeTone.Neutral, report(contactReadiness = "정보 부족").readinessTone())
+    }
+
+    @Test
+    fun conclusionHeadline_summarizesActionWithoutExtraDetail() {
+        assertEquals(
+            "오늘은 보내지 않는 쪽이 안전합니다.",
+            report(contactReadiness = "지금은 보류").conclusionHeadline(),
+        )
+        assertEquals(
+            "먼저 확인할 정보가 있습니다.",
+            report(contactReadiness = "정보 부족").conclusionHeadline(),
+        )
+        assertEquals(
+            "새 연락보다 짧은 답장이 자연스럽습니다.",
+            report(
+                reunionObjective = "새 연락보다 상대가 남긴 말에 답하는 것이 목표입니다.",
+                nextStep = "상대의 마지막 메시지에 바로 답하세요.",
+            ).conclusionHeadline(),
+        )
+        assertEquals(
+            "짧고 부담 없는 한 문장만 준비하세요.",
+            report().conclusionHeadline(),
+        )
     }
 
     @Test
