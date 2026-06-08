@@ -98,6 +98,7 @@ class ReunionManagerAppTest {
         waitForText("연락 판단", timeoutMillis = 20_000)
         waitForText("아주 가볍게 가능", timeoutMillis = 20_000)
         waitForText("답장 문장", timeoutMillis = 20_000)
+        waitForTextContaining("보내기 전:", timeoutMillis = 20_000)
         waitForText("문장 복사", timeoutMillis = 20_000)
     }
 
@@ -116,6 +117,10 @@ class ReunionManagerAppTest {
     private fun waitForText(text: String, timeoutMillis: Long = 10_000) =
         device.wait(Until.findObject(By.text(text)), timeoutMillis)
             ?: throw AssertionError("Did not find text: $text")
+
+    private fun waitForTextContaining(text: String, timeoutMillis: Long = 10_000) =
+        device.wait(Until.findObject(By.textContains(text)), timeoutMillis)
+            ?: throw AssertionError("Did not find text containing: $text")
 
     private fun findTextWithScroll(text: String): UiObject2 {
         repeat(5) {

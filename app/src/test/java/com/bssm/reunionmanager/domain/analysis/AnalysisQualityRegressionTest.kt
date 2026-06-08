@@ -51,6 +51,24 @@ class AnalysisQualityRegressionTest {
         }
     }
 
+    @Test
+    fun finalizeReport_keepsMessageDraftAsSingleCopyableLine() {
+        val rawReport = optimisticGemmaReport.copy(
+            messageDraft = """
+                추천 문장:
+                "오랜만이야. 잘 지내?"
+                - 답은 천천히 해도 괜찮아.
+            """.trimIndent(),
+            caution = "집 앞에 찾아가서 당장 확인하세요.",
+        )
+
+        val report = AnalysisSafetyRules.finalizeReport(rawReport, lightPositive())
+
+        assertEquals("오랜만이야. 잘 지내?", report.messageDraft)
+        assertFalse(report.messageDraft.contains("\n"))
+        assertEquals("답을 재촉하지 말고 상대의 속도를 존중하세요.", report.caution)
+    }
+
     private data class QualityCase(
         val name: String,
         val input: AnalysisInput,

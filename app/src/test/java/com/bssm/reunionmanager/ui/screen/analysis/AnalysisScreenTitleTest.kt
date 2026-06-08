@@ -154,6 +154,23 @@ class AnalysisScreenTitleTest {
         )
     }
 
+    @Test
+    fun copySafetyNote_usesOneShortLine() {
+        val report = report(
+            caution = "답을 재촉하지 마세요.\n상대가 답하지 않으면 기다리세요.",
+        )
+
+        assertEquals("답을 재촉하지 마세요.", report.copySafetyNote())
+    }
+
+    @Test
+    fun copySafetyNote_limitsLongText() {
+        val note = report(caution = "가".repeat(120)).copySafetyNote()
+
+        assertEquals(44, note.length)
+        assertTrue(note.endsWith("…"))
+    }
+
     private fun report(
         headline: String = "테스트",
         contactReadiness: String = "아주 가볍게 가능",
@@ -163,6 +180,7 @@ class AnalysisScreenTitleTest {
         nextStep: String = "짧은 한 문장만 준비하세요.",
         messageDraft: String = "오랜만이야. 잘 지내?",
         alternativeDrafts: String = "오랜만이야\n잘 지내?\n답은 천천히 해도 괜찮아",
+        caution: String = "답을 재촉하지 마세요.",
     ): AnalysisReport {
         return AnalysisReport(
             headline = headline,
@@ -173,7 +191,7 @@ class AnalysisScreenTitleTest {
             nextStep = nextStep,
             messageDraft = messageDraft,
             alternativeDrafts = alternativeDrafts,
-            caution = "답을 재촉하지 마세요.",
+            caution = caution,
         )
     }
 }

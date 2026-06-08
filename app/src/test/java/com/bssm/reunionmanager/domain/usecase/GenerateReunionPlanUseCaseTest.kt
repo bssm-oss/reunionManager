@@ -511,6 +511,55 @@ class GenerateReunionPlanUseCaseTest {
     }
 
     @Test
+    fun invoke_sanitizesConfiguredGemmaProviderDraftToSingleLineBeforeSaving() = runTest {
+        val importedId = importSampleConversation()
+        providerSettingsRepository.save(
+            ProviderSettings(
+                modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",
+                modelName = "gemma-4-E4B-it.litertlm",
+                backend = GemmaBackend.CPU,
+                userDisplayName = "현우",
+            ),
+        )
+
+        val useCase = GenerateReunionPlanUseCase(
+            conversationRepository = conversationRepository,
+            analysisRepository = analysisRepository,
+            providerSettingsRepository = providerSettingsRepository,
+            fakeAnalysisProvider = FakeAnalysisProvider(),
+            gemmaProviderFactory = {
+                StaticAnalysisProvider(
+                    AnalysisReport(
+                        headline = "Mock Gemma multi-line draft",
+                        contactReadiness = "아주 가볍게 가능",
+                        evidence = "Mock Gemma evidence",
+                        relationshipSummary = "Mock Gemma relationship summary",
+                        reunionObjective = "Mock Gemma reunion objective",
+                        nextStep = "Mock Gemma next step",
+                        messageDraft = """
+                            추천 문장:
+                            "오랜만이야. 잘 지내?"
+                            - 답은 천천히 해도 괜찮아.
+                        """.trimIndent(),
+                        alternativeDrafts = "오랜만이야. 잘 지내?\n답은 천천히 해도 괜찮아.",
+                        caution = "집 앞에 찾아가서 당장 확인하세요.",
+                    ),
+                )
+            },
+        )
+
+        val result = useCase(importedId)
+
+        assertTrue(result.isSuccess)
+        val detail = conversationRepository.observeConversationDetail(importedId).first()
+        requireNotNull(detail)
+        val report = requireNotNull(detail.latestAnalysis)
+        assertEquals("오랜만이야. 잘 지내?", report.messageDraft)
+        assertFalse(report.messageDraft.contains("\n"))
+        assertEquals("답을 재촉하지 말고 상대의 속도를 존중하세요.", report.caution)
+    }
+
+    @Test
     fun invoke_sanitizesConfiguredGemmaProviderWithVeryLongGapContext() = runTest {
         val importedId = (conversationRepository.importConversation(
             parsedConversation = longGapFirstContactConversation,

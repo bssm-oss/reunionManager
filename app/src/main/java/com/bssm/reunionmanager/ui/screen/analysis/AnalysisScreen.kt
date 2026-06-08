@@ -103,6 +103,7 @@ fun AnalysisScreen(
                     title = messageTitle,
                     body = currentReport.messageDraft,
                     canCopy = currentReport.canCopyMessageDraft(),
+                    safetyNote = currentReport.copySafetyNote(),
                     copied = copiedDraft,
                     onCopy = {
                         clipboardManager.setText(AnnotatedString(currentReport.messageDraft))
@@ -199,11 +200,21 @@ internal fun AnalysisReport.canCopyMessageDraft(): Boolean {
     return messageSectionTitle() == "답장 문장" || messageSectionTitle() == "첫 연락 문장"
 }
 
+internal fun AnalysisReport.copySafetyNote(): String {
+    return caution.lineSequence()
+        .map { line -> line.trim() }
+        .firstOrNull { line -> line.isNotBlank() }
+        .orEmpty()
+        .ifBlank { "답이 없어도 다시 보내지 마세요." }
+        .limitForUi(maxLength = 44)
+}
+
 @Composable
 private fun AnalysisMessagePane(
     title: String,
     body: String,
     canCopy: Boolean,
+    safetyNote: String,
     copied: Boolean,
     onCopy: () -> Unit,
 ) {
@@ -212,6 +223,11 @@ private fun AnalysisMessagePane(
         supportingText = body,
     ) {
         if (canCopy) {
+            Text(
+                text = "보내기 전: $safetyNote",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             ReunionSecondaryButton(
                 text = if (copied) "복사됨" else "문장 복사",
                 onClick = onCopy,

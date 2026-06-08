@@ -25,6 +25,17 @@ object AnalysisSafetyRules {
         "붙잡",
         "당장",
     )
+    private val unsafeInstructionPhrases = listOf(
+        "여러 번 보내",
+        "계속 보내",
+        "답을 받아",
+        "답을 요구",
+        "집 앞",
+        "찾아가",
+        "찾아갈",
+        "바로 전화",
+        "당장",
+    )
     private val hardBoundaryPhrases = listOf(
         "연락하지",
         "답장하지",
@@ -237,7 +248,7 @@ object AnalysisSafetyRules {
             nextStep = report.nextStep.trim().ifBlank { defaultNextStep(readiness, input) },
             messageDraft = sanitizeDraft(readiness, report.messageDraft, input),
             alternativeDrafts = sanitizeAlternatives(readiness, report.alternativeDrafts),
-            caution = report.caution.trim().ifBlank { "답을 재촉하지 말고 상대의 속도를 존중하세요." },
+            caution = sanitizeCaution(readiness, report.caution),
         )
     }
 
@@ -280,7 +291,7 @@ object AnalysisSafetyRules {
     }
 
     fun counterpartReplyDraft(input: AnalysisInput, candidate: String? = null): String {
-        val trimmedCandidate = candidate?.trim().orEmpty()
+        val trimmedCandidate = candidate?.firstDraftLine().orEmpty()
         if (trimmedCandidate.isSafeCounterpartReply()) {
             return trimmedCandidate
         }
@@ -429,7 +440,7 @@ object AnalysisSafetyRules {
     }
 
     private fun sanitizeDraft(readiness: String, draft: String, input: AnalysisInput?): String {
-        val trimmed = draft.trim()
+        val trimmed = draft.firstDraftLine()
         return when {
             readiness == HOLD || readiness == UNKNOWN -> defaultDraft(readiness, input)
             trimmed.isBlank() || trimmed.length > MAX_DRAFT_LENGTH || trimmed.hasUnsafeDraftPhrase() -> {
@@ -456,6 +467,16 @@ object AnalysisSafetyRules {
             }
         }
         return lines.take(3).joinToString(separator = "\n")
+    }
+
+    private fun sanitizeCaution(readiness: String, caution: String): String {
+        val trimmed = caution.firstDraftLine()
+        return when {
+            trimmed.isBlank() || trimmed.length > 90 || trimmed.hasUnsafeInstructionPhrase() -> {
+                defaultCaution(readiness)
+            }
+            else -> trimmed
+        }
     }
 
     private fun defaultObjective(readiness: String, input: AnalysisInput?): String {
@@ -501,6 +522,14 @@ object AnalysisSafetyRules {
         }
     }
 
+    private fun defaultCaution(readiness: String): String {
+        return when (readiness) {
+            HOLD -> "경계 표현이나 무응답 신호가 있으면 다시 연락하지 않는 선택도 포함하세요."
+            UNKNOWN -> "확신이 부족할 때는 보내지 않고 대화 맥락을 먼저 확인하세요."
+            else -> "답을 재촉하지 말고 상대의 속도를 존중하세요."
+        }
+    }
+
     private fun defaultAlternatives(readiness: String): List<String> {
         return when (readiness) {
             HOLD -> listOf(
@@ -528,6 +557,32 @@ object AnalysisSafetyRules {
 
     private fun String.hasUnsafeDraftPhrase(): Boolean {
         return unsafeDraftPhrases.any { phrase -> contains(phrase, ignoreCase = true) }
+    }
+
+    private fun String.hasUnsafeInstructionPhrase(): Boolean {
+        return unsafeInstructionPhrases.any { phrase -> contains(phrase, ignoreCase = true) }
+    }
+
+    private fun String.firstDraftLine(): String {
+        return lineSequence()
+            .map { line -> line.trim().trimStart('-', '•', '*', ' ', '\t') }
+            .map { line -> line.replace(Regex("^\\d+[.)]\\s*"), "") }
+            .map { line -> line.trim().trim('"', '\'', '“', '”', '‘', '’') }
+            .firstOrNull { line -> line.isNotBlank() && !line.isDraftLabelLine() }
+            .orEmpty()
+    }
+
+    private fun String.isDraftLabelLine(): Boolean {
+        val normalized = trim()
+        return normalized.endsWith(":") && containsAny(
+            normalized,
+            "추천",
+            "문장",
+            "답장",
+            "초안",
+            "메시지",
+            "보낼 문장",
+        )
     }
 
     private fun String.isSafeCounterpartReply(): Boolean {
