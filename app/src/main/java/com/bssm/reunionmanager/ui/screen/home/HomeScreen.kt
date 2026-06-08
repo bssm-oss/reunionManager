@@ -21,7 +21,8 @@ import com.bssm.reunionmanager.ui.theme.ScreenSectionSpacing
 @Composable
 fun HomeScreen(
     conversationCount: Int,
-    providerConfigured: Boolean,
+    modelConfigured: Boolean,
+    modelVerified: Boolean,
     onImportClick: () -> Unit,
     onConversationsClick: () -> Unit,
     onSettingsClick: () -> Unit,
@@ -52,15 +53,20 @@ fun HomeScreen(
         )
         ReunionPane(
             title = "AI 모드",
-            supportingText = if (providerConfigured) {
-                "분석과 초안 생성이 이 기기에서 실행됩니다."
-            } else {
-                "모델이 없으면 참고용 데모로 확인합니다."
-            },
+            supportingText = modelModeDescription(
+                modelConfigured = modelConfigured,
+                modelVerified = modelVerified,
+            ),
         ) {
             ReunionBadge(
-                text = if (providerConfigured) "기기 내 실행" else "데모 모드",
-                tone = if (providerConfigured) ReunionBadgeTone.Accent else ReunionBadgeTone.Neutral,
+                text = modelModeBadge(
+                    modelConfigured = modelConfigured,
+                    modelVerified = modelVerified,
+                ),
+                tone = modelModeTone(
+                    modelConfigured = modelConfigured,
+                    modelVerified = modelVerified,
+                ),
             )
         }
         ReunionPane(
@@ -69,5 +75,29 @@ fun HomeScreen(
         ) {
             ReunionBadge(text = "${conversationCount}개 저장")
         }
+    }
+}
+
+private fun modelModeDescription(modelConfigured: Boolean, modelVerified: Boolean): String {
+    return when {
+        modelVerified -> "분석과 초안 생성이 이 기기에서 실행됩니다."
+        modelConfigured -> "모델 실행 점검 전에는 참고용 데모로 정리합니다."
+        else -> "모델이 없으면 참고용 데모로 확인합니다."
+    }
+}
+
+private fun modelModeBadge(modelConfigured: Boolean, modelVerified: Boolean): String {
+    return when {
+        modelVerified -> "실행 확인됨"
+        modelConfigured -> "점검 필요"
+        else -> "데모 모드"
+    }
+}
+
+private fun modelModeTone(modelConfigured: Boolean, modelVerified: Boolean): ReunionBadgeTone {
+    return when {
+        modelVerified -> ReunionBadgeTone.Success
+        modelConfigured -> ReunionBadgeTone.Accent
+        else -> ReunionBadgeTone.Neutral
     }
 }

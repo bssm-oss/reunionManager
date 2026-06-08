@@ -147,6 +147,32 @@ class ReunionManagerAppTest {
         waitForText("문장 복사", timeoutMillis = 20_000)
     }
 
+    @Test
+    fun importedConversation_withUncheckedModelStillUsesDemoAnalysis() {
+        runBlocking {
+            application.appContainer.providerSettingsRepository.save(
+                ProviderSettings(
+                    modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",
+                    modelName = "gemma-4-E4B-it.litertlm",
+                    userDisplayName = "현우",
+                ),
+            )
+            application.appContainer.importConversationUseCase(
+                sourceName = "unchecked-model.txt",
+                rawText = sampleConversation,
+            )
+        }
+
+        launchMainActivity()
+
+        waitForText("점검 필요")
+        clickText("저장한 대화 보기")
+        clickText("샘플 채팅방")
+        clickText("다음 행동 정리하기")
+        waitForText("데모로 정리하기")
+        assertNull(device.findObject(By.text("기기에서 정리하기")))
+    }
+
     private fun launchMainActivity() {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val intent = Intent(context, MainActivity::class.java).apply {

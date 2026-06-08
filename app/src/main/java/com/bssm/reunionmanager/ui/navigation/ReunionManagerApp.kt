@@ -134,7 +134,8 @@ fun ReunionManagerApp() {
             composable(route = ReunionDestination.Home.route) {
                 HomeScreen(
                     conversationCount = conversations.size,
-                    providerConfigured = providerSettings.isConfigured,
+                    modelConfigured = providerSettings.isConfigured,
+                    modelVerified = providerSettings.isModelVerified,
                     onImportClick = { navController.navigate(ReunionDestination.Import.route) },
                     onConversationsClick = { navController.navigate(ReunionDestination.Conversations.route) },
                     onSettingsClick = { navController.navigate(ReunionDestination.Settings.route) },
@@ -191,7 +192,7 @@ fun ReunionManagerApp() {
                     detail = detail,
                     analysisState = analysisState,
                     userDisplayNameConfigured = providerSettings.userDisplayName.isNotBlank(),
-                    providerConfigured = providerSettings.isConfigured,
+                    providerConfigured = providerSettings.isModelVerified,
                     onGenerate = { viewModel.generateAnalysis(conversationId) },
                     onOpenSettings = { navController.navigate(ReunionDestination.Settings.route) },
                 )

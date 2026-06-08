@@ -26,8 +26,8 @@ class GenerateReunionPlanUseCase(
 
             val provider: AnalysisProvider
             val providerType: String
-            // The fake provider keeps the MVP usable when no local Gemma model path is configured.
-            if (settings.isConfigured) {
+            // The fake provider keeps the MVP usable until a local Gemma model has actually executed once.
+            if (settings.isModelVerified) {
                 provider = gemmaProviderFactory(settings)
                 providerType = "gemma4"
             } else {

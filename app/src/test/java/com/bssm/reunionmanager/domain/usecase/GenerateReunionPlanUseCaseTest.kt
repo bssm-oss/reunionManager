@@ -151,16 +151,9 @@ class GenerateReunionPlanUseCaseTest {
     }
 
     @Test
-    fun invoke_usesGemmaProviderWhenModelPathIsConfigured() = runTest {
+    fun invoke_usesGemmaProviderWhenModelIsVerified() = runTest {
         val importedId = importSampleConversation()
-        providerSettingsRepository.save(
-            ProviderSettings(
-                modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",
-                modelName = "gemma-4-E4B-it.litertlm",
-                backend = GemmaBackend.GPU,
-                userDisplayName = "현우",
-            ),
-        )
+        providerSettingsRepository.save(verifiedProviderSettings(backend = GemmaBackend.GPU))
 
         val useCase = GenerateReunionPlanUseCase(
             conversationRepository = conversationRepository,
@@ -168,7 +161,7 @@ class GenerateReunionPlanUseCaseTest {
             providerSettingsRepository = providerSettingsRepository,
             fakeAnalysisProvider = FakeAnalysisProvider(),
             gemmaProviderFactory = { settings ->
-                assertEquals("/data/local/tmp/gemma-4-E4B-it.litertlm", settings.modelPath)
+                assertEquals(MODEL_PATH, settings.modelPath)
                 assertEquals(GemmaBackend.GPU, settings.backend)
                 StaticAnalysisProvider(
                     AnalysisReport(
@@ -204,20 +197,44 @@ class GenerateReunionPlanUseCaseTest {
     }
 
     @Test
+    fun invoke_usesFakeProviderWhenModelPathExistsButIsNotVerified() = runTest {
+        val importedId = importSampleConversation()
+        providerSettingsRepository.save(
+            ProviderSettings(
+                modelPath = MODEL_PATH,
+                modelName = MODEL_NAME,
+                backend = GemmaBackend.CPU,
+                userDisplayName = "현우",
+            ),
+        )
+
+        val useCase = GenerateReunionPlanUseCase(
+            conversationRepository = conversationRepository,
+            analysisRepository = analysisRepository,
+            providerSettingsRepository = providerSettingsRepository,
+            fakeAnalysisProvider = FakeAnalysisProvider(),
+            gemmaProviderFactory = {
+                error("Gemma provider should not be used before model verification.")
+            },
+        )
+
+        val result = useCase(importedId)
+
+        assertTrue(result.isSuccess)
+        assertEquals("fake", result.getOrNull())
+        val detail = conversationRepository.observeConversationDetail(importedId).first()
+        requireNotNull(detail)
+        assertNotNull(detail.latestAnalysis)
+    }
+
+    @Test
     fun invoke_guardrailsConfiguredGemmaProviderWhenConversationLooksUnanswered() = runTest {
         val importedId = (conversationRepository.importConversation(
             parsedConversation = unansweredConversation,
             rawText = "configured unanswered raw text",
             sourceName = "configured-unanswered.txt",
         ) as ImportConversationResult.Imported).conversationId
-        providerSettingsRepository.save(
-            ProviderSettings(
-                modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",
-                modelName = "gemma-4-E4B-it.litertlm",
-                backend = GemmaBackend.CPU,
-                userDisplayName = "현우",
-            ),
-        )
+        providerSettingsRepository.save(verifiedProviderSettings())
 
         val useCase = GenerateReunionPlanUseCase(
             conversationRepository = conversationRepository,
@@ -259,13 +276,7 @@ class GenerateReunionPlanUseCaseTest {
     @Test
     fun invoke_guardrailsConfiguredGemmaProviderWhenUserNameIsMissing() = runTest {
         val importedId = importSampleConversation()
-        providerSettingsRepository.save(
-            ProviderSettings(
-                modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",
-                modelName = "gemma-4-E4B-it.litertlm",
-                backend = GemmaBackend.CPU,
-            ),
-        )
+        providerSettingsRepository.save(verifiedProviderSettings(userDisplayName = ""))
 
         val useCase = GenerateReunionPlanUseCase(
             conversationRepository = conversationRepository,
@@ -313,14 +324,7 @@ class GenerateReunionPlanUseCaseTest {
             rawText = "configured boundary raw text",
             sourceName = "configured-boundary.txt",
         ) as ImportConversationResult.Imported).conversationId
-        providerSettingsRepository.save(
-            ProviderSettings(
-                modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",
-                modelName = "gemma-4-E4B-it.litertlm",
-                backend = GemmaBackend.CPU,
-                userDisplayName = "현우",
-            ),
-        )
+        providerSettingsRepository.save(verifiedProviderSettings())
 
         val useCase = GenerateReunionPlanUseCase(
             conversationRepository = conversationRepository,
@@ -364,14 +368,7 @@ class GenerateReunionPlanUseCaseTest {
             rawText = "configured moved on raw text",
             sourceName = "configured-moved-on.txt",
         ) as ImportConversationResult.Imported).conversationId
-        providerSettingsRepository.save(
-            ProviderSettings(
-                modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",
-                modelName = "gemma-4-E4B-it.litertlm",
-                backend = GemmaBackend.CPU,
-                userDisplayName = "현우",
-            ),
-        )
+        providerSettingsRepository.save(verifiedProviderSettings())
 
         val useCase = GenerateReunionPlanUseCase(
             conversationRepository = conversationRepository,
@@ -415,14 +412,7 @@ class GenerateReunionPlanUseCaseTest {
             rawText = "technical group raw text",
             sourceName = "technical-group.txt",
         ) as ImportConversationResult.Imported).conversationId
-        providerSettingsRepository.save(
-            ProviderSettings(
-                modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",
-                modelName = "gemma-4-E4B-it.litertlm",
-                backend = GemmaBackend.CPU,
-                userDisplayName = "현우",
-            ),
-        )
+        providerSettingsRepository.save(verifiedProviderSettings())
 
         val useCase = GenerateReunionPlanUseCase(
             conversationRepository = conversationRepository,
@@ -464,14 +454,7 @@ class GenerateReunionPlanUseCaseTest {
     @Test
     fun invoke_sanitizesConfiguredGemmaProviderShapeBeforeSaving() = runTest {
         val importedId = importSampleConversation()
-        providerSettingsRepository.save(
-            ProviderSettings(
-                modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",
-                modelName = "gemma-4-E4B-it.litertlm",
-                backend = GemmaBackend.CPU,
-                userDisplayName = "현우",
-            ),
-        )
+        providerSettingsRepository.save(verifiedProviderSettings())
 
         val useCase = GenerateReunionPlanUseCase(
             conversationRepository = conversationRepository,
@@ -513,14 +496,7 @@ class GenerateReunionPlanUseCaseTest {
     @Test
     fun invoke_sanitizesConfiguredGemmaProviderDraftToSingleLineBeforeSaving() = runTest {
         val importedId = importSampleConversation()
-        providerSettingsRepository.save(
-            ProviderSettings(
-                modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",
-                modelName = "gemma-4-E4B-it.litertlm",
-                backend = GemmaBackend.CPU,
-                userDisplayName = "현우",
-            ),
-        )
+        providerSettingsRepository.save(verifiedProviderSettings())
 
         val useCase = GenerateReunionPlanUseCase(
             conversationRepository = conversationRepository,
@@ -566,14 +542,7 @@ class GenerateReunionPlanUseCaseTest {
             rawText = "long gap first contact raw text",
             sourceName = "long-gap-first-contact.txt",
         ) as ImportConversationResult.Imported).conversationId
-        providerSettingsRepository.save(
-            ProviderSettings(
-                modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",
-                modelName = "gemma-4-E4B-it.litertlm",
-                backend = GemmaBackend.CPU,
-                userDisplayName = "현우",
-            ),
-        )
+        providerSettingsRepository.save(verifiedProviderSettings())
 
         val useCase = GenerateReunionPlanUseCase(
             conversationRepository = conversationRepository,
@@ -645,14 +614,7 @@ class GenerateReunionPlanUseCaseTest {
             rawText = "counterpart waiting raw text",
             sourceName = "counterpart-waiting.txt",
         ) as ImportConversationResult.Imported).conversationId
-        providerSettingsRepository.save(
-            ProviderSettings(
-                modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",
-                modelName = "gemma-4-E4B-it.litertlm",
-                backend = GemmaBackend.CPU,
-                userDisplayName = "현우",
-            ),
-        )
+        providerSettingsRepository.save(verifiedProviderSettings())
 
         val useCase = GenerateReunionPlanUseCase(
             conversationRepository = conversationRepository,
@@ -698,12 +660,7 @@ class GenerateReunionPlanUseCaseTest {
             sourceName = "specific-counterpart-waiting.txt",
         ) as ImportConversationResult.Imported).conversationId
         providerSettingsRepository.save(
-            ProviderSettings(
-                modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",
-                modelName = "gemma-4-E4B-it.litertlm",
-                backend = GemmaBackend.CPU,
-                userDisplayName = "현우",
-            ),
+            verifiedProviderSettings(),
         )
 
         val specificDraft = "말해줘서 고마워. 나도 부담 없이 천천히 이야기하고 싶어."
@@ -747,12 +704,7 @@ class GenerateReunionPlanUseCaseTest {
             sourceName = "counterpart-well-being.txt",
         ) as ImportConversationResult.Imported).conversationId
         providerSettingsRepository.save(
-            ProviderSettings(
-                modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",
-                modelName = "gemma-4-E4B-it.litertlm",
-                backend = GemmaBackend.CPU,
-                userDisplayName = "현우",
-            ),
+            verifiedProviderSettings(),
         )
 
         val useCase = GenerateReunionPlanUseCase(
@@ -796,12 +748,7 @@ class GenerateReunionPlanUseCaseTest {
             sourceName = "counterpart-scheduled-meeting.txt",
         ) as ImportConversationResult.Imported).conversationId
         providerSettingsRepository.save(
-            ProviderSettings(
-                modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",
-                modelName = "gemma-4-E4B-it.litertlm",
-                backend = GemmaBackend.CPU,
-                userDisplayName = "현우",
-            ),
+            verifiedProviderSettings(),
         )
 
         val useCase = GenerateReunionPlanUseCase(
@@ -846,12 +793,7 @@ class GenerateReunionPlanUseCaseTest {
             sourceName = "counterpart-schedule-question.txt",
         ) as ImportConversationResult.Imported).conversationId
         providerSettingsRepository.save(
-            ProviderSettings(
-                modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",
-                modelName = "gemma-4-E4B-it.litertlm",
-                backend = GemmaBackend.CPU,
-                userDisplayName = "현우",
-            ),
+            verifiedProviderSettings(),
         )
 
         val useCase = GenerateReunionPlanUseCase(
@@ -893,11 +835,7 @@ class GenerateReunionPlanUseCaseTest {
     fun invoke_returnsFailureWhenConfiguredGemmaProviderErrors() = runTest {
         val importedId = importSampleConversation()
         providerSettingsRepository.save(
-            ProviderSettings(
-                modelPath = "/data/local/tmp/missing-gemma-4-E4B-it.litertlm",
-                modelName = "gemma-4-E4B-it.litertlm",
-                backend = GemmaBackend.CPU,
-            )
+            verifiedProviderSettings(modelPath = MISSING_MODEL_PATH),
         )
 
         val useCase = GenerateReunionPlanUseCase(
@@ -941,6 +879,26 @@ class GenerateReunionPlanUseCaseTest {
     }
 
     private companion object {
+        private const val MODEL_PATH = "/data/local/tmp/gemma-4-E4B-it.litertlm"
+        private const val MODEL_NAME = "gemma-4-E4B-it.litertlm"
+        private const val MISSING_MODEL_PATH = "/data/local/tmp/missing-gemma-4-E4B-it.litertlm"
+
+        fun verifiedProviderSettings(
+            modelPath: String = MODEL_PATH,
+            backend: GemmaBackend = GemmaBackend.CPU,
+            userDisplayName: String = "현우",
+        ): ProviderSettings {
+            return ProviderSettings(
+                modelPath = modelPath,
+                modelName = MODEL_NAME,
+                backend = backend,
+                userDisplayName = userDisplayName,
+                verifiedModelPath = modelPath,
+                verifiedBackend = backend,
+                verifiedAtEpochMillis = 1L,
+            )
+        }
+
         val sampleParsedConversation = ParsedConversation(
             title = "분석 테스트",
             exportedAtEpochMillis = null,
