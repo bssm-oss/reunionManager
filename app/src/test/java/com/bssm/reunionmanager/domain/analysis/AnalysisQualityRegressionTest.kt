@@ -13,14 +13,23 @@ class AnalysisQualityRegressionTest {
         val cases = listOf(
             qualityCase("name missing", missingPerspective(), "정보 부족", "내 카톡 이름", "오랜만이야"),
             qualityCase("user sent three unanswered messages", userUnansweredRun(), "지금은 보류", "보내지 않습니다", "오랜만이야"),
+            qualityCase("user sent two unanswered messages", userUnansweredRun(count = 2), "지금은 보류", "보내지 않습니다", "오랜만이야"),
             qualityCase("counterpart says do not contact", counterpartBoundary("이제 연락하지 말아줘"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart asks no more contact", counterpartBoundary("연락 안 했으면 좋겠어"), "지금은 보류", "보내지 않습니다", "안부"),
             qualityCase("counterpart says stop", counterpartBoundary("그만 보내줘"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart threatens report", counterpartBoundary("계속 이러면 신고할 거야"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart feels afraid", counterpartBoundary("네 연락 오는 거 무서워"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart calls it stalking", counterpartBoundary("이건 스토킹처럼 느껴져"), "지금은 보류", "보내지 않습니다", "안부"),
             qualityCase("counterpart says uncomfortable", counterpartBoundary("이런 연락은 불편해"), "지금은 보류", "보내지 않습니다", "안부"),
             qualityCase("counterpart says not okay", counterpartBoundary("지금은 괜찮지 않아"), "지금은 보류", "보내지 않습니다", "안부"),
             qualityCase("counterpart moved on", counterpartBoundary("나 새로 만나는 사람 있어"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart has new partner", counterpartBoundary("나 남자친구 생겼어"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart is seeing someone else", counterpartBoundary("다른 사람 만나고 있어"), "지금은 보류", "보내지 않습니다", "안부"),
             qualityCase("counterpart says each move on", counterpartBoundary("우리 이제 각자 잘 지내자"), "지금은 보류", "보내지 않습니다", "안부"),
             qualityCase("counterpart asks friend only", counterpartBoundary("친구로 지내는 게 좋겠어"), "지금은 보류", "보내지 않습니다", "안부"),
             qualityCase("counterpart says no romantic feeling", counterpartBoundary("연애 감정은 없어"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart says no feelings", counterpartBoundary("이제 마음이 없어"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart says no lingering feeling", counterpartBoundary("미련 없어"), "지금은 보류", "보내지 않습니다", "안부"),
             qualityCase("counterpart will contact later", counterpartBoundary("나중에 내가 연락할게"), "지금은 보류", "보내지 않습니다", "안부"),
             qualityCase("counterpart asks time", counterpartBoundary("생각할 시간이 필요해"), "지금은 보류", "보내지 않습니다", "안부"),
             qualityCase("counterpart asks to wait", counterpartBoundary("조금 기다려줘"), "지금은 보류", "보내지 않습니다", "안부"),
@@ -37,7 +46,7 @@ class AnalysisQualityRegressionTest {
             qualityCase("light positive signal", lightPositive(), "아주 가볍게 가능", "짧게", "보내지 않습니다"),
         )
 
-        assertEquals(24, cases.size)
+        assertEquals(33, cases.size)
         cases.forEach { case ->
             val report = AnalysisSafetyRules.finalizeReport(optimisticGemmaReport, case.input)
 
@@ -109,11 +118,16 @@ class AnalysisQualityRegressionTest {
         )
     }
 
-    private fun userUnansweredRun(): AnalysisInput {
+    private fun userUnansweredRun(count: Int = 3): AnalysisInput {
+        val recentLines = listOf(
+            "현우: 혹시 잠깐 괜찮아?",
+            "현우: 답 없어서 다시 남겨",
+            "현우: 미안해. 오늘은 더 보내지 않을게",
+        ).take(count)
         return input(
-            recentExcerpt = "현우: 혹시 잠깐 괜찮아?\n현우: 답 없어서 다시 남겨\n현우: 미안해. 오늘은 더 보내지 않을게",
-            signalExcerpt = "현우: 미안해. 오늘은 더 보내지 않을게",
-            perspectiveSummary = configuredPerspective("나", myFinalRun = 3),
+            recentExcerpt = recentLines.joinToString(separator = "\n"),
+            signalExcerpt = recentLines.last(),
+            perspectiveSummary = configuredPerspective("나", myFinalRun = count),
         )
     }
 
