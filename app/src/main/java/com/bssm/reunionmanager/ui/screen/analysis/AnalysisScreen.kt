@@ -153,8 +153,14 @@ fun AnalysisScreen(
                         body = currentReport.summaryBody(),
                     )
                 }
-                if (currentReport.alternativeDrafts.isNotBlank()) {
-                    item { AnalysisSectionPane(title = currentReport.alternativeSectionTitle(), body = currentReport.alternativeDrafts) }
+                val alternativeDraftsBody = currentReport.alternativeDraftsBody()
+                if (alternativeDraftsBody.isNotBlank()) {
+                    item {
+                        AnalysisSectionPane(
+                            title = currentReport.alternativeSectionTitle(),
+                            body = alternativeDraftsBody,
+                        )
+                    }
                 }
                 item { AnalysisSectionPane(title = "판단 근거", body = currentReport.evidenceBody()) }
                 item {
@@ -355,13 +361,16 @@ internal fun AnalysisReport.summaryTitle(): String {
 }
 
 internal fun AnalysisReport.summaryBody(): String {
-    val lines = listOf(
-        relationshipSummary.trim(),
-        reunionObjective.trim().takeIf { it.isNotBlank() }?.let { "목표: $it" }.orEmpty(),
-    ).filter { it.isNotBlank() }
-    return lines.joinToString(separator = "\n")
+    val focusedSummary = when {
+        contactReadiness == "지금은 보류" -> "오늘은 보내지 않는 쪽이 안전합니다."
+        contactReadiness == "정보 부족" || isCheckOnlyResult() -> "먼저 확인할 정보가 있습니다."
+        contactReadiness == "먼저 사과 필요" -> "가벼운 안부보다 짧은 인정이 먼저입니다."
+        messageSectionTitle() == "답장 문장" -> "상대가 마지막에 답장을 남긴 상태라 짧은 답장이 자연스럽습니다."
+        else -> relationshipSummary.trim()
+    }
+    return focusedSummary
         .ifBlank { "최근 대화 흐름을 기준으로 다음 행동만 간단히 정리했습니다." }
-        .limitForUi(maxLength = 180)
+        .limitForUi(maxLength = 96)
 }
 
 internal fun AnalysisReport.evidenceBody(): String {
@@ -372,6 +381,17 @@ internal fun AnalysisReport.evidenceBody(): String {
         .joinToString(separator = "\n")
         .ifBlank { "최근 대화 흐름과 마지막 발신자 기준으로 판단했습니다." }
         .limitForUi(maxLength = 220)
+}
+
+internal fun AnalysisReport.alternativeDraftsBody(): String {
+    val mainDraft = messageDraft.trim()
+    val maxItems = if (alternativeSectionTitle() == "다음 선택지") 3 else 2
+    return alternativeDrafts.lineSequence()
+        .map { line -> line.trim() }
+        .filter { line -> line.isNotBlank() && line != mainDraft }
+        .distinct()
+        .take(maxItems)
+        .joinToString(separator = "\n") { line -> line.limitForUi(maxLength = 54) }
 }
 
 private fun String.limitForUi(maxLength: Int): String {

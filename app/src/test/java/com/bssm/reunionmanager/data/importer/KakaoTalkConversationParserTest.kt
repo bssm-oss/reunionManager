@@ -85,6 +85,19 @@ class KakaoTalkConversationParserTest {
     }
 
     @Test
+    fun parse_usesFileNameWhenMobileExportStartsWithDateDivider() {
+        val parsed = parser.parse(
+            fileName = "reunion_kakao_sample.txt",
+            rawText = dateDividerFirstConversation,
+        )
+
+        assertEquals("reunion_kakao_sample", parsed.title)
+        assertEquals(listOf("현우", "민지"), parsed.participants)
+        assertEquals(2, parsed.messages.size)
+        assertEquals("오랜만이야. 잘 지내?", parsed.messages.first().content)
+    }
+
+    @Test
     fun parse_supportsCorpusStyleMessengerLines() {
         val parsed = parser.parse(
             fileName = "public-corpus-format.txt",
@@ -146,6 +159,12 @@ class KakaoTalkConversationParserTest {
             [가나다] [오전 11:01] 오우 감사합니다
             rag 입문인데
             [ABC] [오전 11:05] OPENAI 임베딩 쓰는 것보다 효과가 좋은 것인가요?
+        """.trimIndent()
+
+        val dateDividerFirstConversation = """
+            --------------- 2026년 6월 8일 월요일 ---------------
+            [현우] [오전 10:55] 오랜만이야. 잘 지내?
+            [민지] [오전 11:03] 응 나도 잘 지내. 너는?
         """.trimIndent()
 
         val conversationWithMidstreamSystemNotice = """

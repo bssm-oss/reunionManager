@@ -34,7 +34,7 @@ class KakaoTalkConversationParser {
 
     private fun parseMobileTextExport(fileName: String, rawText: String): ParsedConversation? {
         val normalizedLines = rawText.replace("\r\n", "\n").split('\n')
-        val title = normalizedLines.firstOrNull().orEmpty().extractTitle(fileName)
+        val title = normalizedLines.extractMobileTitle(fileName)
 
         var currentDate: LocalDate? = null
         var exportedAtEpochMillis: Long? = null
@@ -251,6 +251,23 @@ class KakaoTalkConversationParser {
     private fun String.extractTitle(fileName: String): String {
         val cleaned = trim().removeSuffix(" 님과 카카오톡 대화").removeSuffix(" 카카오톡 대화")
         return cleaned.ifBlank { fileName.toConversationTitle() }
+    }
+
+    private fun List<String>.extractMobileTitle(fileName: String): String {
+        val firstLine = firstOrNull { it.trim().isNotBlank() }.orEmpty().trim()
+        return if (firstLine.isMobileMetadataOrMessageLine()) {
+            fileName.toConversationTitle()
+        } else {
+            firstLine.extractTitle(fileName)
+        }
+    }
+
+    private fun String.isMobileMetadataOrMessageLine(): Boolean {
+        return isBlank() ||
+            exportDateRegex.matches(this) ||
+            dateDividerRegex.matches(this) ||
+            messageRegex.matches(this) ||
+            systemNoticeRegex.matches(this)
     }
 
     private fun String.toConversationTitle(): String {

@@ -146,17 +146,16 @@ class AnalysisScreenTitleTest {
     }
 
     @Test
-    fun summaryBody_includesSummaryAndGoalWithoutGrowingTooLong() {
+    fun summaryBody_keepsOnlyOneFocusedLine() {
         val report = report(
             relationshipSummary = "상대가 마지막에 답장을 남긴 상태라 새 연락보다 짧은 답장이 자연스럽습니다.",
             reunionObjective = "상대의 속도를 존중하면서 안부만 확인합니다.",
+            nextStep = "상대의 마지막 메시지에 바로 답하세요.",
         )
 
-        val body = report.summaryBody()
-
         assertEquals(
-            "상대가 마지막에 답장을 남긴 상태라 새 연락보다 짧은 답장이 자연스럽습니다.\n목표: 상대의 속도를 존중하면서 안부만 확인합니다.",
-            body,
+            "상대가 마지막에 답장을 남긴 상태라 짧은 답장이 자연스럽습니다.",
+            report.summaryBody(),
         )
     }
 
@@ -167,7 +166,7 @@ class AnalysisScreenTitleTest {
             reunionObjective = "나".repeat(200),
         )
 
-        assertEquals(180, report.summaryBody().length)
+        assertEquals(96, report.summaryBody().length)
     }
 
     @Test
@@ -177,6 +176,30 @@ class AnalysisScreenTitleTest {
         )
 
         assertEquals("첫 줄\n둘째 줄\n셋째 줄", report.evidenceBody())
+    }
+
+    @Test
+    fun alternativeDraftsBody_hidesRepeatedMainDraftAndKeepsTwoCandidateMessages() {
+        val report = report(
+            messageDraft = "메시지 봤어. 나는 잘 지내고 있어. 괜찮다면 천천히 안부 나누자.",
+            alternativeDrafts = "메시지 봤어. 나는 잘 지내고 있어. 괜찮다면 천천히 안부 나누자.\n메시지 봤어. 부담 없으면 천천히 답할게.\n고마워. 나도 짧게 안부 전하고 싶었어.",
+        )
+
+        assertEquals(
+            "메시지 봤어. 부담 없으면 천천히 답할게.\n고마워. 나도 짧게 안부 전하고 싶었어.",
+            report.alternativeDraftsBody(),
+        )
+    }
+
+    @Test
+    fun alternativeDraftsBody_keepsThreeActionsForCheckOnlyResults() {
+        val report = report(
+            contactReadiness = "정보 부족",
+            messageDraft = "지금은 보낼 문장을 만들지 않습니다.",
+            alternativeDrafts = "내 카톡 이름 저장하기\n같은 대화 다시 분석하기\n최근 대화 파일인지 확인하기",
+        )
+
+        assertEquals(3, report.alternativeDraftsBody().lines().size)
     }
 
     @Test
