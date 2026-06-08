@@ -19,8 +19,8 @@ This repository hosts the Reunion Manager Android MVP.
 - Save conversations, participants, messages, analysis results, and provider settings in Room.
 - Browse saved conversations and inspect message history.
 - Generate a reunion plan through:
-  - a fake local provider when no Gemma model path exists
-  - a Gemma 4 on-device provider when the user saves a local `.litertlm` model path
+  - a fake local provider when no Gemma model path exists or a copied model has not passed execution check
+  - a Gemma 4 on-device provider, wrapped by local swarm review, only after the saved `.litertlm` model path/backend have been verified on the device
 
 ## Editing Rules
 

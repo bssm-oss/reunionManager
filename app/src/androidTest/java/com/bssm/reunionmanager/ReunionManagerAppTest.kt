@@ -74,6 +74,7 @@ class ReunionManagerAppTest {
 
         clickTextWithScroll("분석 설정")
         waitForText("모델 점검 필요")
+        waitForText("gemma-4-E4B-it.litertlm 모델은 저장됐지만, 점검 전에는 데모로 정리합니다.")
         waitForText("점검 필요")
         waitForText("모델 실행 점검")
     }
@@ -97,6 +98,7 @@ class ReunionManagerAppTest {
 
         clickTextWithScroll("분석 설정")
         waitForText("모델 실행 확인됨")
+        waitForText("gemma-4-E4B-it.litertlm 모델을 이 기기에서 실행 확인했습니다.")
         waitForText("실행 확인됨")
         waitForText("다시 점검")
     }

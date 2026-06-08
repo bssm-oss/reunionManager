@@ -79,6 +79,21 @@ class LocalAnalysisSwarmProviderTest {
         assertFalse(result.messageDraft.contains("오랜만이야"))
     }
 
+    @Test
+    fun analyze_addsConcreteParallelReviewEvidence() = runTest {
+        val provider = LocalAnalysisSwarmProvider(
+            draftProvider = StaticProvider(optimisticDraft),
+            baselineProvider = StaticProvider(optimisticDraft),
+        )
+
+        val result = provider.analyze(input())
+
+        assertTrue(result.evidence.contains("로컬 병렬 검수"))
+        assertTrue(result.evidence.contains("안전 통과"))
+        assertTrue(result.evidence.contains("마지막 나"))
+        assertTrue(result.evidence.contains("맥락 충분"))
+    }
+
     private class StaticProvider(
         private val report: AnalysisReport,
     ) : AnalysisProvider {

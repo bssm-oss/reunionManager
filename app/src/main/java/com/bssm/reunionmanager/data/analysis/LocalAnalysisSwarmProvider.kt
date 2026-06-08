@@ -12,13 +12,21 @@ class LocalAnalysisSwarmProvider(
     private val baselineProvider: AnalysisProvider,
 ) : AnalysisProvider {
     override suspend fun analyze(input: AnalysisInput): AnalysisReport = coroutineScope {
-        val decision = AnalysisSafetyRules.evaluate(input)
+        val decisionDeferred = async { AnalysisSafetyRules.evaluate(input) }
+        val lastMessageReviewDeferred = async { input.lastMessageReviewLabel() }
+        val contextReviewDeferred = async { input.contextReviewLabel() }
         val baselineDeferred = async { AnalysisSafetyRules.finalizeReport(baselineProvider.analyze(input), input) }
+        val decision = decisionDeferred.await()
+        val review = SwarmReview(
+            safety = decision.safetyReviewLabel(),
+            lastMessage = lastMessageReviewDeferred.await(),
+            context = contextReviewDeferred.await(),
+        )
 
         when (decision.action) {
             AnalysisSafetyRules.AnalysisAction.RequirePerspective,
             AnalysisSafetyRules.AnalysisAction.HoldContact,
-            AnalysisSafetyRules.AnalysisAction.CheckContext -> baselineDeferred.await().withSwarmEvidence(decision)
+            AnalysisSafetyRules.AnalysisAction.CheckContext -> baselineDeferred.await().withSwarmEvidence(review)
 
             AnalysisSafetyRules.AnalysisAction.ReplyToCounterpart,
             AnalysisSafetyRules.AnalysisAction.ModelDraft -> {
@@ -31,7 +39,7 @@ class LocalAnalysisSwarmProvider(
                     sanitizedDraft = sanitizedDraft,
                     baseline = baseline,
                 )
-                AnalysisSafetyRules.finalizeReport(selected, input).withSwarmEvidence(decision)
+                AnalysisSafetyRules.finalizeReport(selected, input).withSwarmEvidence(review)
             }
         }
     }
@@ -64,23 +72,46 @@ class LocalAnalysisSwarmProvider(
     }
 
     private fun AnalysisReport.withSwarmEvidence(
-        decision: AnalysisSafetyRules.AnalysisDecision,
+        review: SwarmReview,
     ): AnalysisReport {
         return copy(
             evidence = AnalysisSafetyRules.appendEvidence(
                 evidence,
-                "로컬 병렬 검수: 안전, 마지막 메시지, 관계 맥락을 각각 확인했습니다. (${decision.action.toEvidenceLabel()})",
+                "로컬 병렬 검수: 안전 ${review.safety}, 마지막 ${review.lastMessage}, 맥락 ${review.context}.",
             ),
         )
     }
 
-    private fun AnalysisSafetyRules.AnalysisAction.toEvidenceLabel(): String {
-        return when (this) {
-            AnalysisSafetyRules.AnalysisAction.RequirePerspective -> "이름 확인"
-            AnalysisSafetyRules.AnalysisAction.HoldContact -> "보류"
-            AnalysisSafetyRules.AnalysisAction.CheckContext -> "맥락 확인"
-            AnalysisSafetyRules.AnalysisAction.ReplyToCounterpart -> "답장"
-            AnalysisSafetyRules.AnalysisAction.ModelDraft -> "초안 생성"
+    private fun AnalysisSafetyRules.AnalysisDecision.safetyReviewLabel(): String {
+        return when {
+            needsPerspectiveSetup -> "이름 필요"
+            requiresHold -> "보류"
+            hasWeakContext -> "맥락 확인"
+            else -> "통과"
         }
     }
+
+    private fun AnalysisInput.lastMessageReviewLabel(): String {
+        val role = perspectiveValue("마지막 메시지 발신자 역할:").ifBlank { "알 수 없음" }
+        val run = perspectiveValue("마지막 연속 발화 역할:")
+        return if (run.isBlank()) role else "$role, $run"
+    }
+
+    private fun AnalysisInput.contextReviewLabel(): String {
+        return if (AnalysisSafetyRules.hasWeakReunionContext(this)) "부족" else "충분"
+    }
+
+    private fun AnalysisInput.perspectiveValue(prefix: String): String {
+        return perspectiveSummary.lineSequence()
+            .firstOrNull { line -> line.trim().startsWith(prefix) }
+            ?.substringAfter(prefix)
+            ?.trim()
+            .orEmpty()
+    }
+
+    private data class SwarmReview(
+        val safety: String,
+        val lastMessage: String,
+        val context: String,
+    )
 }

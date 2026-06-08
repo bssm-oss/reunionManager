@@ -60,6 +60,21 @@ fun SettingsScreen(
         providerSettings.isModelVerified -> ReunionBadgeTone.Success
         else -> ReunionBadgeTone.Accent
     }
+    val modelStatusDescription = when {
+        !providerSettings.isConfigured -> "모델을 선택하기 전에는 참고용 데모로 확인합니다."
+        providerSettings.isModelVerified -> "${providerSettings.modelName} 모델을 이 기기에서 실행 확인했습니다."
+        else -> "${providerSettings.modelName} 모델은 저장됐지만, 점검 전에는 데모로 정리합니다."
+    }
+    val modelMessageTitle = if (providerSettings.isModelVerified) {
+        "모델 실행 확인됨"
+    } else {
+        "모델 파일 저장됨"
+    }
+    val modelMessageTone = if (providerSettings.isModelVerified) {
+        ReunionBadgeTone.Success
+    } else {
+        ReunionBadgeTone.Accent
+    }
     val modelPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
     ) { uri ->
@@ -106,11 +121,7 @@ fun SettingsScreen(
         }
         ReunionPane(
             title = modelStatusTitle,
-            supportingText = if (providerSettings.isConfigured) {
-                providerSettings.modelName
-            } else {
-                "모델을 선택하기 전에는 참고용 데모로 확인합니다."
-            },
+            supportingText = modelStatusDescription,
         ) {
             ReunionBadge(
                 text = modelStatusBadge,
@@ -152,9 +163,9 @@ fun SettingsScreen(
         }
         modelSettingsState.message?.let { message ->
             ReunionEmptyState(
-                title = "모델 준비 완료",
+                title = modelMessageTitle,
                 body = message,
-                tone = ReunionBadgeTone.Success,
+                tone = modelMessageTone,
             )
         }
         modelSettingsState.errorMessage?.let { errorMessage ->
