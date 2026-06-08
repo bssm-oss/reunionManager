@@ -29,7 +29,7 @@ class Gemma4AnalysisProvider(
     override suspend fun analyze(input: AnalysisInput): AnalysisReport = withContext(Dispatchers.IO) {
         val modelFile = File(settings.modelPath)
         require(modelFile.isFile) {
-            "모델 파일을 찾을 수 없습니다. 모델을 다시 선택하거나 데모 모드를 사용하세요."
+            "모델 파일을 찾을 수 없습니다. 모델을 다시 선택하거나 기본 정리를 사용하세요."
         }
 
         val engineConfig = EngineConfig(

@@ -210,7 +210,7 @@ fun ReunionManagerApp() {
 
 private fun ProviderSettings.runtimeBadgeText(): String {
     return when {
-        !isConfigured -> "데모 모드"
+        !isConfigured -> "기본 정리"
         isModelVerified -> "실행 확인됨"
         else -> "점검 필요"
     }

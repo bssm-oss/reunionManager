@@ -51,7 +51,7 @@ fun SettingsScreen(
         else -> "모델 점검 필요"
     }
     val modelStatusBadge = when {
-        !providerSettings.isConfigured -> "데모 모드"
+        !providerSettings.isConfigured -> "기본 정리"
         providerSettings.isModelVerified -> "실행 확인됨"
         else -> "점검 필요"
     }
@@ -61,9 +61,9 @@ fun SettingsScreen(
         else -> ReunionBadgeTone.Accent
     }
     val modelStatusDescription = when {
-        !providerSettings.isConfigured -> "모델을 선택하기 전에는 참고용 데모로 확인합니다."
+        !providerSettings.isConfigured -> "모델을 선택하기 전에는 기본 정리로 확인합니다."
         providerSettings.isModelVerified -> "${providerSettings.modelName} 모델을 이 기기에서 실행 확인했습니다."
-        else -> "${providerSettings.modelName} 모델은 저장됐지만, 점검 전에는 데모로 정리합니다."
+        else -> "${providerSettings.modelName} 모델은 저장됐지만, 점검 전에는 기본 정리로 진행합니다."
     }
     val modelMessageTitle = modelMessageTitle(providerSettings, modelSettingsState.message)
     val modelMessageTone = if (providerSettings.isModelVerified) {

@@ -71,7 +71,7 @@ class ReunionManagerAppTest {
         waitForText("모델 파일")
         waitForText("Gemma 4 .litertlm 파일만 이 기기에 저장됩니다.")
         assertNotNull(device.findObject(By.text("모델 파일 선택")))
-        assertNotNull(device.findObject(By.text("데모 모드")))
+        assertNotNull(device.findObject(By.text("기본 정리")))
     }
 
     @Test
@@ -90,7 +90,7 @@ class ReunionManagerAppTest {
 
         clickTextWithScroll("분석 설정")
         waitForText("모델 점검 필요")
-        waitForText("gemma-4-E4B-it.litertlm 모델은 저장됐지만, 점검 전에는 데모로 정리합니다.")
+        waitForText("gemma-4-E4B-it.litertlm 모델은 저장됐지만, 점검 전에는 기본 정리로 진행합니다.")
         waitForText("점검 필요")
         waitForText("모델 실행 점검")
     }
@@ -134,7 +134,9 @@ class ReunionManagerAppTest {
         clickText("샘플 채팅방")
         clickText("다음 행동 정리하기")
         waitForText("내 이름 확인")
-        waitForText("내 카톡 이름 설정하기")
+        waitForText("현우 선택")
+        waitForText("민지 선택")
+        waitForText("직접 입력하기")
         assertNull(device.findObject(By.text("오랜만이야. 괜찮다면 짧게 안부만 묻고 싶어.")))
     }
 
@@ -153,7 +155,7 @@ class ReunionManagerAppTest {
         clickText("긴 샘플 채팅방")
         waitForText("아직 정리하지 않았어요")
         waitForText("최근 메시지")
-        waitForText("전체 10개 중 최근 8개만 먼저 보여줍니다.")
+        waitForText("최근 8개만 먼저 보기")
         waitForText("전체 메시지 보기")
         clickText("전체 메시지 보기")
         waitForText("전체 메시지")
@@ -176,18 +178,18 @@ class ReunionManagerAppTest {
         clickText("저장한 대화 보기")
         clickText("샘플 채팅방")
         clickText("다음 행동 정리하기")
-        waitForText("데모로 정리하기")
-        clickText("데모로 정리하기")
+        waitForText("기본으로 정리하기")
+        clickText("기본으로 정리하기")
         waitForText("오늘의 결론", timeoutMillis = 20_000)
         waitForText("아주 가볍게 가능", timeoutMillis = 20_000)
         waitForText("새 연락보다 짧은 답장이 자연스럽습니다.", timeoutMillis = 20_000)
         waitForText("답장 문장", timeoutMillis = 20_000)
-        waitForTextContaining("보내기 전:", timeoutMillis = 20_000)
+        waitForText("한 번만 보내고 기다려요.", timeoutMillis = 20_000)
         waitForText("문장 복사", timeoutMillis = 20_000)
     }
 
     @Test
-    fun importedConversation_withUncheckedModelStillUsesDemoAnalysis() {
+    fun importedConversation_withUncheckedModelStillUsesBasicAnalysis() {
         runBlocking {
             application.appContainer.providerSettingsRepository.save(
                 ProviderSettings(
@@ -208,7 +210,7 @@ class ReunionManagerAppTest {
         clickText("저장한 대화 보기")
         clickText("샘플 채팅방")
         clickText("다음 행동 정리하기")
-        waitForText("데모로 정리하기")
+        waitForText("기본으로 정리하기")
         assertNull(device.findObject(By.text("기기에서 정리하기")))
     }
 

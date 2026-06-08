@@ -81,7 +81,7 @@ Current automated coverage focuses on the highest-risk behaviors:
   - home trust signals
   - import navigation
   - settings navigation
-  - unchecked model files staying in demo analysis
+  - unchecked model files staying in basic local analysis
   - imported conversation browsing through reunion-plan generation and first-message display
 
 ## QA Notes
