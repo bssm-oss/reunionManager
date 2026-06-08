@@ -258,6 +258,28 @@ class AnalysisScreenTitleTest {
         )
     }
 
+    @Test
+    fun needsPerspectiveSetupForAnalysis_detectsMissingOrMismatchedName() {
+        val participants = listOf("민지", "현우")
+
+        assertTrue(needsPerspectiveSetupForAnalysis(participants, userDisplayName = ""))
+        assertTrue(needsPerspectiveSetupForAnalysis(participants, userDisplayName = "현우님"))
+        assertFalse(needsPerspectiveSetupForAnalysis(participants, userDisplayName = "현우"))
+        assertFalse(needsPerspectiveSetupForAnalysis(listOf("현우"), userDisplayName = ""))
+    }
+
+    @Test
+    fun perspectiveSetupSupportingText_explainsMismatchedNameWithoutExtraDetail() {
+        assertEquals(
+            "내 카톡 이름을 저장한 뒤 분석하세요.",
+            perspectiveSetupSupportingText(participantNames = listOf("민지", "현우"), userDisplayName = ""),
+        )
+        assertEquals(
+            "저장한 이름이 이 대화에 없어요. 카카오톡에 보이는 이름으로 고친 뒤 분석하세요.",
+            perspectiveSetupSupportingText(participantNames = listOf("민지", "현우"), userDisplayName = "현우님"),
+        )
+    }
+
     private fun report(
         headline: String = "테스트",
         contactReadiness: String = "아주 가볍게 가능",

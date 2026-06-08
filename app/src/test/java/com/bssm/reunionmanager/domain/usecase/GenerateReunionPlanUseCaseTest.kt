@@ -318,6 +318,49 @@ class GenerateReunionPlanUseCaseTest {
     }
 
     @Test
+    fun invoke_guardrailsConfiguredGemmaProviderWhenUserNameDoesNotMatchParticipants() = runTest {
+        val importedId = importSampleConversation()
+        providerSettingsRepository.save(verifiedProviderSettings(userDisplayName = "현우님"))
+
+        val useCase = GenerateReunionPlanUseCase(
+            conversationRepository = conversationRepository,
+            analysisRepository = analysisRepository,
+            providerSettingsRepository = providerSettingsRepository,
+            fakeAnalysisProvider = FakeAnalysisProvider(),
+            gemmaProviderFactory = {
+                StaticAnalysisProvider(
+                    AnalysisReport(
+                        headline = "Mock Gemma assumed perspective",
+                        contactReadiness = "아주 가볍게 가능",
+                        evidence = "Mock Gemma treated the last sender as counterpart",
+                        relationshipSummary = "Mock Gemma summary",
+                        reunionObjective = "바로 짧게 답장합니다.",
+                        nextStep = "상대의 마지막 메시지에 답하세요.",
+                        messageDraft = "메시지 봤어. 고마워.",
+                        alternativeDrafts = "메시지 봤어. 고마워.\n천천히 이야기하자\n답은 천천히 해도 돼",
+                        caution = "Mock Gemma caution",
+                    ),
+                )
+            },
+        )
+
+        val result = useCase(importedId)
+
+        assertTrue(result.isSuccess)
+        assertEquals("gemma4", result.getOrNull())
+        val detail = conversationRepository.observeConversationDetail(importedId).first()
+        requireNotNull(detail)
+        val report = requireNotNull(detail.latestAnalysis)
+        assertEquals("내 이름 확인", report.headline)
+        assertEquals("정보 부족", report.contactReadiness)
+        assertTrue(report.evidence.contains("대화 참가자"))
+        assertTrue(report.messageDraft.contains("보낼 문장을 만들지 않습니다"))
+        assertTrue(report.messageDraft.contains("대화방 표시 이름"))
+        assertTrue(report.alternativeDrafts.contains("내 카톡 이름 확인하기"))
+        assertFalse(report.messageDraft.contains("메시지 봤어"))
+    }
+
+    @Test
     fun invoke_guardrailsConfiguredGemmaProviderWhenCounterpartSetsBoundary() = runTest {
         val importedId = (conversationRepository.importConversation(
             parsedConversation = boundaryConversation,

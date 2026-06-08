@@ -213,6 +213,28 @@ class ConversationRepositoryTest {
         assertTrue(input.perspectiveSummary.contains("내 마지막 연속 발화: 2개"))
     }
 
+    @Test
+    fun buildAnalysisInput_requiresNameCheckWhenConfiguredNameIsNotInParticipants() = runTest {
+        val result = repository.importConversation(
+            parsedConversation = signalHeavyConversation,
+            rawText = "signal raw text with wrong user",
+            sourceName = "signal-wrong-user.txt",
+        )
+        val importedId = (result as ImportConversationResult.Imported).conversationId
+
+        val input = repository.buildAnalysisInput(
+            conversationId = importedId,
+            userDisplayName = "현우님",
+        )
+        requireNotNull(input)
+
+        assertTrue(input.perspectiveSummary.contains("내 카톡 이름: 현우님"))
+        assertTrue(input.perspectiveSummary.contains("내 카톡 이름 확인 필요"))
+        assertTrue(input.perspectiveSummary.contains("상대 후보: 알 수 없음"))
+        assertTrue(input.perspectiveSummary.contains("마지막 메시지 발신자 역할: 알 수 없음"))
+        assertTrue(input.perspectiveSummary.contains("관점 주의"))
+    }
+
     private companion object {
         val sampleParsedConversation = ParsedConversation(
             title = "테스트 대화",

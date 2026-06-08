@@ -12,6 +12,7 @@ class AnalysisQualityRegressionTest {
     fun finalizeReport_handlesRealisticKakaoQualityCases() {
         val cases = listOf(
             qualityCase("name missing", missingPerspective(), "정보 부족", "내 카톡 이름", "오랜만이야"),
+            qualityCase("configured name does not match participants", mismatchedPerspective(), "정보 부족", "내 카톡 이름", "오랜만이야"),
             qualityCase("user sent three unanswered messages", userUnansweredRun(), "지금은 보류", "보내지 않습니다", "오랜만이야"),
             qualityCase("user sent two unanswered messages", userUnansweredRun(count = 2), "지금은 보류", "보내지 않습니다", "오랜만이야"),
             qualityCase("counterpart says do not contact", counterpartBoundary("이제 연락하지 말아줘"), "지금은 보류", "보내지 않습니다", "안부"),
@@ -63,7 +64,7 @@ class AnalysisQualityRegressionTest {
             qualityCase("light positive signal", lightPositive(), "아주 가볍게 가능", "짧게", "보내지 않습니다"),
         )
 
-        assertEquals(50, cases.size)
+        assertEquals(51, cases.size)
         cases.forEach { case ->
             val report = AnalysisSafetyRules.finalizeReport(optimisticGemmaReport, case.input)
 
@@ -206,6 +207,20 @@ class AnalysisQualityRegressionTest {
             recentExcerpt = "현우: 오랜만이야\n민지: 나도 가끔 생각났어",
             signalExcerpt = "민지: 나도 가끔 생각났어",
             perspectiveSummary = "내 카톡 이름: 설정되지 않음\n마지막 메시지 발신자 역할: 알 수 없음\n관점 주의: 내 카톡 이름이 설정되지 않아 마지막 발신자가 사용자인지 상대인지 확정할 수 없습니다.",
+        )
+    }
+
+    private fun mismatchedPerspective(): AnalysisInput {
+        return input(
+            recentExcerpt = "현우: 오랜만이야\n민지: 나도 가끔 생각났어",
+            signalExcerpt = "민지: 나도 가끔 생각났어",
+            perspectiveSummary = """
+                내 카톡 이름: 현우님
+                내 카톡 이름 확인 필요: 저장한 이름이 이 대화 참가자와 일치하지 않습니다.
+                상대 후보: 알 수 없음
+                마지막 메시지 발신자 역할: 알 수 없음
+                관점 주의: 저장한 내 카톡 이름이 대화 참가자와 일치하지 않아 마지막 발신자가 사용자인지 상대인지 확정할 수 없습니다.
+            """.trimIndent(),
         )
     }
 

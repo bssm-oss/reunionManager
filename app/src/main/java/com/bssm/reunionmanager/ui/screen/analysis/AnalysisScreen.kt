@@ -34,12 +34,14 @@ import com.bssm.reunionmanager.ui.theme.ScreenSectionSpacing
 fun AnalysisScreen(
     detail: ConversationDetail?,
     analysisState: AnalysisUiState?,
-    userDisplayNameConfigured: Boolean = true,
+    userDisplayName: String = "",
     providerConfigured: Boolean = true,
     onGenerate: () -> Unit,
     onOpenSettings: () -> Unit = {},
 ) {
-    val needsPerspectiveSetup = (detail?.participantNames?.size ?: 0) >= 2 && !userDisplayNameConfigured
+    val needsPerspectiveSetup = detail?.participantNames
+        ?.let { participantNames -> needsPerspectiveSetupForAnalysis(participantNames, userDisplayName) }
+        ?: false
     val report = detail?.latestAnalysis
     val clipboardManager = LocalClipboardManager.current
     var showDetails by remember(report) { mutableStateOf(false) }
@@ -71,7 +73,10 @@ fun AnalysisScreen(
             } else if (needsPerspectiveSetup) {
                 ReunionPane(
                     title = "내 이름 확인",
-                    supportingText = "내 카톡 이름을 저장한 뒤 분석하세요.",
+                    supportingText = perspectiveSetupSupportingText(
+                        participantNames = detail?.participantNames.orEmpty(),
+                        userDisplayName = userDisplayName,
+                    ),
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                 ) {
                     ReunionPrimaryButton(
@@ -273,6 +278,28 @@ internal fun analysisGenerateButtonText(providerConfigured: Boolean, hasReport: 
         hasReport -> "다시 정리하기"
         providerConfigured -> "다음 행동 정리하기"
         else -> "데모로 정리하기"
+    }
+}
+
+internal fun needsPerspectiveSetupForAnalysis(
+    participantNames: List<String>,
+    userDisplayName: String,
+): Boolean {
+    val normalizedName = userDisplayName.trim()
+    return participantNames.size >= 2 && (normalizedName.isBlank() || normalizedName !in participantNames)
+}
+
+internal fun perspectiveSetupSupportingText(
+    participantNames: List<String>,
+    userDisplayName: String,
+): String {
+    val normalizedName = userDisplayName.trim()
+    return when {
+        normalizedName.isBlank() -> "내 카톡 이름을 저장한 뒤 분석하세요."
+        participantNames.size >= 2 && normalizedName !in participantNames -> {
+            "저장한 이름이 이 대화에 없어요. 카카오톡에 보이는 이름으로 고친 뒤 분석하세요."
+        }
+        else -> "내 카톡 이름을 저장한 뒤 분석하세요."
     }
 }
 

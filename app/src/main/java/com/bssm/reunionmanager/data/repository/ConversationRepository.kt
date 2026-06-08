@@ -263,40 +263,45 @@ class ConversationRepository(
         userDisplayName: String,
         participantNames: List<String>,
     ): String {
+        val normalizedUserDisplayName = userDisplayName.trim()
         if (isEmpty()) {
-            return "내 카톡 이름: ${userDisplayName.ifBlank { "설정되지 않음" }}\n발신자 역할: 알 수 없음"
+            return "내 카톡 이름: ${normalizedUserDisplayName.ifBlank { "설정되지 않음" }}\n발신자 역할: 알 수 없음"
         }
 
         val lastMessage = last()
         val lastSenderRun = lastSenderRunCount()
-        val isUserKnown = userDisplayName.isNotBlank()
+        val isUserNameConfigured = normalizedUserDisplayName.isNotBlank()
+        val isUserKnown = isUserNameConfigured && participantNames.contains(normalizedUserDisplayName)
         val lastSenderRole = when {
             !isUserKnown -> "알 수 없음"
-            lastMessage.senderName == userDisplayName -> "나"
+            lastMessage.senderName == normalizedUserDisplayName -> "나"
             else -> "상대"
         }
         val counterpartNames = if (isUserKnown) {
-            participantNames.filterNot { name -> name == userDisplayName }
+            participantNames.filterNot { name -> name == normalizedUserDisplayName }
         } else {
             emptyList()
         }
-        val myMessageCount = if (isUserKnown) count { message -> message.senderName == userDisplayName } else 0
+        val myMessageCount = if (isUserKnown) count { message -> message.senderName == normalizedUserDisplayName } else 0
         val counterpartMessageCount = if (isUserKnown) size - myMessageCount else 0
         val myFinalRun = if (lastSenderRole == "나") lastSenderRun else 0
         val counterpartFinalRun = if (lastSenderRole == "상대") lastSenderRun else 0
         val myRecentMessage = if (isUserKnown) {
-            lastOrNull { message -> message.senderName == userDisplayName }
+            lastOrNull { message -> message.senderName == normalizedUserDisplayName }
         } else {
             null
         }
         val counterpartRecentMessage = if (isUserKnown) {
-            lastOrNull { message -> message.senderName != userDisplayName }
+            lastOrNull { message -> message.senderName != normalizedUserDisplayName }
         } else {
             null
         }
 
         return buildString {
-            appendLine("내 카톡 이름: ${userDisplayName.ifBlank { "설정되지 않음" }}")
+            appendLine("내 카톡 이름: ${normalizedUserDisplayName.ifBlank { "설정되지 않음" }}")
+            if (isUserNameConfigured && !isUserKnown) {
+                appendLine("내 카톡 이름 확인 필요: 저장한 이름이 이 대화 참가자와 일치하지 않습니다.")
+            }
             appendLine("상대 후보: ${counterpartNames.joinToString().ifBlank { "알 수 없음" }}")
             appendLine("마지막 메시지 발신자 역할: $lastSenderRole")
             appendLine("마지막 연속 발화 역할: $lastSenderRole ${lastSenderRun}개")
@@ -307,6 +312,8 @@ class ConversationRepository(
                 appendLine("상대 최근 메시지: ${counterpartRecentMessage?.content?.compactForAnalysis(maxLength = 80) ?: "없음"}")
                 appendLine("내 마지막 연속 발화: ${myFinalRun}개")
                 append("상대 마지막 연속 발화: ${counterpartFinalRun}개")
+            } else if (isUserNameConfigured) {
+                append("관점 주의: 저장한 내 카톡 이름이 대화 참가자와 일치하지 않아 마지막 발신자가 사용자인지 상대인지 확정할 수 없습니다.")
             } else {
                 append("관점 주의: 내 카톡 이름이 설정되지 않아 마지막 발신자가 사용자인지 상대인지 확정할 수 없습니다.")
             }

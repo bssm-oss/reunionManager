@@ -397,7 +397,10 @@ object AnalysisSafetyRules {
 
     fun needsUserPerspective(input: AnalysisInput): Boolean {
         return input.participantNames.size >= 2 &&
-            input.perspectiveSummary.contains("내 카톡 이름: 설정되지 않음")
+            (
+                input.perspectiveSummary.contains("내 카톡 이름: 설정되지 않음") ||
+                    input.perspectiveSummary.contains("내 카톡 이름 확인 필요:")
+                )
     }
 
     fun sanitizeReport(report: AnalysisReport, input: AnalysisInput? = null): AnalysisReport {
@@ -452,7 +455,11 @@ object AnalysisSafetyRules {
 
     fun perspectiveSetupEvidence(input: AnalysisInput): String {
         return listOfNotNull(
-            "관점 확인: 내 카톡 이름이 없어 마지막 발신자가 나인지 상대인지 확정하지 못했습니다.",
+            if (hasUserNameMismatch(input)) {
+                "관점 확인: 저장한 내 카톡 이름이 대화 참가자와 일치하지 않습니다."
+            } else {
+                "관점 확인: 내 카톡 이름이 없어 마지막 발신자가 나인지 상대인지 확정하지 못했습니다."
+            },
             input.statsSummary.lineSequence().firstOrNull { line -> line.startsWith("마지막 메시지:") },
             input.perspectiveSummary.lineSequence().firstOrNull { line -> line.startsWith("마지막 메시지 발신자 역할:") },
         ).joinToString(separator = "\n")
@@ -600,11 +607,31 @@ object AnalysisSafetyRules {
                 headline = "내 이름 확인",
                 contactReadiness = UNKNOWN,
                 evidence = appendEvidence(report.evidence, decision.evidence),
-                relationshipSummary = "내 카톡 이름이 없어 이 대화만으로는 답장인지 첫 연락인지 확정할 수 없습니다.",
-                reunionObjective = "보낼 문장을 만들기보다 내 카톡 이름을 먼저 저장해 관점을 맞추는 것이 목표입니다.",
-                nextStep = "설정에서 내 카톡 이름을 저장한 뒤 같은 대화를 다시 분석하세요.",
-                messageDraft = "지금은 보낼 문장을 만들지 않습니다. 내 카톡 이름을 먼저 저장하세요.",
-                alternativeDrafts = "내 카톡 이름 저장하기\n같은 대화 다시 분석하기\n최근 대화 파일인지 확인하기",
+                relationshipSummary = if (hasUserNameMismatch(input)) {
+                    "저장한 내 카톡 이름이 대화 참가자 이름과 달라 답장인지 첫 연락인지 확정할 수 없습니다."
+                } else {
+                    "내 카톡 이름이 없어 이 대화만으로는 답장인지 첫 연락인지 확정할 수 없습니다."
+                },
+                reunionObjective = if (hasUserNameMismatch(input)) {
+                    "보낼 문장을 만들기보다 내 카톡 이름을 대화방 표시 이름과 맞추는 것이 목표입니다."
+                } else {
+                    "보낼 문장을 만들기보다 내 카톡 이름을 먼저 저장해 관점을 맞추는 것이 목표입니다."
+                },
+                nextStep = if (hasUserNameMismatch(input)) {
+                    "설정에서 내 카톡 이름을 대화방에 보이는 이름으로 고친 뒤 다시 분석하세요."
+                } else {
+                    "설정에서 내 카톡 이름을 저장한 뒤 같은 대화를 다시 분석하세요."
+                },
+                messageDraft = if (hasUserNameMismatch(input)) {
+                    "지금은 보낼 문장을 만들지 않습니다. 내 카톡 이름이 대화방 표시 이름과 맞는지 확인하세요."
+                } else {
+                    "지금은 보낼 문장을 만들지 않습니다. 내 카톡 이름을 먼저 저장하세요."
+                },
+                alternativeDrafts = if (hasUserNameMismatch(input)) {
+                    "내 카톡 이름 확인하기\n같은 대화 다시 분석하기\n최근 대화 파일인지 확인하기"
+                } else {
+                    "내 카톡 이름 저장하기\n같은 대화 다시 분석하기\n최근 대화 파일인지 확인하기"
+                },
                 caution = "발신자 관점이 틀리면 상대가 기다리는 상황을 새 연락처럼 잘못 해석할 수 있습니다.",
             )
 
@@ -940,6 +967,10 @@ object AnalysisSafetyRules {
         val lastSenderRole = input.perspectiveValue("마지막 메시지 발신자 역할:")
         return (lastSenderRole == "상대" || lastSenderRole == "알 수 없음") &&
             input.lastRecentMessageContent().hasIdentityUncertaintyPhrase()
+    }
+
+    private fun hasUserNameMismatch(input: AnalysisInput): Boolean {
+        return input.perspectiveSummary.contains("내 카톡 이름 확인 필요:")
     }
 
     private fun identityUncertaintyEvidence(input: AnalysisInput): String? {
