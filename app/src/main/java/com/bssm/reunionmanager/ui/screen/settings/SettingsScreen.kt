@@ -110,12 +110,7 @@ fun SettingsScreen(
             ReunionSecondaryButton(
                 text = "이름 저장",
                 onClick = {
-                    onSave(
-                        providerSettings.modelPath,
-                        providerSettings.modelName,
-                        providerSettings.backend.name,
-                        userDisplayName,
-                    )
+                    providerSettings.nameSaveRequest(userDisplayName).dispatchTo(onSave)
                 },
             )
         }
@@ -179,14 +174,40 @@ fun SettingsScreen(
             ReunionSecondaryButton(
                 text = "데모 모드 사용",
                 onClick = {
-                    onSave(
-                        "",
-                        providerSettings.modelName,
-                        providerSettings.backend.name,
-                        providerSettings.userDisplayName,
-                    )
+                    providerSettings.demoModeSaveRequest(userDisplayName).dispatchTo(onSave)
                 },
             )
         }
     }
+}
+
+internal data class ProviderSettingsSaveRequest(
+    val modelPath: String,
+    val modelName: String,
+    val backend: String,
+    val userDisplayName: String,
+)
+
+internal fun ProviderSettings.nameSaveRequest(userDisplayName: String): ProviderSettingsSaveRequest {
+    return ProviderSettingsSaveRequest(
+        modelPath = modelPath,
+        modelName = modelName,
+        backend = backend.name,
+        userDisplayName = userDisplayName,
+    )
+}
+
+internal fun ProviderSettings.demoModeSaveRequest(userDisplayName: String): ProviderSettingsSaveRequest {
+    return ProviderSettingsSaveRequest(
+        modelPath = "",
+        modelName = modelName,
+        backend = backend.name,
+        userDisplayName = userDisplayName,
+    )
+}
+
+private fun ProviderSettingsSaveRequest.dispatchTo(
+    onSave: (String, String, String, String) -> Unit,
+) {
+    onSave(modelPath, modelName, backend, userDisplayName)
 }
