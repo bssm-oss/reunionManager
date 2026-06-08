@@ -723,11 +723,13 @@ object AnalysisSafetyRules {
     }
 
     private fun String.hasUnsafeDraftPhrase(): Boolean {
-        return unsafeDraftPhrases.any { phrase -> contains(phrase, ignoreCase = true) }
+        return unsafeDraftPhrases.any { phrase -> contains(phrase, ignoreCase = true) } ||
+            hasUnansweredPressurePhrase()
     }
 
     private fun String.hasUnsafeInstructionPhrase(): Boolean {
-        return unsafeInstructionPhrases.any { phrase -> contains(phrase, ignoreCase = true) }
+        return unsafeInstructionPhrases.any { phrase -> contains(phrase, ignoreCase = true) } ||
+            hasUnansweredPressurePhrase()
     }
 
     private fun String.firstDraftLine(): String {

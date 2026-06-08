@@ -111,6 +111,32 @@ class AnalysisQualityRegressionTest {
         assertFalse(report.alternativeDrafts.contains("기회"))
     }
 
+    @Test
+    fun finalizeReport_replacesUnansweredPressureModelOutput() {
+        val rawReport = optimisticGemmaReport.copy(
+            contactReadiness = "아주 가볍게 가능",
+            reunionObjective = "왜 답이 없는지 확인합니다.",
+            nextStep = "읽씹이냐고 짧게 물어보세요.",
+            messageDraft = "왜 답이 없어? 읽씹이야?",
+            alternativeDrafts = """
+                왜 답이 없어?
+                읽씹이야?
+                오랜만이야. 잘 지내?
+            """.trimIndent(),
+            caution = "답장 안 하면 다시 확인하세요.",
+        )
+
+        val report = AnalysisSafetyRules.finalizeReport(rawReport, lightPositive())
+
+        assertEquals("아주 가볍게 가능", report.contactReadiness)
+        assertEquals("가벼운 안부 한 문장으로 상대의 현재 온도를 확인하는 것이 목표입니다.", report.reunionObjective)
+        assertEquals("긴 설명을 보내지 말고 최근 대화를 한 번 읽은 뒤 짧은 한 문장만 준비하세요.", report.nextStep)
+        assertEquals("오랜만이야. 갑자기 부담 주려는 건 아니고, 괜찮다면 짧게 안부만 묻고 싶어.", report.messageDraft)
+        assertEquals("답을 재촉하지 말고 상대의 속도를 존중하세요.", report.caution)
+        assertFalse(report.alternativeDrafts.contains("왜 답"))
+        assertFalse(report.alternativeDrafts.contains("읽씹"))
+    }
+
     private data class QualityCase(
         val name: String,
         val input: AnalysisInput,
