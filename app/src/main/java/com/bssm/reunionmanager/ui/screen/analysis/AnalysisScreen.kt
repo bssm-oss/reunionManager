@@ -270,6 +270,14 @@ internal fun analysisGenerateButtonText(providerConfigured: Boolean, hasReport: 
     }
 }
 
+internal fun copyPromptText(copied: Boolean, safetyNote: String): String {
+    return if (copied) {
+        "복사 후: 답장이 없어도 추가로 보내지 마세요."
+    } else {
+        "보내기 전: $safetyNote"
+    }
+}
+
 @Composable
 private fun AnalysisMessagePane(
     title: String,
@@ -285,7 +293,7 @@ private fun AnalysisMessagePane(
     ) {
         if (canCopy) {
             Text(
-                text = "보내기 전: $safetyNote",
+                text = copyPromptText(copied = copied, safetyNote = safetyNote),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

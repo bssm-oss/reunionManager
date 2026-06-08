@@ -204,6 +204,18 @@ class AnalysisScreenTitleTest {
     }
 
     @Test
+    fun copyPromptText_switchesToPostCopyGuardrail() {
+        assertEquals(
+            "보내기 전: 답을 재촉하지 마세요.",
+            copyPromptText(copied = false, safetyNote = "답을 재촉하지 마세요."),
+        )
+        assertEquals(
+            "복사 후: 답장이 없어도 추가로 보내지 마세요.",
+            copyPromptText(copied = true, safetyNote = "답을 재촉하지 마세요."),
+        )
+    }
+
+    @Test
     fun analysisGenerateButtonText_separatesInitialDraftFromRegeneration() {
         assertEquals(
             "다음 행동 정리하기",
