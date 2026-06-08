@@ -126,6 +126,17 @@ class AnalysisScreenTitleTest {
     }
 
     @Test
+    fun conclusionHeadline_prioritizesApologyEvenForCounterpartReply() {
+        val report = report(
+            contactReadiness = "먼저 사과 필요",
+            reunionObjective = "상대가 남긴 말에 변명 없이 짧게 인정하는 것이 목표입니다.",
+            nextStep = "상대의 마지막 메시지에 답하되 먼저 미안하다고만 전하세요.",
+        )
+
+        assertEquals("재회보다 짧은 인정이 먼저입니다.", report.conclusionHeadline())
+    }
+
+    @Test
     fun summaryTitle_usesSpecificHeadline() {
         val report = report(headline = "상대 답장에 짧게 응답")
 

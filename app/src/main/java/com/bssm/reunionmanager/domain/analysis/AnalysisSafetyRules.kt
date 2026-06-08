@@ -227,6 +227,22 @@ object AnalysisSafetyRules {
         "저녁",
         "약속",
     )
+    private val counterpartRepairPhrases = listOf(
+        "왜 이제",
+        "이제 와",
+        "이제와",
+        "갑자기 왜",
+        "왜 연락",
+        "무슨 일",
+        "뭐야",
+        "어이없",
+        "상처",
+        "서운",
+        "화났",
+        "화가 났",
+        "미안한 줄",
+        "늦었",
+    )
 
     enum class AnalysisAction {
         RequirePerspective,
@@ -372,6 +388,9 @@ object AnalysisSafetyRules {
         val lastMessage = input.lastRecentMessageContent()
         val opening = replyOpening(input)
         return when {
+            lastMessage.hasCounterpartRepairSignal() -> {
+                "갑작스럽게 연락해서 미안해. 네가 불편했다면 더 밀어붙이지 않을게."
+            }
             containsAny(lastMessage, "잘 지내", "잘지내") -> {
                 "${opening}나는 잘 지내고 있어. 괜찮다면 천천히 안부 나누자."
             }
@@ -404,13 +423,20 @@ object AnalysisSafetyRules {
 
     fun counterpartReplyAlternatives(input: AnalysisInput, candidates: String? = null): String {
         val opening = replyOpening(input)
-        val scheduleFallbacks = if (input.lastRecentMessageContent().hasConcreteScheduleSignal()) {
+        val lastMessage = input.lastRecentMessageContent()
+        val scheduleFallbacks = if (lastMessage.hasCounterpartRepairSignal()) {
+            listOf(
+                counterpartReplyDraft(input),
+                "네 말이 맞아. 갑작스럽게 연락해서 미안해. 답은 천천히 해도 괜찮아.",
+                "불편하게 느꼈다면 미안해. 더 재촉하지 않고 기다릴게.",
+            )
+        } else if (lastMessage.hasConcreteScheduleSignal()) {
             listOf(
                 counterpartReplyDraft(input),
                 "${opening}좋아, 그때 보자. 고마워.",
                 "${opening}확인했어. 늦지 않게 갈게.",
             )
-        } else if (input.lastRecentMessageContent().hasScheduleQuestionSignal()) {
+        } else if (lastMessage.hasScheduleQuestionSignal()) {
             listOf(
                 counterpartReplyDraft(input),
                 "${opening}좋아, 가능한 시간 확인해서 알려줄게.",
@@ -482,11 +508,31 @@ object AnalysisSafetyRules {
             )
 
             AnalysisAction.ReplyToCounterpart -> report.copy(
+                headline = if (input.hasCounterpartRepairSignal()) "짧은 사과 먼저" else report.headline,
+                contactReadiness = if (input.hasCounterpartRepairSignal()) APOLOGY else report.contactReadiness,
                 evidence = appendEvidence(report.evidence, decision.evidence),
-                reunionObjective = "새 연락을 시작하기보다 상대가 남긴 말에 짧고 낮은 압박으로 답하는 것이 목표입니다.",
-                nextStep = "상대의 마지막 메시지에 바로 답하되, 재회 이야기보다 짧은 안부와 확인만 남기세요.",
+                relationshipSummary = if (input.hasCounterpartRepairSignal()) {
+                    "상대의 마지막 말에는 불편함이나 서운함이 섞여 있어 가벼운 안부보다 먼저 인정이 필요합니다."
+                } else {
+                    report.relationshipSummary
+                },
+                reunionObjective = if (input.hasCounterpartRepairSignal()) {
+                    "상대가 남긴 말에 변명 없이 짧게 인정하고, 답을 요구하지 않는 것이 목표입니다."
+                } else {
+                    "새 연락을 시작하기보다 상대가 남긴 말에 짧고 낮은 압박으로 답하는 것이 목표입니다."
+                },
+                nextStep = if (input.hasCounterpartRepairSignal()) {
+                    "상대의 마지막 메시지에 답하되, 왜 연락했는지 길게 설명하지 말고 먼저 미안하다고만 전하세요."
+                } else {
+                    "상대의 마지막 메시지에 바로 답하되, 재회 이야기보다 짧은 안부와 확인만 남기세요."
+                },
                 messageDraft = counterpartReplyDraft(input, report.messageDraft),
                 alternativeDrafts = counterpartReplyAlternatives(input, report.alternativeDrafts),
+                caution = if (input.hasCounterpartRepairSignal()) {
+                    "상대가 다시 불편함을 보이면 추가 메시지를 보내지 마세요."
+                } else {
+                    report.caution
+                },
             )
 
             AnalysisAction.ModelDraft -> report.copy(
@@ -715,6 +761,15 @@ object AnalysisSafetyRules {
             "볼 수",
             "언제",
         )
+    }
+
+    private fun AnalysisInput.hasCounterpartRepairSignal(): Boolean {
+        return lastRecentMessageContent().hasCounterpartRepairSignal()
+    }
+
+    private fun String.hasCounterpartRepairSignal(): Boolean {
+        val normalized = replace(Regex("\\s+"), " ").trim().lowercase()
+        return counterpartRepairPhrases.any { phrase -> normalized.contains(phrase) }
     }
 
     private fun hasBoundarySignal(input: AnalysisInput): Boolean {

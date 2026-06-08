@@ -41,12 +41,14 @@ class AnalysisQualityRegressionTest {
             qualityCase("well-being reply", counterpartReply("잘 지내?"), "아주 가볍게 가능", "나는 잘 지내고 있어", "오랜만이야"),
             qualityCase("schedule question", counterpartReply("토요일 저녁에 시간 돼?"), "아주 가볍게 가능", "가능한지 확인", "약속한 시간"),
             qualityCase("concrete meeting", counterpartReply("내일 7시에 카페에서 보자"), "아주 가볍게 가능", "약속한 시간", "안부부터"),
+            qualityCase("counterpart asks why now", counterpartReply("왜 이제 와?"), "먼저 사과 필요", "미안", "안부"),
+            qualityCase("counterpart questions sudden contact", counterpartReply("갑자기 왜 연락해?"), "먼저 사과 필요", "미안", "안부"),
             qualityCase("technical group chat", technicalGroup(), "정보 부족", "보낼 문장을 만들지 않습니다", "오랜만이야"),
             qualityCase("two-person work chat", technicalTwoPerson(), "정보 부족", "보낼 문장을 만들지 않습니다", "오랜만이야"),
             qualityCase("light positive signal", lightPositive(), "아주 가볍게 가능", "짧게", "보내지 않습니다"),
         )
 
-        assertEquals(33, cases.size)
+        assertEquals(35, cases.size)
         cases.forEach { case ->
             val report = AnalysisSafetyRules.finalizeReport(optimisticGemmaReport, case.input)
 

@@ -227,8 +227,8 @@ internal fun AnalysisReport.conclusionHeadline(): String {
     return when {
         contactReadiness == "지금은 보류" -> "오늘은 보내지 않는 쪽이 안전합니다."
         contactReadiness == "정보 부족" || isCheckOnlyResult() -> "먼저 확인할 정보가 있습니다."
-        messageSectionTitle() == "답장 문장" -> "새 연락보다 짧은 답장이 자연스럽습니다."
         contactReadiness == "먼저 사과 필요" -> "재회보다 짧은 인정이 먼저입니다."
+        messageSectionTitle() == "답장 문장" -> "새 연락보다 짧은 답장이 자연스럽습니다."
         else -> "짧고 부담 없는 한 문장만 준비하세요."
     }
 }
