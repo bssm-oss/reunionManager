@@ -163,6 +163,7 @@ fun ReunionManagerApp() {
                     modelSettingsState = modelSettingsState,
                     onSave = viewModel::saveProviderSettings,
                     onModelFileSelected = viewModel::importGemmaModel,
+                    onVerifyModel = viewModel::verifyGemmaModel,
                 )
             }
             composable(

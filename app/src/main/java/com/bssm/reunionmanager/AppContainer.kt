@@ -11,6 +11,7 @@ import com.bssm.reunionmanager.data.repository.ConversationRepository
 import com.bssm.reunionmanager.data.repository.ProviderSettingsRepository
 import com.bssm.reunionmanager.domain.usecase.GenerateReunionPlanUseCase
 import com.bssm.reunionmanager.domain.usecase.ImportConversationUseCase
+import com.bssm.reunionmanager.domain.usecase.VerifyGemmaModelUseCase
 
 class AppContainer(context: Context) {
     private val applicationContext = context.applicationContext
@@ -62,6 +63,13 @@ class AppContainer(context: Context) {
                     baselineProvider = fakeAnalysisProvider,
                 )
             },
+        )
+    }
+
+    val verifyGemmaModelUseCase: VerifyGemmaModelUseCase by lazy {
+        VerifyGemmaModelUseCase(
+            providerSettingsRepository = providerSettingsRepository,
+            gemmaProviderFactory = { settings -> Gemma4AnalysisProvider(applicationContext, settings) },
         )
     }
 }

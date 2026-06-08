@@ -140,6 +140,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun verifyGemmaModel() {
+        viewModelScope.launch {
+            _modelSettingsState.value = ModelSettingsUiState(isChecking = true)
+
+            appContainer.verifyGemmaModelUseCase()
+                .onSuccess { modelName ->
+                    _modelSettingsState.value = ModelSettingsUiState(
+                        message = "$modelName 모델 실행을 확인했습니다.",
+                    )
+                }
+                .onFailure { throwable ->
+                    _modelSettingsState.value = ModelSettingsUiState(
+                        errorMessage = throwable.message ?: "모델 실행을 확인하지 못했습니다.",
+                    )
+                }
+        }
+    }
+
     fun generateAnalysis(conversationId: Long) {
         _analysisStates.update { states ->
             states + (conversationId to AnalysisUiState(isRunning = true))
@@ -218,6 +236,7 @@ data class AnalysisUiState(
 
 data class ModelSettingsUiState(
     val isLoading: Boolean = false,
+    val isChecking: Boolean = false,
     val message: String? = null,
     val errorMessage: String? = null,
 )

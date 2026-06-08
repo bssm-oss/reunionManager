@@ -59,6 +59,25 @@ class ReunionManagerAppTest {
     }
 
     @Test
+    fun settingsScreen_showsModelCheckWhenModelIsConfigured() {
+        runBlocking {
+            application.appContainer.providerSettingsRepository.save(
+                ProviderSettings(
+                    modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",
+                    modelName = "gemma-4-E4B-it.litertlm",
+                    userDisplayName = "현우",
+                ),
+            )
+        }
+
+        launchMainActivity()
+
+        clickTextWithScroll("분석 설정")
+        waitForText("모델 준비됨")
+        waitForText("모델 실행 점검")
+    }
+
+    @Test
     fun importedConversation_requiresUserNameBeforeAnalysis() {
         runBlocking {
             application.appContainer.importConversationUseCase(

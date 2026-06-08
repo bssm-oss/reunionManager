@@ -40,6 +40,7 @@ fun SettingsScreen(
     modelSettingsState: ModelSettingsUiState,
     onSave: (String, String, String, String) -> Unit,
     onModelFileSelected: (Uri) -> Unit,
+    onVerifyModel: () -> Unit,
 ) {
     var userDisplayName by remember(providerSettings.userDisplayName) {
         mutableStateOf(providerSettings.userDisplayName)
@@ -100,6 +101,19 @@ fun SettingsScreen(
                 text = if (providerSettings.isConfigured) "기기 내 실행" else "데모 모드",
                 tone = if (providerSettings.isConfigured) ReunionBadgeTone.Accent else ReunionBadgeTone.Neutral,
             )
+            if (providerSettings.isConfigured) {
+                ReunionSecondaryButton(
+                    text = if (modelSettingsState.isChecking) "모델 점검 중..." else "모델 실행 점검",
+                    onClick = onVerifyModel,
+                    enabled = !modelSettingsState.isChecking && !modelSettingsState.isLoading,
+                )
+            }
+            if (modelSettingsState.isChecking) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                )
+            }
         }
         ReunionPane(
             title = "모델 파일",
@@ -108,7 +122,7 @@ fun SettingsScreen(
             ReunionSecondaryButton(
                 text = if (modelSettingsState.isLoading) "모델 복사 중..." else "모델 파일 선택",
                 onClick = { modelPickerLauncher.launch(arrayOf("application/octet-stream", "*/*")) },
-                enabled = !modelSettingsState.isLoading,
+                enabled = !modelSettingsState.isLoading && !modelSettingsState.isChecking,
             )
             if (modelSettingsState.isLoading) {
                 CircularProgressIndicator(
@@ -126,7 +140,7 @@ fun SettingsScreen(
         }
         modelSettingsState.errorMessage?.let { errorMessage ->
             ReunionEmptyState(
-                title = "모델을 가져오지 못했습니다",
+                title = "모델을 확인하지 못했습니다",
                 body = errorMessage,
                 tone = ReunionBadgeTone.Error,
             )
