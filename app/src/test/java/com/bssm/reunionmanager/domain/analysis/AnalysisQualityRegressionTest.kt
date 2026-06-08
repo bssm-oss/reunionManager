@@ -17,6 +17,10 @@ class AnalysisQualityRegressionTest {
             qualityCase("counterpart says do not contact", counterpartBoundary("이제 연락하지 말아줘"), "지금은 보류", "보내지 않습니다", "안부"),
             qualityCase("counterpart asks no more contact", counterpartBoundary("연락 안 했으면 좋겠어"), "지금은 보류", "보내지 않습니다", "안부"),
             qualityCase("counterpart says stop", counterpartBoundary("그만 보내줘"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart asks to delete phone number", counterpartBoundary("내 번호 지워줘"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart asks to delete contact", counterpartBoundary("연락처 삭제해줘"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart says leaving kakao room", counterpartBoundary("카톡방 나갈게"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart says chat room is left", counterpartBoundary("채팅방 나왔어"), "지금은 보류", "보내지 않습니다", "안부"),
             qualityCase("counterpart threatens report", counterpartBoundary("계속 이러면 신고할 거야"), "지금은 보류", "보내지 않습니다", "안부"),
             qualityCase("counterpart feels afraid", counterpartBoundary("네 연락 오는 거 무서워"), "지금은 보류", "보내지 않습니다", "안부"),
             qualityCase("counterpart calls it stalking", counterpartBoundary("이건 스토킹처럼 느껴져"), "지금은 보류", "보내지 않습니다", "안부"),
@@ -52,7 +56,7 @@ class AnalysisQualityRegressionTest {
             qualityCase("light positive signal", lightPositive(), "아주 가볍게 가능", "짧게", "보내지 않습니다"),
         )
 
-        assertEquals(39, cases.size)
+        assertEquals(43, cases.size)
         cases.forEach { case ->
             val report = AnalysisSafetyRules.finalizeReport(optimisticGemmaReport, case.input)
 
