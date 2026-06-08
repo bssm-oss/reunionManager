@@ -53,6 +53,7 @@ class ReunionManagerAppTest {
 
         waitForText("내 카톡 이름")
         waitForText("모델 파일")
+        waitForText("Gemma 4 .litertlm 파일만 이 기기에 저장됩니다.")
         assertNotNull(device.findObject(By.text("모델 파일 선택")))
         assertNotNull(device.findObject(By.text("데모 모드")))
     }

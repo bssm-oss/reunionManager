@@ -103,7 +103,7 @@ fun SettingsScreen(
         }
         ReunionPane(
             title = "모델 파일",
-            supportingText = "선택한 파일은 이 기기에만 저장됩니다.",
+            supportingText = "Gemma 4 .litertlm 파일만 이 기기에 저장됩니다.",
         ) {
             ReunionSecondaryButton(
                 text = if (modelSettingsState.isLoading) "모델 복사 중..." else "모델 파일 선택",

@@ -11,6 +11,7 @@ import com.bssm.reunionmanager.ReunionManagerApplication
 import com.bssm.reunionmanager.domain.model.ConversationDetail
 import com.bssm.reunionmanager.domain.model.ConversationSummary
 import com.bssm.reunionmanager.domain.model.GemmaBackend
+import com.bssm.reunionmanager.domain.model.GemmaModelFileRules
 import com.bssm.reunionmanager.domain.model.ImportConversationResult
 import com.bssm.reunionmanager.domain.model.ProviderSettings
 import kotlinx.coroutines.Dispatchers
@@ -115,9 +116,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
             runCatching {
                 val sourceName = resolveDisplayName(contentResolver, uri)
-                require(sourceName.endsWith(".litertlm", ignoreCase = true)) {
-                    "모델 파일을 선택하세요."
-                }
+                GemmaModelFileRules.requireSupportedFileName(sourceName)
                 val destination = copyModelToAppStorage(uri, sourceName)
                 val currentSettings = appContainer.providerSettingsRepository.get()
                 appContainer.providerSettingsRepository.save(
@@ -193,6 +192,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
         check(tempDestination.renameTo(destination)) {
             "모델 파일을 이 기기에 저장하지 못했습니다."
+        }
+        runCatching {
+            GemmaModelFileRules.requirePlausibleModelSize(destination.length())
+        }.onFailure {
+            destination.delete()
+            throw it
         }
         destination
     }
