@@ -85,7 +85,6 @@ fun SettingsScreen(
             .padding(ScreenPadding),
         verticalArrangement = Arrangement.spacedBy(ScreenSectionSpacing),
     ) {
-        Text(text = "분석 설정", style = MaterialTheme.typography.headlineMedium)
         Text(
             text = "내 카톡 이름을 먼저 저장하면 답장인지 첫 연락인지 더 정확히 구분합니다.",
             style = MaterialTheme.typography.bodyMedium,

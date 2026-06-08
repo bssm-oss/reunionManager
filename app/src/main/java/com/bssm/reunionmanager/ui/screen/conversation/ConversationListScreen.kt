@@ -47,14 +47,11 @@ fun ConversationListScreen(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         item {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(text = "저장한 대화", style = MaterialTheme.typography.headlineMedium)
-                Text(
-                    text = "대화를 눌러 메시지와 다음 행동을 확인하세요.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            Text(
+                text = "대화를 눌러 메시지와 다음 행동을 확인하세요.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
         items(conversations, key = { it.id }) { conversation ->
             ReunionPane(

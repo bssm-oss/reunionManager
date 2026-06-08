@@ -43,7 +43,7 @@ class ReunionManagerAppTest {
     fun homeScreen_navigatesToImportScreen() {
         clickText("카카오톡 대화 가져오기")
 
-        waitForText("카카오톡 대화 가져오기")
+        waitForText("카카오톡에서 내보낸 대화 파일을 선택하세요. 대화는 이 기기에만 저장됩니다.")
         assertNotNull(device.findObject(By.text("대화 파일 선택")))
     }
 

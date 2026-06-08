@@ -44,11 +44,7 @@ fun ImportScreen(
         verticalArrangement = Arrangement.spacedBy(ScreenSectionSpacing),
     ) {
         Text(
-            text = "카카오톡 대화 가져오기",
-            style = MaterialTheme.typography.headlineMedium,
-        )
-        Text(
-            text = ".txt 또는 .csv 내보내기 파일을 선택하세요. 대화는 이 기기에만 저장됩니다.",
+            text = "카카오톡에서 내보낸 대화 파일을 선택하세요. 대화는 이 기기에만 저장됩니다.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
