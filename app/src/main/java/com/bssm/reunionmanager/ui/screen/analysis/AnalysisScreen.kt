@@ -254,12 +254,18 @@ internal fun AnalysisReport.canCopyMessageDraft(): Boolean {
 }
 
 internal fun AnalysisReport.copySafetyNote(): String {
-    return caution.lineSequence()
+    val firstLine = caution.lineSequence()
         .map { line -> line.trim() }
         .firstOrNull { line -> line.isNotBlank() }
         .orEmpty()
-        .ifBlank { "답이 없어도 다시 보내지 마세요." }
-        .limitForUi(maxLength = 44)
+
+    return when {
+        firstLine.isBlank() -> "한 번만 보내고 기다려요."
+        firstLine.containsAny("불편", "경계", "연락하지", "멈") -> "상대가 불편하면 멈춰요."
+        firstLine.containsAny("확신", "부족", "확인") -> "확신이 없으면 보내지 않아도 돼요."
+        firstLine.containsAny("답", "재촉", "추가", "기다", "속도") -> "한 번만 보내고 기다려요."
+        else -> firstLine.limitForUi(maxLength = 28)
+    }
 }
 
 internal fun analysisGenerateButtonText(providerConfigured: Boolean, hasReport: Boolean): String {
@@ -272,9 +278,9 @@ internal fun analysisGenerateButtonText(providerConfigured: Boolean, hasReport: 
 
 internal fun copyPromptText(copied: Boolean, safetyNote: String): String {
     return if (copied) {
-        "복사 후: 답장이 없어도 추가로 보내지 마세요."
+        "복사됐어요. 한 번만 보내고 기다려요."
     } else {
-        "보내기 전: $safetyNote"
+        safetyNote
     }
 }
 
@@ -331,4 +337,8 @@ internal fun AnalysisReport.evidenceBody(): String {
 
 private fun String.limitForUi(maxLength: Int): String {
     return if (length <= maxLength) this else take(maxLength - 1).trimEnd() + "…"
+}
+
+private fun String.containsAny(vararg values: String): Boolean {
+    return values.any { value -> contains(value) }
 }

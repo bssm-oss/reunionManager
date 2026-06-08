@@ -203,26 +203,38 @@ class AnalysisScreenTitleTest {
             caution = "답을 재촉하지 마세요.\n상대가 답하지 않으면 기다리세요.",
         )
 
-        assertEquals("답을 재촉하지 마세요.", report.copySafetyNote())
+        assertEquals("한 번만 보내고 기다려요.", report.copySafetyNote())
     }
 
     @Test
     fun copySafetyNote_limitsLongText() {
         val note = report(caution = "가".repeat(120)).copySafetyNote()
 
-        assertEquals(44, note.length)
+        assertEquals(28, note.length)
         assertTrue(note.endsWith("…"))
+    }
+
+    @Test
+    fun copySafetyNote_simplifiesBoundaryAndUncertainCautions() {
+        assertEquals(
+            "상대가 불편하면 멈춰요.",
+            report(caution = "상대가 다시 불편함을 보이면 추가 메시지를 보내지 마세요.").copySafetyNote(),
+        )
+        assertEquals(
+            "확신이 없으면 보내지 않아도 돼요.",
+            report(caution = "확신이 부족할 때는 보내지 않고 대화 맥락을 먼저 확인하세요.").copySafetyNote(),
+        )
     }
 
     @Test
     fun copyPromptText_switchesToPostCopyGuardrail() {
         assertEquals(
-            "보내기 전: 답을 재촉하지 마세요.",
-            copyPromptText(copied = false, safetyNote = "답을 재촉하지 마세요."),
+            "한 번만 보내고 기다려요.",
+            copyPromptText(copied = false, safetyNote = "한 번만 보내고 기다려요."),
         )
         assertEquals(
-            "복사 후: 답장이 없어도 추가로 보내지 마세요.",
-            copyPromptText(copied = true, safetyNote = "답을 재촉하지 마세요."),
+            "복사됐어요. 한 번만 보내고 기다려요.",
+            copyPromptText(copied = true, safetyNote = "한 번만 보내고 기다려요."),
         )
     }
 
