@@ -46,12 +46,12 @@ fun SettingsScreen(
         mutableStateOf(providerSettings.userDisplayName)
     }
     val modelStatusTitle = when {
-        !providerSettings.isConfigured -> "기본 정리 사용 중"
+        !providerSettings.isConfigured -> "안전 정리 사용 중"
         providerSettings.isModelVerified -> "AI 모델 준비됨"
         else -> "AI 모델 점검 필요"
     }
     val modelStatusBadge = when {
-        !providerSettings.isConfigured -> "기본 정리"
+        !providerSettings.isConfigured -> "안전 정리"
         providerSettings.isModelVerified -> "준비됨"
         else -> "점검 필요"
     }
@@ -61,9 +61,9 @@ fun SettingsScreen(
         else -> ReunionBadgeTone.Accent
     }
     val modelStatusDescription = when {
-        !providerSettings.isConfigured -> "모델 없이도 오늘의 다음 행동을 정리할 수 있어요."
+        !providerSettings.isConfigured -> "모델 없이도 오늘의 다음 행동을 안전하게 정리할 수 있어요."
         providerSettings.isModelVerified -> "AI 모델을 이 기기에서 실행 확인했습니다."
-        else -> "파일은 저장됐지만, 점검 전에는 기본 정리로 진행합니다."
+        else -> "파일은 저장됐지만, 점검 전에는 안전 정리로 진행합니다."
     }
     val modelMessageTitle = modelMessageTitle(providerSettings, modelSettingsState.message)
     val modelMessageTone = if (providerSettings.isModelVerified) {

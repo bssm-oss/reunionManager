@@ -34,7 +34,7 @@ class SettingsScreenTest {
     fun modelMessageTitle_matchesModelStorageAction() {
         assertEquals(
             "AI 모델 파일 제거됨",
-            modelMessageTitle(providerSettings(userDisplayName = "현우"), "모델 파일을 제거하고 기본 정리로 전환했습니다."),
+            modelMessageTitle(providerSettings(userDisplayName = "현우"), "모델 파일을 제거하고 안전 정리로 전환했습니다."),
         )
         assertEquals(
             "AI 모델 파일 저장됨",

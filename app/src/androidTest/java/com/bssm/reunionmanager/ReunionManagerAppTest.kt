@@ -71,7 +71,7 @@ class ReunionManagerAppTest {
         waitForText("AI 모델 파일")
         waitForText("선택한 파일은 이 기기에만 저장됩니다.")
         assertNotNull(device.findObject(By.text("파일 선택")))
-        assertNotNull(device.findObject(By.text("기본 정리")))
+        assertNotNull(device.findObject(By.text("안전 정리")))
     }
 
     @Test
@@ -90,7 +90,7 @@ class ReunionManagerAppTest {
 
         clickTextWithScroll("분석 설정")
         waitForText("AI 모델 점검 필요")
-        waitForText("파일은 저장됐지만, 점검 전에는 기본 정리로 진행합니다.")
+        waitForText("파일은 저장됐지만, 점검 전에는 안전 정리로 진행합니다.")
         waitForText("점검 필요")
         waitForText("실행 점검")
     }
@@ -178,8 +178,8 @@ class ReunionManagerAppTest {
         clickText("저장한 대화 보기")
         clickText("샘플 채팅방")
         clickText("다음 행동 정리하기")
-        waitForText("기본으로 정리하기")
-        clickText("기본으로 정리하기")
+        waitForText("안전하게 정리하기")
+        clickText("안전하게 정리하기")
         waitForText("오늘의 결론", timeoutMillis = 20_000)
         waitForText("아주 가볍게 가능", timeoutMillis = 20_000)
         waitForText("새 연락보다 짧은 답장이 자연스럽습니다.", timeoutMillis = 20_000)
@@ -210,7 +210,7 @@ class ReunionManagerAppTest {
         clickText("저장한 대화 보기")
         clickText("샘플 채팅방")
         clickText("다음 행동 정리하기")
-        waitForText("기본으로 정리하기")
+        waitForText("안전하게 정리하기")
         assertNull(device.findObject(By.text("기기에서 정리하기")))
     }
 

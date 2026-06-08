@@ -282,7 +282,7 @@ class AnalysisScreenTitleTest {
             analysisGenerateButtonText(providerConfigured = true, hasReport = false),
         )
         assertEquals(
-            "기본으로 정리하기",
+            "안전하게 정리하기",
             analysisGenerateButtonText(providerConfigured = false, hasReport = false),
         )
         assertEquals(

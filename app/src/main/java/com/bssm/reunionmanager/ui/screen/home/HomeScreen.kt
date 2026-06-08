@@ -93,8 +93,8 @@ private fun homeStateDescription(
 private fun modelModeDescription(modelConfigured: Boolean, modelVerified: Boolean): String {
     return when {
         modelVerified -> "AI는 이 기기에서 실행됩니다."
-        modelConfigured -> "점검 전에는 기본 정리로 진행합니다."
-        else -> "모델이 없어도 기본 정리로 확인할 수 있어요."
+        modelConfigured -> "점검 전에는 안전 정리로 진행합니다."
+        else -> "모델이 없어도 안전 정리로 확인할 수 있어요."
     }
 }
 
@@ -102,7 +102,7 @@ private fun modelModeBadge(modelConfigured: Boolean, modelVerified: Boolean): St
     return when {
         modelVerified -> "실행 확인됨"
         modelConfigured -> "점검 필요"
-        else -> "기본 정리"
+        else -> "안전 정리"
     }
 }
 

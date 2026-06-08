@@ -67,7 +67,7 @@ fun AnalysisScreen(
         item {
             if (analysisState?.isRunning == true) {
                 ReunionEmptyState(
-                    title = if (providerConfigured) "다음 행동을 정리하는 중" else "기본 정리 중",
+                    title = if (providerConfigured) "다음 행동을 정리하는 중" else "안전하게 정리하는 중",
                     body = "저장한 대화에서 부담 없는 한 걸음을 고르고 있습니다.",
                     tone = ReunionBadgeTone.Accent,
                 ) {
@@ -303,7 +303,7 @@ internal fun analysisGenerateButtonText(providerConfigured: Boolean, hasReport: 
     return when {
         hasReport -> "다시 정리하기"
         providerConfigured -> "다음 행동 정리하기"
-        else -> "기본으로 정리하기"
+        else -> "안전하게 정리하기"
     }
 }
 

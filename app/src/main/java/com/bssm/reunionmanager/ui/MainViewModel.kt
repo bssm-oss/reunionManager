@@ -124,7 +124,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 deleteCopiedModelFile(currentSettings.modelPath)
                 if (currentSettings.isConfigured) {
                     _modelSettingsState.value = ModelSettingsUiState(
-                        message = "모델 파일을 제거하고 기본 정리로 전환했습니다.",
+                        message = "모델 파일을 제거하고 안전 정리로 전환했습니다.",
                     )
                 }
             }
