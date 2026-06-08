@@ -8,6 +8,7 @@ import android.provider.OpenableColumns
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.bssm.reunionmanager.ReunionManagerApplication
+import com.bssm.reunionmanager.data.importer.KakaoTalkExportTextDecoder
 import com.bssm.reunionmanager.domain.model.ConversationDetail
 import com.bssm.reunionmanager.domain.model.ConversationSummary
 import com.bssm.reunionmanager.domain.model.GemmaBackend
@@ -66,8 +67,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             runCatching {
                 withContext(Dispatchers.IO) {
                     val sourceName = resolveDisplayName(contentResolver, uri)
-                    val rawText = contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
+                    val rawBytes = contentResolver.openInputStream(uri)?.use { it.readBytes() }
                         ?: error("선택한 파일을 읽지 못했습니다.")
+                    val rawText = KakaoTalkExportTextDecoder.decode(rawBytes)
                     appContainer.importConversationUseCase(sourceName = sourceName, rawText = rawText)
                 }
             }.onSuccess { result ->
