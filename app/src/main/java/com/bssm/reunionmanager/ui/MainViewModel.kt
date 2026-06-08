@@ -99,12 +99,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         userDisplayName: String,
     ) {
         viewModelScope.launch {
+            val currentSettings = appContainer.providerSettingsRepository.get()
+            val nextModelPath = modelPath.trim()
+            val nextModelName = modelName.trim().ifBlank { ProviderSettings.DEFAULT_MODEL }
+            val nextBackend = GemmaBackend.fromStoredValue(backend)
+            val preservesVerifiedModel = currentSettings.isModelVerified &&
+                currentSettings.modelPath == nextModelPath &&
+                currentSettings.backend == nextBackend
             appContainer.providerSettingsRepository.save(
                 ProviderSettings(
-                    modelPath = modelPath.trim(),
-                    modelName = modelName.trim().ifBlank { ProviderSettings.DEFAULT_MODEL },
-                    backend = GemmaBackend.fromStoredValue(backend),
+                    modelPath = nextModelPath,
+                    modelName = nextModelName,
+                    backend = nextBackend,
                     userDisplayName = userDisplayName.trim(),
+                    verifiedModelPath = if (preservesVerifiedModel) currentSettings.verifiedModelPath else "",
+                    verifiedBackend = if (preservesVerifiedModel) currentSettings.verifiedBackend else nextBackend,
+                    verifiedAtEpochMillis = if (preservesVerifiedModel) currentSettings.verifiedAtEpochMillis else null,
                 ),
             )
         }
@@ -130,7 +140,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 sourceName
             }.onSuccess { modelName ->
                 _modelSettingsState.value = ModelSettingsUiState(
-                    message = "$modelName 모델을 사용할 수 있습니다.",
+                    message = "$modelName 모델을 복사했습니다. 실행 점검을 눌러 확인하세요.",
                 )
             }.onFailure { throwable ->
                 _modelSettingsState.value = ModelSettingsUiState(

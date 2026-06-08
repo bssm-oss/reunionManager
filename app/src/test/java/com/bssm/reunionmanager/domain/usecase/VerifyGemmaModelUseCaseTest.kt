@@ -65,6 +65,7 @@ class VerifyGemmaModelUseCaseTest {
         var providerCalled = false
         val useCase = VerifyGemmaModelUseCase(
             providerSettingsRepository = providerSettingsRepository,
+            currentTimeMillis = { 123_456L },
             gemmaProviderFactory = {
                 StaticAnalysisProvider {
                     providerCalled = true
@@ -77,6 +78,10 @@ class VerifyGemmaModelUseCaseTest {
         assertTrue(result.isSuccess)
         assertEquals(testModelFile.name, result.getOrNull())
         assertTrue(providerCalled)
+        val verifiedSettings = providerSettingsRepository.get()
+        assertTrue(verifiedSettings.isModelVerified)
+        assertEquals(testModelFile.absolutePath, verifiedSettings.verifiedModelPath)
+        assertEquals(123_456L, verifiedSettings.verifiedAtEpochMillis)
     }
 
     @Test
@@ -103,6 +108,7 @@ class VerifyGemmaModelUseCaseTest {
         assertTrue(result.isFailure)
         assertTrue(result.exceptionOrNull()!!.message!!.contains("찾을 수 없습니다"))
         assertFalse(providerCalled)
+        assertFalse(providerSettingsRepository.get().isModelVerified)
     }
 
     @Test
@@ -123,6 +129,7 @@ class VerifyGemmaModelUseCaseTest {
 
         assertTrue(result.isFailure)
         assertTrue(result.exceptionOrNull()!!.message!!.contains("native runtime failed"))
+        assertFalse(providerSettingsRepository.get().isModelVerified)
     }
 
     private class StaticAnalysisProvider(

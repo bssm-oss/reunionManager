@@ -11,6 +11,7 @@ import java.io.File
 class VerifyGemmaModelUseCase(
     private val providerSettingsRepository: ProviderSettingsRepository,
     private val gemmaProviderFactory: (ProviderSettings) -> AnalysisProvider,
+    private val currentTimeMillis: () -> Long = System::currentTimeMillis,
 ) {
     suspend operator fun invoke(): Result<String> {
         return runCatching {
@@ -32,6 +33,14 @@ class VerifyGemmaModelUseCase(
             require(report.messageDraft.isNotBlank()) {
                 "모델 응답을 계획 형식으로 읽지 못했습니다."
             }
+            providerSettingsRepository.save(
+                settings.copy(
+                    modelName = modelName,
+                    verifiedModelPath = settings.modelPath,
+                    verifiedBackend = settings.backend,
+                    verifiedAtEpochMillis = currentTimeMillis(),
+                ),
+            )
             modelName
         }
     }

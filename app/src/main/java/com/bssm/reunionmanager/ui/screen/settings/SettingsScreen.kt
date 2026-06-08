@@ -45,6 +45,21 @@ fun SettingsScreen(
     var userDisplayName by remember(providerSettings.userDisplayName) {
         mutableStateOf(providerSettings.userDisplayName)
     }
+    val modelStatusTitle = when {
+        !providerSettings.isConfigured -> "모델 없음"
+        providerSettings.isModelVerified -> "모델 실행 확인됨"
+        else -> "모델 점검 필요"
+    }
+    val modelStatusBadge = when {
+        !providerSettings.isConfigured -> "데모 모드"
+        providerSettings.isModelVerified -> "실행 확인됨"
+        else -> "점검 필요"
+    }
+    val modelStatusTone = when {
+        !providerSettings.isConfigured -> ReunionBadgeTone.Neutral
+        providerSettings.isModelVerified -> ReunionBadgeTone.Success
+        else -> ReunionBadgeTone.Accent
+    }
     val modelPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
     ) { uri ->
@@ -90,7 +105,7 @@ fun SettingsScreen(
             )
         }
         ReunionPane(
-            title = if (providerSettings.isConfigured) "모델 준비됨" else "모델 없음",
+            title = modelStatusTitle,
             supportingText = if (providerSettings.isConfigured) {
                 providerSettings.modelName
             } else {
@@ -98,12 +113,16 @@ fun SettingsScreen(
             },
         ) {
             ReunionBadge(
-                text = if (providerSettings.isConfigured) "기기 내 실행" else "데모 모드",
-                tone = if (providerSettings.isConfigured) ReunionBadgeTone.Accent else ReunionBadgeTone.Neutral,
+                text = modelStatusBadge,
+                tone = modelStatusTone,
             )
             if (providerSettings.isConfigured) {
                 ReunionSecondaryButton(
-                    text = if (modelSettingsState.isChecking) "모델 점검 중..." else "모델 실행 점검",
+                    text = when {
+                        modelSettingsState.isChecking -> "모델 점검 중..."
+                        providerSettings.isModelVerified -> "다시 점검"
+                        else -> "모델 실행 점검"
+                    },
                     onClick = onVerifyModel,
                     enabled = !modelSettingsState.isChecking && !modelSettingsState.isLoading,
                 )

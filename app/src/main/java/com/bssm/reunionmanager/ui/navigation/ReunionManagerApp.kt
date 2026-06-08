@@ -30,6 +30,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.bssm.reunionmanager.domain.model.ProviderSettings
 import com.bssm.reunionmanager.ui.MainViewModel
 import com.bssm.reunionmanager.ui.screen.analysis.AnalysisScreen
 import com.bssm.reunionmanager.ui.screen.conversation.ConversationDetailScreen
@@ -116,8 +117,8 @@ fun ReunionManagerApp() {
                     },
                     actions = {
                         ReunionBadge(
-                            text = if (providerSettings.isConfigured) "기기 내 실행" else "데모 모드",
-                            tone = if (providerSettings.isConfigured) ReunionBadgeTone.Accent else ReunionBadgeTone.Neutral,
+                            text = providerSettings.runtimeBadgeText(),
+                            tone = providerSettings.runtimeBadgeTone(),
                             modifier = Modifier.padding(end = 12.dp),
                         )
                     },
@@ -196,5 +197,21 @@ fun ReunionManagerApp() {
                 )
             }
         }
+    }
+}
+
+private fun ProviderSettings.runtimeBadgeText(): String {
+    return when {
+        !isConfigured -> "데모 모드"
+        isModelVerified -> "실행 확인됨"
+        else -> "점검 필요"
+    }
+}
+
+private fun ProviderSettings.runtimeBadgeTone(): ReunionBadgeTone {
+    return when {
+        !isConfigured -> ReunionBadgeTone.Neutral
+        isModelVerified -> ReunionBadgeTone.Success
+        else -> ReunionBadgeTone.Accent
     }
 }

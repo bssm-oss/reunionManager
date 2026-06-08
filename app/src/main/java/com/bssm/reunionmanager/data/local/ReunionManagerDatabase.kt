@@ -25,7 +25,7 @@ import com.bssm.reunionmanager.data.local.entity.ProviderSettingsEntity
         AnalysisResultEntity::class,
         ProviderSettingsEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = false,
 )
 abstract class ReunionManagerDatabase : RoomDatabase() {
@@ -42,7 +42,7 @@ abstract class ReunionManagerDatabase : RoomDatabase() {
                 ReunionManagerDatabase::class.java,
                 RoomConfig.DATABASE_NAME,
             )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                 .build()
         }
 
@@ -70,6 +70,14 @@ abstract class ReunionManagerDatabase : RoomDatabase() {
         private val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE provider_settings ADD COLUMN userDisplayName TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE provider_settings ADD COLUMN verifiedModelPath TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE provider_settings ADD COLUMN verifiedBackend TEXT NOT NULL DEFAULT 'CPU'")
+                db.execSQL("ALTER TABLE provider_settings ADD COLUMN verifiedAtEpochMillis INTEGER")
             }
         }
     }

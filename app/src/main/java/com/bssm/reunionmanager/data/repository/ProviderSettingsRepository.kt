@@ -29,6 +29,9 @@ class ProviderSettingsRepository(
                 modelPath = settings.modelPath,
                 backend = settings.backend.name,
                 userDisplayName = settings.userDisplayName,
+                verifiedModelPath = settings.verifiedModelPath,
+                verifiedBackend = settings.verifiedBackend.name,
+                verifiedAtEpochMillis = settings.verifiedAtEpochMillis,
             ),
         )
     }
@@ -39,6 +42,9 @@ class ProviderSettingsRepository(
             modelName = modelName,
             backend = GemmaBackend.fromStoredValue(backend),
             userDisplayName = userDisplayName,
+            verifiedModelPath = verifiedModelPath,
+            verifiedBackend = GemmaBackend.fromStoredValue(verifiedBackend),
+            verifiedAtEpochMillis = verifiedAtEpochMillis,
         )
     }
 }

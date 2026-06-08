@@ -73,8 +73,32 @@ class ReunionManagerAppTest {
         launchMainActivity()
 
         clickTextWithScroll("분석 설정")
-        waitForText("모델 준비됨")
+        waitForText("모델 점검 필요")
+        waitForText("점검 필요")
         waitForText("모델 실행 점검")
+    }
+
+    @Test
+    fun settingsScreen_showsVerifiedModelStateWhenModelWasChecked() {
+        val modelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm"
+        runBlocking {
+            application.appContainer.providerSettingsRepository.save(
+                ProviderSettings(
+                    modelPath = modelPath,
+                    modelName = "gemma-4-E4B-it.litertlm",
+                    userDisplayName = "현우",
+                    verifiedModelPath = modelPath,
+                    verifiedAtEpochMillis = 100L,
+                ),
+            )
+        }
+
+        launchMainActivity()
+
+        clickTextWithScroll("분석 설정")
+        waitForText("모델 실행 확인됨")
+        waitForText("실행 확인됨")
+        waitForText("다시 점검")
     }
 
     @Test
