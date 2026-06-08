@@ -209,6 +209,28 @@ object AnalysisSafetyRules {
         "결제",
         "견적",
     )
+    private val identityUncertaintyPhrases = listOf(
+        "누구세요",
+        "누구시죠",
+        "누구야",
+        "누구신데",
+        "누군데",
+        "누구냐",
+        "저 아세요",
+        "절 아세요",
+        "잘못 보냈",
+        "잘못 보내",
+        "잘못 온",
+        "잘못 연락",
+        "모르는 번호",
+        "모르는 사람",
+        "번호 저장 안",
+        "저장 안 되어",
+        "저장 안돼",
+        "어떻게 아세요",
+        "제 번호 어떻게",
+        "내 번호 어떻게",
+    )
     private val scheduleTimePhrases = listOf(
         "오늘",
         "내일",
@@ -364,6 +386,9 @@ object AnalysisSafetyRules {
         if (input.participantNames.size > 2) {
             return true
         }
+        if (hasIdentityUncertaintySignal(input)) {
+            return true
+        }
         if (hasStrongPersonalSignal(input)) {
             return false
         }
@@ -419,6 +444,7 @@ object AnalysisSafetyRules {
         return listOfNotNull(
             "맥락 확인: 재회 판단에 필요한 개인 관계 신호가 부족합니다.",
             "참여자 수: ${input.participantNames.size}명",
+            identityUncertaintyEvidence(input),
             input.statsSummary.lineSequence().firstOrNull { line -> line.startsWith("마지막 메시지:") },
             input.perspectiveSummary.lineSequence().firstOrNull { line -> line.startsWith("상대 최근 메시지:") },
         ).joinToString(separator = "\n")
@@ -908,6 +934,25 @@ object AnalysisSafetyRules {
         val combined = "${input.conversationTitle}\n${input.excerpt}\n${input.recentExcerpt}".lowercase()
         val hitCount = technicalOrTransactionalPhrases.count { phrase -> combined.contains(phrase.lowercase()) }
         return hitCount >= 2
+    }
+
+    private fun hasIdentityUncertaintySignal(input: AnalysisInput): Boolean {
+        val lastSenderRole = input.perspectiveValue("마지막 메시지 발신자 역할:")
+        return (lastSenderRole == "상대" || lastSenderRole == "알 수 없음") &&
+            input.lastRecentMessageContent().hasIdentityUncertaintyPhrase()
+    }
+
+    private fun identityUncertaintyEvidence(input: AnalysisInput): String? {
+        return if (hasIdentityUncertaintySignal(input)) {
+            "상대 식별: 상대가 발신자를 알아보지 못하거나 잘못 보낸 메시지처럼 반응했습니다."
+        } else {
+            null
+        }
+    }
+
+    private fun String.hasIdentityUncertaintyPhrase(): Boolean {
+        val normalized = replace(Regex("\\s+"), " ").trim().lowercase()
+        return identityUncertaintyPhrases.any { phrase -> normalized.contains(phrase) }
     }
 
     private fun AnalysisInput.lastRecentMessageContent(): String {

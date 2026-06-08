@@ -51,6 +51,8 @@ class AnalysisQualityRegressionTest {
             qualityCase("concrete meeting", counterpartReply("내일 7시에 카페에서 보자"), "아주 가볍게 가능", "약속한 시간", "안부부터"),
             qualityCase("counterpart asks why now", counterpartReply("왜 이제 와?"), "먼저 사과 필요", "미안", "안부"),
             qualityCase("counterpart questions sudden contact", counterpartReply("갑자기 왜 연락해?"), "먼저 사과 필요", "미안", "안부"),
+            qualityCase("counterpart asks who this is", counterpartReply("누구세요?"), "정보 부족", "보낼 문장을 만들지 않습니다", "오랜만이야"),
+            qualityCase("counterpart says wrong message", counterpartReply("잘못 보내신 것 같아요"), "정보 부족", "보낼 문장을 만들지 않습니다", "오랜만이야"),
             qualityCase("user drunk late night message", userImpairedTiming("술 마셔서 그런지 보고 싶어"), "지금은 보류", "보내지 않습니다", "오랜만이야"),
             qualityCase("user midnight impulse", userImpairedTiming("새벽에 잠이 안 와서 연락했어"), "지금은 보류", "보내지 않습니다", "오랜만이야"),
             qualityCase("user asks why no reply", userUnansweredPressure("왜 답이 없어?"), "지금은 보류", "보내지 않습니다", "오랜만이야"),
@@ -61,7 +63,7 @@ class AnalysisQualityRegressionTest {
             qualityCase("light positive signal", lightPositive(), "아주 가볍게 가능", "짧게", "보내지 않습니다"),
         )
 
-        assertEquals(48, cases.size)
+        assertEquals(50, cases.size)
         cases.forEach { case ->
             val report = AnalysisSafetyRules.finalizeReport(optimisticGemmaReport, case.input)
 
@@ -160,6 +162,19 @@ class AnalysisQualityRegressionTest {
         assertTrue(report.alternativeDrafts.contains("편히 쉬어"))
         assertFalse(report.messageDraft.contains("오랜만"))
         assertFalse(report.alternativeDrafts.contains("안부 전하고 싶었어"))
+    }
+
+    @Test
+    fun finalizeReport_explainsIdentityUncertaintyAsWeakContext() {
+        val report = AnalysisSafetyRules.finalizeReport(
+            optimisticGemmaReport,
+            counterpartReply("번호 저장이 안 되어 있는데 누구세요?"),
+        )
+
+        assertEquals("정보 부족", report.contactReadiness)
+        assertEquals("관계 맥락 확인", report.headline)
+        assertTrue(report.evidence.contains("상대 식별"))
+        assertTrue(report.messageDraft.contains("보낼 문장을 만들지 않습니다"))
     }
 
     private data class QualityCase(
