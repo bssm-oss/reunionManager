@@ -5,6 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.bssm.reunionmanager.data.importer.ParsedConversation
 import com.bssm.reunionmanager.data.importer.ParsedMessage
 import com.bssm.reunionmanager.data.local.ReunionManagerDatabase
+import com.bssm.reunionmanager.domain.model.AnalysisReport
 import com.bssm.reunionmanager.domain.model.ImportConversationResult
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -64,6 +65,37 @@ class ConversationRepositoryTest {
         assertEquals(2, detail.participantNames.size)
         assertEquals(2, detail.messages.size)
         assertEquals("안녕", detail.messages.first().content)
+    }
+
+    @Test
+    fun observeConversationSummaries_includesLatestAnalysisHeadline() = runTest {
+        val result = repository.importConversation(
+            parsedConversation = sampleParsedConversation,
+            rawText = "summary analysis raw text",
+            sourceName = "summary-analysis.txt",
+        )
+        val importedId = (result as ImportConversationResult.Imported).conversationId
+        val analysisRepository = AnalysisRepository(database.analysisResultDao())
+
+        analysisRepository.saveLatest(
+            conversationId = importedId,
+            providerType = "fake",
+            report = AnalysisReport(
+                headline = "상대 답장에 짧게 응답",
+                contactReadiness = "아주 가볍게 가능",
+                evidence = "테스트 근거",
+                relationshipSummary = "테스트 요약",
+                reunionObjective = "짧게 답합니다.",
+                nextStep = "한 문장만 준비하세요.",
+                messageDraft = "메시지 봤어. 고마워.",
+                alternativeDrafts = "메시지 봤어. 고마워.\n천천히 이야기하자\n답은 천천히 해도 돼",
+                caution = "재촉하지 않습니다.",
+            ),
+        )
+
+        val summary = repository.observeConversationSummaries().first().single()
+
+        assertEquals("상대 답장에 짧게 응답", summary.latestAnalysisHeadline)
     }
 
     @Test

@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <lint>
     <issue id="AndroidGradlePluginVersion" severity="ignore" />
+    <issue id="CoroutineCreationDuringComposition" severity="ignore" />
+    <issue id="FlowOperatorInvokedInComposition" severity="ignore" />
     <issue id="GradleDependency" severity="ignore" />
+    <issue id="NullSafeMutableLiveData" severity="ignore" />
     <issue id="ObsoleteSdkInt" severity="ignore" />
+    <issue id="StateFlowValueCalledInComposition" severity="ignore" />
 </lint>

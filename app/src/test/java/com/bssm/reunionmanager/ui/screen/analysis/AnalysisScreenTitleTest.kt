@@ -2,6 +2,8 @@ package com.bssm.reunionmanager.ui.screen.analysis
 
 import com.bssm.reunionmanager.domain.model.AnalysisReport
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AnalysisScreenTitleTest {
@@ -130,6 +132,26 @@ class AnalysisScreenTitleTest {
         )
 
         assertEquals("첫 줄\n둘째 줄\n셋째 줄", report.evidenceBody())
+    }
+
+    @Test
+    fun canCopyMessageDraft_returnsTrueOnlyForActualDrafts() {
+        assertTrue(report().canCopyMessageDraft())
+        assertTrue(
+            report(
+                reunionObjective = "새 연락보다 상대가 남긴 말에 답하는 것이 목표입니다.",
+                nextStep = "상대의 마지막 메시지에 바로 답하세요.",
+            ).canCopyMessageDraft(),
+        )
+        assertFalse(report(contactReadiness = "지금은 보류").canCopyMessageDraft())
+        assertFalse(
+            report(
+                headline = "내 이름 확인",
+                contactReadiness = "정보 부족",
+                messageDraft = "지금은 보낼 문장을 만들지 않습니다. 내 카톡 이름을 먼저 저장하세요.",
+                alternativeDrafts = "내 카톡 이름 저장하기\n같은 대화 다시 분석하기\n최근 대화 파일인지 확인하기",
+            ).canCopyMessageDraft(),
+        )
     }
 
     private fun report(

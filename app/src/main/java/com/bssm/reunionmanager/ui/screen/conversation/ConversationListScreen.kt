@@ -14,6 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.bssm.reunionmanager.domain.model.ConversationSummary
+import com.bssm.reunionmanager.ui.theme.ReunionBadge
+import com.bssm.reunionmanager.ui.theme.ReunionBadgeTone
 import com.bssm.reunionmanager.ui.theme.ReunionEmptyState
 import com.bssm.reunionmanager.ui.theme.ReunionPane
 import com.bssm.reunionmanager.ui.theme.ScreenPadding
@@ -58,8 +60,14 @@ fun ConversationListScreen(
             ReunionPane(
                 modifier = Modifier.clickable { onConversationClick(conversation.id) },
                 title = conversation.title,
-                supportingText = "참여자 ${conversation.participantCount}명 · 메시지 ${conversation.messageCount}개",
+                supportingText = conversation.summaryText(),
             ) {
+                if (conversation.latestAnalysisHeadline != null) {
+                    ReunionBadge(
+                        text = "정리됨",
+                        tone = ReunionBadgeTone.Accent,
+                    )
+                }
                 Text(
                     text = conversation.sourceName,
                     style = MaterialTheme.typography.bodySmall,
@@ -68,4 +76,12 @@ fun ConversationListScreen(
             }
         }
     }
+}
+
+private fun ConversationSummary.summaryText(): String {
+    val base = "참여자 ${participantCount}명 · 메시지 ${messageCount}개"
+    return latestAnalysisHeadline
+        ?.takeIf { headline -> headline.isNotBlank() }
+        ?.let { headline -> "$base\n최근 정리: $headline" }
+        ?: base
 }

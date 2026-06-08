@@ -19,7 +19,6 @@ import com.bssm.reunionmanager.domain.model.ConversationSummary
 import com.bssm.reunionmanager.domain.model.ImportConversationResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import java.security.MessageDigest
 
 class ConversationRepository(
@@ -30,7 +29,11 @@ class ConversationRepository(
     private val analysisResultDao: AnalysisResultDao,
 ) {
     fun observeConversationSummaries(): Flow<List<ConversationSummary>> {
-        return conversationDao.observeAll().map { conversations ->
+        return combine(
+            conversationDao.observeAll(),
+            analysisResultDao.observeLatestForAllConversations(),
+        ) { conversations, latestAnalyses ->
+            val latestAnalysisByConversationId = latestAnalyses.associateBy { analysis -> analysis.conversationId }
             conversations.map { entity ->
                 ConversationSummary(
                     id = entity.id,
@@ -39,7 +42,7 @@ class ConversationRepository(
                     messageCount = entity.messageCount,
                     importedAtEpochMillis = entity.importedAtEpochMillis,
                     sourceName = entity.sourceName,
-                    latestAnalysisHeadline = null,
+                    latestAnalysisHeadline = latestAnalysisByConversationId[entity.id]?.headline,
                 )
             }
         }

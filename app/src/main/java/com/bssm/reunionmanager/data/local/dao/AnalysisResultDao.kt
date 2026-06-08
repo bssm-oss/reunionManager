@@ -25,6 +25,18 @@ interface AnalysisResultDao {
     @Query(
         """
         SELECT * FROM analysis_results
+        WHERE id IN (
+            SELECT MAX(id)
+            FROM analysis_results
+            GROUP BY conversationId
+        )
+        """,
+    )
+    fun observeLatestForAllConversations(): Flow<List<AnalysisResultEntity>>
+
+    @Query(
+        """
+        SELECT * FROM analysis_results
         WHERE conversationId = :conversationId
         ORDER BY createdAtEpochMillis DESC
         LIMIT 1

@@ -14,6 +14,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.bssm.reunionmanager.domain.model.AnalysisReport
 import com.bssm.reunionmanager.domain.model.ConversationDetail
@@ -37,7 +39,9 @@ fun AnalysisScreen(
 ) {
     val needsPerspectiveSetup = (detail?.participantNames?.size ?: 0) >= 2 && !userDisplayNameConfigured
     val report = detail?.latestAnalysis
+    val clipboardManager = LocalClipboardManager.current
     var showDetails by remember(report) { mutableStateOf(false) }
+    var copiedDraft by remember(report) { mutableStateOf(false) }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -94,7 +98,18 @@ fun AnalysisScreen(
             val messageTitle = currentReport.messageSectionTitle()
             item { AnalysisSectionPane(title = "연락 판단", body = currentReport.contactReadiness, tone = ReunionBadgeTone.Accent) }
             item { AnalysisSectionPane(title = "오늘 할 일", body = currentReport.nextStep, tone = ReunionBadgeTone.Accent) }
-            item { AnalysisSectionPane(title = messageTitle, body = currentReport.messageDraft) }
+            item {
+                AnalysisMessagePane(
+                    title = messageTitle,
+                    body = currentReport.messageDraft,
+                    canCopy = currentReport.canCopyMessageDraft(),
+                    copied = copiedDraft,
+                    onCopy = {
+                        clipboardManager.setText(AnnotatedString(currentReport.messageDraft))
+                        copiedDraft = true
+                    },
+                )
+            }
             item {
                 ReunionSecondaryButton(
                     text = if (showDetails) "상세 닫기" else "판단 근거 보기",
@@ -178,6 +193,31 @@ private fun AnalysisReport.isCheckOnlyResult(): Boolean {
         alternativeDrafts.contains("대화가 1:1 개인 관계인지 확인하기") ||
         headline.contains("관계 맥락") ||
         headline.contains("내 이름 확인")
+}
+
+internal fun AnalysisReport.canCopyMessageDraft(): Boolean {
+    return messageSectionTitle() == "답장 문장" || messageSectionTitle() == "첫 연락 문장"
+}
+
+@Composable
+private fun AnalysisMessagePane(
+    title: String,
+    body: String,
+    canCopy: Boolean,
+    copied: Boolean,
+    onCopy: () -> Unit,
+) {
+    ReunionPane(
+        title = title,
+        supportingText = body,
+    ) {
+        if (canCopy) {
+            ReunionSecondaryButton(
+                text = if (copied) "복사됨" else "문장 복사",
+                onClick = onCopy,
+            )
+        }
+    }
 }
 
 internal fun AnalysisReport.summaryTitle(): String {

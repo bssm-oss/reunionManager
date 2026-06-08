@@ -98,6 +98,7 @@ class ReunionManagerAppTest {
         waitForText("연락 판단", timeoutMillis = 20_000)
         waitForText("아주 가볍게 가능", timeoutMillis = 20_000)
         waitForText("답장 문장", timeoutMillis = 20_000)
+        waitForText("문장 복사", timeoutMillis = 20_000)
     }
 
     private fun launchMainActivity() {
