@@ -4,6 +4,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Test
 
 class KakaoTalkConversationParserTest {
@@ -93,12 +94,20 @@ class KakaoTalkConversationParserTest {
         assertEquals(expectedFirstMessageAt, parsed.messages.first().sentAtEpochMillis)
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun parse_rejectsUnsupportedText() {
-        parser.parse(
-            fileName = "broken.txt",
-            rawText = "this is not a KakaoTalk export",
-        )
+        try {
+            parser.parse(
+                fileName = "broken.txt",
+                rawText = "this is not a KakaoTalk export",
+            )
+            fail("Unsupported text should not be parsed.")
+        } catch (exception: IllegalArgumentException) {
+            assertEquals(
+                "지원하는 카카오톡 대화 파일이 아닙니다. .txt 또는 CSV 내보내기 파일을 선택하세요.",
+                exception.message,
+            )
+        }
     }
 
     private companion object {

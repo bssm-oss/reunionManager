@@ -28,7 +28,7 @@ class KakaoTalkConversationParser {
     fun parse(fileName: String, rawText: String): ParsedConversation {
         return parseMobileTextExport(fileName = fileName, rawText = rawText)
             ?: parseCsvLikeExport(fileName = fileName, rawText = rawText)
-            ?: throw IllegalArgumentException("The selected file does not contain a supported KakaoTalk conversation.")
+            ?: throw IllegalArgumentException("지원하는 카카오톡 대화 파일이 아닙니다. .txt 또는 CSV 내보내기 파일을 선택하세요.")
     }
 
     private fun parseMobileTextExport(fileName: String, rawText: String): ParsedConversation? {
