@@ -10,13 +10,21 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.bssm.reunionmanager.domain.model.AnalysisReport
 import com.bssm.reunionmanager.domain.model.ConversationDetail
+import com.bssm.reunionmanager.domain.model.ConversationMessage
 import com.bssm.reunionmanager.ui.theme.ReunionBadge
+import com.bssm.reunionmanager.ui.theme.ReunionBadgeTone
 import com.bssm.reunionmanager.ui.theme.ReunionEmptyState
 import com.bssm.reunionmanager.ui.theme.ReunionPane
 import com.bssm.reunionmanager.ui.theme.ReunionPrimaryButton
+import com.bssm.reunionmanager.ui.theme.ReunionSecondaryButton
 import com.bssm.reunionmanager.ui.theme.ScreenPadding
 import java.time.Instant
 import java.time.ZoneId
@@ -43,6 +51,9 @@ fun ConversationDetailScreen(
         return
     }
 
+    var showAllMessages by remember(detail.id) { mutableStateOf(false) }
+    val visibleMessages = detail.messages.visibleMessagePreview(showAllMessages)
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = ScreenPadding, vertical = ScreenPadding),
@@ -60,40 +71,54 @@ fun ConversationDetailScreen(
         }
         item {
             ReunionPane(
-                title = "대화 요약",
-                supportingText = "참여자 ${detail.participantNames.size}명 · 메시지 ${detail.messages.size}개",
+                title = detail.latestAnalysis?.let { "최근 정리" } ?: "아직 정리하지 않았어요",
+                supportingText = detail.latestAnalysis?.headline ?: "대화를 훑기 전에 오늘 할 일만 먼저 정리할 수 있어요.",
+                containerColor = detail.latestAnalysis?.detailContainerColor() ?: MaterialTheme.colorScheme.surface,
+            ) {
+                detail.latestAnalysis?.let { report ->
+                    ReunionBadge(
+                        text = report.contactReadiness,
+                        tone = report.detailReadinessTone(),
+                    )
+                    Text(
+                        text = report.nextStep.limitForDetail(maxLength = 88),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                ReunionPrimaryButton(
+                    text = if (detail.latestAnalysis == null) "다음 행동 정리하기" else "다시 정리하기",
+                    onClick = onOpenAnalysis,
+                )
+            }
+        }
+        item {
+            ReunionPane(
+                title = "대화 정보",
+                supportingText = detail.infoSummary(),
             ) {
                 ReunionBadge(text = "기기 내 저장")
             }
         }
         item {
             ReunionPane(
-                title = "참여자",
-                supportingText = detail.participantNames.joinToString().ifBlank { "알 수 없음" },
-            )
-        }
-        item {
-            ReunionPrimaryButton(text = "다음 행동 정리하기", onClick = onOpenAnalysis)
-        }
-        detail.latestAnalysis?.let { report ->
-            item {
-                ReunionPane(
-                    title = "최근 정리",
-                    supportingText = report.headline,
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                ) {
-                    Text(
-                        text = report.caution,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                title = if (showAllMessages) "전체 메시지" else "최근 메시지",
+                supportingText = detail.messages.messagePreviewSummary(showAllMessages),
+            ) {
+                if (detail.messages.hasHiddenMessages(showAllMessages)) {
+                    ReunionSecondaryButton(
+                        text = "전체 메시지 보기",
+                        onClick = { showAllMessages = true },
+                    )
+                } else if (showAllMessages && detail.messages.size > RecentMessagePreviewCount) {
+                    ReunionSecondaryButton(
+                        text = "최근 메시지만 보기",
+                        onClick = { showAllMessages = false },
                     )
                 }
             }
         }
-        item {
-            Text(text = "메시지", style = MaterialTheme.typography.titleLarge)
-        }
-        items(detail.messages, key = { it.id }) { message ->
+        items(visibleMessages, key = { it.id }) { message ->
             ReunionPane(
                 title = message.senderName,
                 supportingText = formatter.format(Instant.ofEpochMilli(message.sentAtEpochMillis)),
@@ -106,4 +131,49 @@ fun ConversationDetailScreen(
             }
         }
     }
+}
+
+private const val RecentMessagePreviewCount = 8
+
+internal fun List<ConversationMessage>.visibleMessagePreview(showAllMessages: Boolean): List<ConversationMessage> {
+    return if (showAllMessages) this else takeLast(RecentMessagePreviewCount)
+}
+
+internal fun List<ConversationMessage>.hasHiddenMessages(showAllMessages: Boolean): Boolean {
+    return !showAllMessages && size > RecentMessagePreviewCount
+}
+
+internal fun List<ConversationMessage>.messagePreviewSummary(showAllMessages: Boolean): String {
+    return when {
+        isEmpty() -> "저장된 메시지가 없습니다."
+        showAllMessages -> "전체 ${size}개 메시지를 보고 있습니다."
+        size > RecentMessagePreviewCount -> "전체 ${size}개 중 최근 ${RecentMessagePreviewCount}개만 먼저 보여줍니다."
+        else -> "전체 ${size}개 메시지를 보고 있습니다."
+    }
+}
+
+private fun ConversationDetail.infoSummary(): String {
+    val participants = participantNames.joinToString().ifBlank { "알 수 없음" }
+    return "참여자 $participants\n메시지 ${messages.size}개"
+}
+
+private fun AnalysisReport.detailReadinessTone(): ReunionBadgeTone {
+    return when (contactReadiness) {
+        "지금은 보류" -> ReunionBadgeTone.Error
+        "아주 가볍게 가능" -> ReunionBadgeTone.Success
+        "먼저 사과 필요" -> ReunionBadgeTone.Accent
+        else -> ReunionBadgeTone.Neutral
+    }
+}
+
+@Composable
+private fun AnalysisReport.detailContainerColor() = when (detailReadinessTone()) {
+    ReunionBadgeTone.Error -> MaterialTheme.colorScheme.errorContainer
+    ReunionBadgeTone.Success -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.16f)
+    ReunionBadgeTone.Accent -> MaterialTheme.colorScheme.primaryContainer
+    ReunionBadgeTone.Neutral -> MaterialTheme.colorScheme.surface
+}
+
+private fun String.limitForDetail(maxLength: Int): String {
+    return if (length <= maxLength) this else take(maxLength - 1).trimEnd() + "…"
 }

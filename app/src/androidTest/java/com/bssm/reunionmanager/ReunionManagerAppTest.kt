@@ -139,6 +139,27 @@ class ReunionManagerAppTest {
     }
 
     @Test
+    fun importedConversation_detailPrioritizesActionAndRecentMessages() {
+        runBlocking {
+            application.appContainer.importConversationUseCase(
+                sourceName = "long-sample.txt",
+                rawText = longConversation,
+            )
+        }
+
+        launchMainActivity()
+
+        clickText("저장한 대화 보기")
+        clickText("긴 샘플 채팅방")
+        waitForText("아직 정리하지 않았어요")
+        waitForText("최근 메시지")
+        waitForText("전체 10개 중 최근 8개만 먼저 보여줍니다.")
+        waitForText("전체 메시지 보기")
+        clickText("전체 메시지 보기")
+        waitForText("전체 메시지")
+    }
+
+    @Test
     fun importedConversation_canBeBrowsedAndAnalyzedAfterUserNameIsSaved() {
         runBlocking {
             application.appContainer.providerSettingsRepository.save(
@@ -287,6 +308,23 @@ class ReunionManagerAppTest {
             [현우] [오전 10:55] 오랜만이야
             [민지] [오전 10:56] 나도 가끔 생각났어
             [민지] [오전 10:57] 괜찮다면 천천히 이야기해도 돼
+        """.trimIndent()
+
+        val longConversation = """
+            긴 샘플 채팅방 카카오톡 대화
+            저장한 날짜 : 2024-04-05 01:36:14
+
+            --------------- 2024년 3월 27일 수요일 ---------------
+            [현우] [오전 10:51] 첫 번째 메시지
+            [민지] [오전 10:52] 두 번째 메시지
+            [현우] [오전 10:53] 세 번째 메시지
+            [민지] [오전 10:54] 네 번째 메시지
+            [현우] [오전 10:55] 다섯 번째 메시지
+            [민지] [오전 10:56] 여섯 번째 메시지
+            [현우] [오전 10:57] 일곱 번째 메시지
+            [민지] [오전 10:58] 여덟 번째 메시지
+            [현우] [오전 10:59] 아홉 번째 메시지
+            [민지] [오전 11:00] 열 번째 메시지
         """.trimIndent()
     }
 }
