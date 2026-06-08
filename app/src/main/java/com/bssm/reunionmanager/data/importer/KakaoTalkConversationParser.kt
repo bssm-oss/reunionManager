@@ -26,8 +26,9 @@ class KakaoTalkConversationParser {
     private val localZoneId: ZoneId = ZoneId.systemDefault()
 
     fun parse(fileName: String, rawText: String): ParsedConversation {
-        return parseMobileTextExport(fileName = fileName, rawText = rawText)
-            ?: parseCsvLikeExport(fileName = fileName, rawText = rawText)
+        val normalizedRawText = rawText.stripUtf8Bom()
+        return parseMobileTextExport(fileName = fileName, rawText = normalizedRawText)
+            ?: parseCsvLikeExport(fileName = fileName, rawText = normalizedRawText)
             ?: throw IllegalArgumentException("지원하는 카카오톡 대화 파일이 아닙니다. .txt 또는 CSV 내보내기 파일을 선택하세요.")
     }
 
@@ -236,10 +237,15 @@ class KakaoTalkConversationParser {
     }
 
     private fun String.toHeaderKey(): String {
-        return lowercase(Locale.ROOT)
+        return stripUtf8Bom()
+            .lowercase(Locale.ROOT)
             .replace(" ", "")
             .replace("_", "")
             .replace("-", "")
+    }
+
+    private fun String.stripUtf8Bom(): String {
+        return removePrefix("\uFEFF")
     }
 
     private fun String.extractTitle(fileName: String): String {

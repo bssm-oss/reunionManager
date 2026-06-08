@@ -62,6 +62,29 @@ class KakaoTalkConversationParserTest {
     }
 
     @Test
+    fun parse_supportsPcCsvExportWithUtf8Bom() {
+        val parsed = parser.parse(
+            fileName = "pc-export.csv",
+            rawText = "\uFEFF$pcCsvConversation",
+        )
+
+        assertEquals("pc-export", parsed.title)
+        assertEquals(listOf("민지", "현우"), parsed.participants)
+        assertEquals(4, parsed.messages.size)
+    }
+
+    @Test
+    fun parse_stripsUtf8BomFromMobileTitle() {
+        val parsed = parser.parse(
+            fileName = "sample.txt",
+            rawText = "\uFEFF$sampleConversation",
+        )
+
+        assertEquals("LLM RAG Langchain 통합", parsed.title)
+        assertEquals(listOf("가나다", "J", "ABC"), parsed.participants)
+    }
+
+    @Test
     fun parse_supportsCorpusStyleMessengerLines() {
         val parsed = parser.parse(
             fileName = "public-corpus-format.txt",
