@@ -264,6 +264,18 @@ class AnalysisScreenTitleTest {
     }
 
     @Test
+    fun copyPromptText_preservesContextualSafetyAfterCopy() {
+        assertEquals(
+            "복사됐어요. 상대가 불편하면 멈춰요.",
+            copyPromptText(copied = true, safetyNote = "상대가 불편하면 멈춰요."),
+        )
+        assertEquals(
+            "한 번만 보내고 기다려요.",
+            copyPromptText(copied = false, safetyNote = ""),
+        )
+    }
+
+    @Test
     fun analysisGenerateButtonText_separatesInitialDraftFromRegeneration() {
         assertEquals(
             "다음 행동 정리하기",

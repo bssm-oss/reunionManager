@@ -33,15 +33,15 @@ class SettingsScreenTest {
     @Test
     fun modelMessageTitle_matchesModelStorageAction() {
         assertEquals(
-            "모델 파일 제거됨",
+            "AI 모델 파일 제거됨",
             modelMessageTitle(providerSettings(userDisplayName = "현우"), "모델 파일을 제거하고 기본 정리로 전환했습니다."),
         )
         assertEquals(
-            "모델 파일 저장됨",
+            "AI 모델 파일 저장됨",
             modelMessageTitle(providerSettings(userDisplayName = "현우"), "gemma 모델을 복사했습니다."),
         )
         assertEquals(
-            "모델 실행 확인됨",
+            "AI 모델 준비됨",
             modelMessageTitle(
                 providerSettings(userDisplayName = "현우").copy(
                     verifiedModelPath = "/data/local/tmp/gemma-4-E4B-it.litertlm",

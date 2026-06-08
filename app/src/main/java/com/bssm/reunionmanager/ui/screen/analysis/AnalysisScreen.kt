@@ -322,10 +322,11 @@ internal fun perspectiveSetupSupportingText(
 }
 
 internal fun copyPromptText(copied: Boolean, safetyNote: String): String {
+    val note = safetyNote.ifBlank { "한 번만 보내고 기다려요." }
     return if (copied) {
-        "복사됐어요. 한 번만 보내고 기다려요."
+        "복사됐어요. $note"
     } else {
-        safetyNote
+        note
     }
 }
 

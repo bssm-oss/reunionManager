@@ -46,13 +46,13 @@ fun SettingsScreen(
         mutableStateOf(providerSettings.userDisplayName)
     }
     val modelStatusTitle = when {
-        !providerSettings.isConfigured -> "모델 없음"
-        providerSettings.isModelVerified -> "모델 실행 확인됨"
-        else -> "모델 점검 필요"
+        !providerSettings.isConfigured -> "기본 정리 사용 중"
+        providerSettings.isModelVerified -> "AI 모델 준비됨"
+        else -> "AI 모델 점검 필요"
     }
     val modelStatusBadge = when {
         !providerSettings.isConfigured -> "기본 정리"
-        providerSettings.isModelVerified -> "실행 확인됨"
+        providerSettings.isModelVerified -> "준비됨"
         else -> "점검 필요"
     }
     val modelStatusTone = when {
@@ -61,9 +61,9 @@ fun SettingsScreen(
         else -> ReunionBadgeTone.Accent
     }
     val modelStatusDescription = when {
-        !providerSettings.isConfigured -> "모델을 선택하기 전에는 기본 정리로 확인합니다."
-        providerSettings.isModelVerified -> "${providerSettings.modelName} 모델을 이 기기에서 실행 확인했습니다."
-        else -> "${providerSettings.modelName} 모델은 저장됐지만, 점검 전에는 기본 정리로 진행합니다."
+        !providerSettings.isConfigured -> "모델 없이도 오늘의 다음 행동을 정리할 수 있어요."
+        providerSettings.isModelVerified -> "AI 모델을 이 기기에서 실행 확인했습니다."
+        else -> "파일은 저장됐지만, 점검 전에는 기본 정리로 진행합니다."
     }
     val modelMessageTitle = modelMessageTitle(providerSettings, modelSettingsState.message)
     val modelMessageTone = if (providerSettings.isModelVerified) {
@@ -121,9 +121,9 @@ fun SettingsScreen(
             if (providerSettings.isConfigured) {
                 ReunionSecondaryButton(
                     text = when {
-                        modelSettingsState.isChecking -> "모델 점검 중..."
+                        modelSettingsState.isChecking -> "점검 중..."
                         providerSettings.isModelVerified -> "다시 점검"
-                        else -> "모델 실행 점검"
+                        else -> "실행 점검"
                     },
                     onClick = onVerifyModel,
                     enabled = !modelSettingsState.isChecking && !modelSettingsState.isLoading,
@@ -137,11 +137,11 @@ fun SettingsScreen(
             }
         }
         ReunionPane(
-            title = "모델 파일",
-            supportingText = "Gemma 4 .litertlm 파일만 이 기기에 저장됩니다.",
+            title = "AI 모델 파일",
+            supportingText = "선택한 파일은 이 기기에만 저장됩니다.",
         ) {
             ReunionSecondaryButton(
-                text = if (modelSettingsState.isLoading) "모델 복사 중..." else "모델 파일 선택",
+                text = if (modelSettingsState.isLoading) "파일 저장 중..." else "파일 선택",
                 onClick = { modelPickerLauncher.launch(arrayOf("application/octet-stream", "*/*")) },
                 enabled = !modelSettingsState.isLoading && !modelSettingsState.isChecking,
             )
@@ -168,7 +168,7 @@ fun SettingsScreen(
         }
         if (providerSettings.isConfigured) {
             ReunionSecondaryButton(
-                text = "모델 파일 제거",
+                text = "AI 모델 파일 제거",
                 onClick = {
                     providerSettings.demoModeSaveRequest(userDisplayName).dispatchTo(onSave)
                 },
@@ -207,9 +207,9 @@ internal fun modelMessageTitle(
     message: String?,
 ): String {
     return when {
-        message?.contains("제거") == true -> "모델 파일 제거됨"
-        providerSettings.isModelVerified -> "모델 실행 확인됨"
-        else -> "모델 파일 저장됨"
+        message?.contains("제거") == true -> "AI 모델 파일 제거됨"
+        providerSettings.isModelVerified -> "AI 모델 준비됨"
+        else -> "AI 모델 파일 저장됨"
     }
 }
 

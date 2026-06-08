@@ -68,9 +68,9 @@ class ReunionManagerAppTest {
         clickTextWithScroll("분석 설정")
 
         waitForText("내 카톡 이름")
-        waitForText("모델 파일")
-        waitForText("Gemma 4 .litertlm 파일만 이 기기에 저장됩니다.")
-        assertNotNull(device.findObject(By.text("모델 파일 선택")))
+        waitForText("AI 모델 파일")
+        waitForText("선택한 파일은 이 기기에만 저장됩니다.")
+        assertNotNull(device.findObject(By.text("파일 선택")))
         assertNotNull(device.findObject(By.text("기본 정리")))
     }
 
@@ -89,10 +89,10 @@ class ReunionManagerAppTest {
         launchMainActivity()
 
         clickTextWithScroll("분석 설정")
-        waitForText("모델 점검 필요")
-        waitForText("gemma-4-E4B-it.litertlm 모델은 저장됐지만, 점검 전에는 기본 정리로 진행합니다.")
+        waitForText("AI 모델 점검 필요")
+        waitForText("파일은 저장됐지만, 점검 전에는 기본 정리로 진행합니다.")
         waitForText("점검 필요")
-        waitForText("모델 실행 점검")
+        waitForText("실행 점검")
     }
 
     @Test
@@ -113,9 +113,9 @@ class ReunionManagerAppTest {
         launchMainActivity()
 
         clickTextWithScroll("분석 설정")
-        waitForText("모델 실행 확인됨")
-        waitForText("gemma-4-E4B-it.litertlm 모델을 이 기기에서 실행 확인했습니다.")
-        waitForText("실행 확인됨")
+        waitForText("AI 모델 준비됨")
+        waitForText("AI 모델을 이 기기에서 실행 확인했습니다.")
+        waitForText("준비됨")
         waitForText("다시 점검")
     }
 
