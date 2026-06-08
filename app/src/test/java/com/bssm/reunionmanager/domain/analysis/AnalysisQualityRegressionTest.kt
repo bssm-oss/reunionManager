@@ -45,6 +45,11 @@ class AnalysisQualityRegressionTest {
             qualityCase("relationship cleanup", counterpartBoundary("우리 관계는 정리하자"), "지금은 보류", "보내지 않습니다", "안부"),
             qualityCase("breakup", counterpartBoundary("이제 헤어지자"), "지금은 보류", "보내지 않습니다", "안부"),
             qualityCase("final end", counterpartBoundary("우리 끝이야"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart moved on emotionally", counterpartBoundary("나 이제 마음 정리했어"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart rejects reunion", counterpartBoundary("우리 다시 만나는 일은 없을 것 같아"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart has no plan to meet", counterpartBoundary("다시 볼 생각 없어"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart does not want contact", counterpartBoundary("너랑 연락하고 싶지 않아"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("counterpart does not want conversation", counterpartBoundary("지금은 얘기하고 싶지 않아"), "지금은 보류", "보내지 않습니다", "안부"),
             qualityCase("no pressure phrase", counterpartReply("부담 없으면 천천히 답해도 돼"), "아주 가볍게 가능", "메시지 봤어", "오랜만이야"),
             qualityCase("not trying to pressure", counterpartReply("부담 주려는 건 아니고 잘 지내는지만 궁금했어"), "아주 가볍게 가능", "메시지 봤어", "오랜만이야"),
             qualityCase("well-being reply", counterpartReply("잘 지내?"), "아주 가볍게 가능", "나는 잘 지내고 있어", "오랜만이야"),
@@ -74,7 +79,7 @@ class AnalysisQualityRegressionTest {
             qualityCase("light positive signal", lightPositive(), "아주 가볍게 가능", "짧게", "보내지 않습니다"),
         )
 
-        assertEquals(61, cases.size)
+        assertEquals(66, cases.size)
         cases.forEach { case ->
             val report = AnalysisSafetyRules.finalizeReport(optimisticGemmaReport, case.input)
 
