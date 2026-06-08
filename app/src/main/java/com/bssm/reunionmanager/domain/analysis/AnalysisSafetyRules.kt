@@ -243,6 +243,20 @@ object AnalysisSafetyRules {
         "미안한 줄",
         "늦었",
     )
+    private val impairedTimingPhrases = listOf(
+        "술 마",
+        "술마",
+        "술김",
+        "취해서",
+        "취했",
+        "취한",
+        "만취",
+        "새벽에",
+        "밤에 갑자기",
+        "잠이 안 와",
+        "잠이 안와",
+        "충동적으로",
+    )
 
     enum class AnalysisAction {
         RequirePerspective,
@@ -264,6 +278,7 @@ object AnalysisSafetyRules {
     fun evaluate(input: AnalysisInput): AnalysisDecision {
         val needsPerspectiveSetup = needsUserPerspective(input)
         val requiresHold = hasBoundarySignal(input) ||
+            hasImpairedTimingSignal(input) ||
             userFinalRunCount(input) >= 2 ||
             unknownFinalRunCount(input) >= 3
         val hasWeakContext = hasWeakReunionContext(input)
@@ -355,6 +370,7 @@ object AnalysisSafetyRules {
             input.perspectiveSummary.lineSequence().firstOrNull { it.startsWith("마지막 메시지 발신자 역할:") },
             input.perspectiveSummary.lineSequence().firstOrNull { it.startsWith("내 마지막 연속 발화:") },
             firstBoundaryLine(input)?.let { "신호: $it" },
+            impairedTimingEvidence(input),
         ).joinToString(separator = "\n")
     }
 
@@ -853,6 +869,25 @@ object AnalysisSafetyRules {
         }
     }
 
+    private fun hasImpairedTimingSignal(input: AnalysisInput): Boolean {
+        val lastSenderRole = input.perspectiveValue("마지막 메시지 발신자 역할:")
+        return (lastSenderRole == "나" || lastSenderRole == "알 수 없음") &&
+            input.lastRecentMessageContent().hasImpairedTimingPhrase()
+    }
+
+    private fun impairedTimingEvidence(input: AnalysisInput): String? {
+        return if (hasImpairedTimingSignal(input)) {
+            "타이밍: 마지막 메시지가 술기운이나 늦은 밤 충동성 연락처럼 보여 보류했습니다."
+        } else {
+            null
+        }
+    }
+
+    private fun String.hasImpairedTimingPhrase(): Boolean {
+        val normalized = replace(Regex("\\s+"), " ").trim().lowercase()
+        return impairedTimingPhrases.any { phrase -> normalized.contains(phrase) }
+    }
+
     private fun String.hasBoundaryPhrase(): Boolean {
         val normalized = replace(Regex("\\s+"), " ").trim().lowercase()
         if (hardBoundaryPhrases.any { phrase -> normalized.contains(phrase) }) {
@@ -872,5 +907,13 @@ object AnalysisSafetyRules {
             ?.let { value -> Regex("\\d+").find(value)?.value }
             ?.toIntOrNull()
             ?: 0
+    }
+
+    private fun AnalysisInput.perspectiveValue(label: String): String {
+        return perspectiveSummary.lineSequence()
+            .firstOrNull { line -> line.startsWith(label) }
+            ?.substringAfter(label)
+            ?.trim()
+            .orEmpty()
     }
 }

@@ -43,12 +43,14 @@ class AnalysisQualityRegressionTest {
             qualityCase("concrete meeting", counterpartReply("내일 7시에 카페에서 보자"), "아주 가볍게 가능", "약속한 시간", "안부부터"),
             qualityCase("counterpart asks why now", counterpartReply("왜 이제 와?"), "먼저 사과 필요", "미안", "안부"),
             qualityCase("counterpart questions sudden contact", counterpartReply("갑자기 왜 연락해?"), "먼저 사과 필요", "미안", "안부"),
+            qualityCase("user drunk late night message", userImpairedTiming("술 마셔서 그런지 보고 싶어"), "지금은 보류", "보내지 않습니다", "오랜만이야"),
+            qualityCase("user midnight impulse", userImpairedTiming("새벽에 잠이 안 와서 연락했어"), "지금은 보류", "보내지 않습니다", "오랜만이야"),
             qualityCase("technical group chat", technicalGroup(), "정보 부족", "보낼 문장을 만들지 않습니다", "오랜만이야"),
             qualityCase("two-person work chat", technicalTwoPerson(), "정보 부족", "보낼 문장을 만들지 않습니다", "오랜만이야"),
             qualityCase("light positive signal", lightPositive(), "아주 가볍게 가능", "짧게", "보내지 않습니다"),
         )
 
-        assertEquals(35, cases.size)
+        assertEquals(37, cases.size)
         cases.forEach { case ->
             val report = AnalysisSafetyRules.finalizeReport(optimisticGemmaReport, case.input)
 
@@ -157,6 +159,14 @@ class AnalysisQualityRegressionTest {
             recentExcerpt = recentLines.joinToString(separator = "\n"),
             signalExcerpt = recentLines.last(),
             perspectiveSummary = configuredPerspective("나", myFinalRun = count),
+        )
+    }
+
+    private fun userImpairedTiming(message: String): AnalysisInput {
+        return input(
+            recentExcerpt = "민지: 잘 지내?\n현우: $message",
+            signalExcerpt = "현우: $message",
+            perspectiveSummary = configuredPerspective("나", myFinalRun = 1),
         )
     }
 
