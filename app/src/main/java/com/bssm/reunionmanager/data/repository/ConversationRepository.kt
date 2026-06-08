@@ -80,9 +80,9 @@ class ConversationRepository(
         rawText: String,
         sourceName: String,
     ): ImportConversationResult {
-        // Duplicate protection is based on the raw imported transcript so the same conversation is
-        // not saved twice under different filenames.
-        val sourceHash = rawText.sha256()
+        // Duplicate protection is still based on the imported transcript, with the UTF-8 BOM
+        // normalized away so the same file is not saved twice because of an encoding marker.
+        val sourceHash = rawText.stripUtf8Bom().sha256()
         conversationDao.findIdBySourceHash(sourceHash)?.let { existingId ->
             return ImportConversationResult.Duplicate(existingId)
         }
@@ -161,6 +161,10 @@ class ConversationRepository(
     private fun String.sha256(): String {
         val bytes = MessageDigest.getInstance("SHA-256").digest(toByteArray())
         return bytes.joinToString(separator = "") { byte -> "%02x".format(byte) }
+    }
+
+    private fun String.stripUtf8Bom(): String {
+        return removePrefix("\uFEFF")
     }
 
     private fun AnalysisResultEntity.toDomainModel(): AnalysisReport {

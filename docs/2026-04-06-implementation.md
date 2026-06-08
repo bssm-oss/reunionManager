@@ -44,7 +44,7 @@ The current MVP implementation supports one grounded local-first flow:
 
 ## Import Rules
 
-- duplicate protection uses a SHA-256 hash of the raw imported text
+- duplicate protection uses a SHA-256 hash of the imported text after stripping a leading UTF-8 BOM marker
 - multiline text after a recognized message line is appended to the prior message
 - PC CSV-style rows with date/user/message columns are supported
 - anonymized corpus-style rows like `YYYY-MM-DD HH:mm:ss , P1 : message` are supported

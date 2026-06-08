@@ -116,6 +116,23 @@ class ConversationRepositoryTest {
     }
 
     @Test
+    fun importConversation_returnsDuplicateWhenOnlyUtf8BomDiffers() = runTest {
+        repository.importConversation(
+            parsedConversation = sampleParsedConversation,
+            rawText = "same exported transcript",
+            sourceName = "sample.txt",
+        )
+
+        val result = repository.importConversation(
+            parsedConversation = sampleParsedConversation,
+            rawText = "\uFEFFsame exported transcript",
+            sourceName = "sample-with-bom.txt",
+        )
+
+        assertTrue(result is ImportConversationResult.Duplicate)
+    }
+
+    @Test
     fun buildAnalysisInput_includesRecentSignalsAndStats() = runTest {
         val result = repository.importConversation(
             parsedConversation = signalHeavyConversation,
