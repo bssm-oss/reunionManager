@@ -55,12 +55,13 @@ class AnalysisQualityRegressionTest {
             qualityCase("user midnight impulse", userImpairedTiming("새벽에 잠이 안 와서 연락했어"), "지금은 보류", "보내지 않습니다", "오랜만이야"),
             qualityCase("user asks why no reply", userUnansweredPressure("왜 답이 없어?"), "지금은 보류", "보내지 않습니다", "오랜만이야"),
             qualityCase("user calls read ignored", userUnansweredPressure("읽씹이야?"), "지금은 보류", "보내지 않습니다", "오랜만이야"),
+            qualityCase("personal signals in group chat", personalGroup(), "정보 부족", "보낼 문장을 만들지 않습니다", "오랜만이야"),
             qualityCase("technical group chat", technicalGroup(), "정보 부족", "보낼 문장을 만들지 않습니다", "오랜만이야"),
             qualityCase("two-person work chat", technicalTwoPerson(), "정보 부족", "보낼 문장을 만들지 않습니다", "오랜만이야"),
             qualityCase("light positive signal", lightPositive(), "아주 가볍게 가능", "짧게", "보내지 않습니다"),
         )
 
-        assertEquals(47, cases.size)
+        assertEquals(48, cases.size)
         cases.forEach { case ->
             val report = AnalysisSafetyRules.finalizeReport(optimisticGemmaReport, case.input)
 
@@ -244,6 +245,15 @@ class AnalysisQualityRegressionTest {
             recentExcerpt = "준호: RAG 테스트 결과 공유할게\n민지: LLM 모델 API 응답이 느려",
             signalExcerpt = "",
             perspectiveSummary = configuredPerspective("상대", counterpartFinalRun = 1, counterpartRecent = "LLM 모델 API 응답이 느려"),
+        )
+    }
+
+    private fun personalGroup(): AnalysisInput {
+        return input(
+            participants = listOf("현우", "민지", "준호"),
+            recentExcerpt = "준호: 다들 잘 지내?\n민지: 나도 가끔 생각났어",
+            signalExcerpt = "민지: 나도 가끔 생각났어",
+            perspectiveSummary = configuredPerspective("상대", counterpartFinalRun = 1, counterpartRecent = "나도 가끔 생각났어"),
         )
     }
 

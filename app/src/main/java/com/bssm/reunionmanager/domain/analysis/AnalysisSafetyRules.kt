@@ -361,10 +361,13 @@ object AnalysisSafetyRules {
     }
 
     fun hasWeakReunionContext(input: AnalysisInput): Boolean {
+        if (input.participantNames.size > 2) {
+            return true
+        }
         if (hasStrongPersonalSignal(input)) {
             return false
         }
-        return input.participantNames.size > 2 || looksTechnicalOrTransactional(input)
+        return looksTechnicalOrTransactional(input)
     }
 
     fun needsUserPerspective(input: AnalysisInput): Boolean {
