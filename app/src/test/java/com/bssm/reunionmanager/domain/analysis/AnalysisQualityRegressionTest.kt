@@ -185,6 +185,54 @@ class AnalysisQualityRegressionTest {
         assertTrue(report.messageDraft.contains("보낼 문장을 만들지 않습니다"))
     }
 
+    @Test
+    fun finalizeReport_prioritizesGuardrailEvidenceOverModelEvidence() {
+        val report = AnalysisSafetyRules.finalizeReport(
+            optimisticGemmaReport.copy(evidence = "모델은 연락 가능성이 있다고 판단했습니다."),
+            counterpartBoundary("이제 연락하지 말아줘"),
+        )
+
+        assertEquals("지금은 보류", report.contactReadiness)
+        assertTrue(report.evidence.lineSequence().first().startsWith("규칙 보정"))
+        assertTrue(report.evidence.contains("모델은 연락 가능성이 있다고 판단했습니다."))
+    }
+
+    @Test
+    fun finalizeReport_prioritizesPerspectiveEvidenceOverModelEvidence() {
+        val report = AnalysisSafetyRules.finalizeReport(
+            optimisticGemmaReport.copy(evidence = "모델은 상대가 긍정적이라고 판단했습니다."),
+            missingPerspective(),
+        )
+
+        assertEquals("정보 부족", report.contactReadiness)
+        assertTrue(report.evidence.lineSequence().first().startsWith("관점 확인"))
+        assertTrue(report.evidence.contains("모델은 상대가 긍정적이라고 판단했습니다."))
+    }
+
+    @Test
+    fun finalizeReport_prioritizesWeakContextEvidenceOverModelEvidence() {
+        val report = AnalysisSafetyRules.finalizeReport(
+            optimisticGemmaReport.copy(evidence = "모델은 대화가 개인적이라고 판단했습니다."),
+            technicalTwoPerson(),
+        )
+
+        assertEquals("정보 부족", report.contactReadiness)
+        assertTrue(report.evidence.lineSequence().first().startsWith("맥락 확인"))
+        assertTrue(report.evidence.contains("모델은 대화가 개인적이라고 판단했습니다."))
+    }
+
+    @Test
+    fun finalizeReport_prioritizesReplyEvidenceOverModelEvidence() {
+        val report = AnalysisSafetyRules.finalizeReport(
+            optimisticGemmaReport.copy(evidence = "모델은 첫 연락으로 판단했습니다."),
+            counterpartReply("잘 지내?"),
+        )
+
+        assertEquals("아주 가볍게 가능", report.contactReadiness)
+        assertTrue(report.evidence.lineSequence().first().startsWith("상대가 마지막에 메시지를 남긴 상태"))
+        assertTrue(report.evidence.contains("모델은 첫 연락으로 판단했습니다."))
+    }
+
     private data class QualityCase(
         val name: String,
         val input: AnalysisInput,

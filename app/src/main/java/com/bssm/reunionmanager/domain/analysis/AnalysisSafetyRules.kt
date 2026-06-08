@@ -649,7 +649,7 @@ object AnalysisSafetyRules {
             AnalysisAction.RequirePerspective -> report.copy(
                 headline = "내 이름 확인",
                 contactReadiness = UNKNOWN,
-                evidence = appendEvidence(report.evidence, decision.evidence),
+                evidence = appendEvidence(decision.evidence, report.evidence),
                 relationshipSummary = if (hasUserNameMismatch(input)) {
                     "저장한 내 카톡 이름이 대화 참가자 이름과 달라 답장인지 첫 연락인지 확정할 수 없습니다."
                 } else {
@@ -680,7 +680,7 @@ object AnalysisSafetyRules {
 
             AnalysisAction.HoldContact -> report.copy(
                 contactReadiness = HOLD,
-                evidence = appendEvidence(report.evidence, decision.evidence),
+                evidence = appendEvidence(decision.evidence, report.evidence),
                 reunionObjective = "상대에게 다시 부담을 주지 않는 것이 우선입니다.",
                 nextStep = "오늘은 보내지 말고, 경계 표현이나 내가 반복해서 보낸 메시지를 먼저 다시 확인하세요.",
                 messageDraft = "오늘은 보내지 않습니다. 상대가 먼저 답하거나 시간이 충분히 지난 뒤 다시 판단하세요.",
@@ -691,7 +691,7 @@ object AnalysisSafetyRules {
             AnalysisAction.CheckContext -> report.copy(
                 headline = "관계 맥락 확인",
                 contactReadiness = UNKNOWN,
-                evidence = appendEvidence(report.evidence, decision.evidence),
+                evidence = appendEvidence(decision.evidence, report.evidence),
                 relationshipSummary = "이 대화만으로는 재회 판단에 필요한 1:1 개인 관계 맥락이 충분하지 않습니다.",
                 reunionObjective = "보낼 문장을 만들기보다 분석 대상 대화가 맞는지 먼저 확인하는 것이 목표입니다.",
                 nextStep = "오늘은 보내지 말고, 1:1 개인 관계 대화인지 또는 더 관련 있는 대화 파일이 있는지 먼저 확인하세요.",
@@ -703,7 +703,7 @@ object AnalysisSafetyRules {
             AnalysisAction.ReplyToCounterpart -> report.copy(
                 headline = if (input.hasCounterpartRepairSignal()) "짧은 사과 먼저" else report.headline,
                 contactReadiness = if (input.hasCounterpartRepairSignal()) APOLOGY else report.contactReadiness,
-                evidence = appendEvidence(report.evidence, decision.evidence),
+                evidence = appendEvidence(decision.evidence, report.evidence),
                 relationshipSummary = if (input.hasCounterpartRepairSignal()) {
                     "상대의 마지막 말에는 불편함이나 서운함이 섞여 있어 가벼운 안부보다 먼저 인정이 필요합니다."
                 } else {
