@@ -457,6 +457,22 @@ object AnalysisSafetyRules {
             containsAny(lastMessage, "미안", "사과") -> {
                 "말해줘서 고마워. 나도 차분히 듣고 싶어. 부담 없으면 천천히 이야기하자."
             }
+            lastMessage.hasRestClosingSignal() -> {
+                if (hasDelayedCounterpartReply(input)) {
+                    "늦게 봤네. 메시지 고마워."
+                } else {
+                    "응, 너도 잘 자."
+                }
+            }
+            lastMessage.hasCareClosingSignal() -> {
+                "고마워. 너도 조심히 들어가."
+            }
+            lastMessage.hasEffortClosingSignal() -> {
+                "고마워. 너도 수고했어."
+            }
+            lastMessage.hasMealCheckSignal() -> {
+                "응, 챙겨 먹었어. 물어봐줘서 고마워."
+            }
             lastMessage.hasConcreteScheduleSignal() -> {
                 "${opening}좋아, 약속한 시간에 맞춰 갈게. 고마워."
             }
@@ -495,6 +511,30 @@ object AnalysisSafetyRules {
                 counterpartReplyDraft(input),
                 "${opening}좋아, 가능한 시간 확인해서 알려줄게.",
                 "${opening}괜찮다면 시간 맞춰보자. 고마워.",
+            )
+        } else if (lastMessage.hasRestClosingSignal()) {
+            listOf(
+                counterpartReplyDraft(input),
+                "고마워. 너도 편히 쉬어.",
+                "응, 좋은 밤 보내.",
+            )
+        } else if (lastMessage.hasCareClosingSignal()) {
+            listOf(
+                counterpartReplyDraft(input),
+                "고마워. 너도 조심히 들어가.",
+                "응, 도착하면 편히 쉬어.",
+            )
+        } else if (lastMessage.hasEffortClosingSignal()) {
+            listOf(
+                counterpartReplyDraft(input),
+                "고마워. 너도 오늘 수고했어.",
+                "응, 푹 쉬어.",
+            )
+        } else if (lastMessage.hasMealCheckSignal()) {
+            listOf(
+                counterpartReplyDraft(input),
+                "응, 챙겨 먹었어. 너도 잘 챙겨 먹어.",
+                "물어봐줘서 고마워. 너도 식사 잘 챙겨.",
             )
         } else {
             listOf(
@@ -787,6 +827,14 @@ object AnalysisSafetyRules {
             "안부",
             "부담 없이",
             "부담 없",
+            "잘 자",
+            "잘자",
+            "수고",
+            "고생",
+            "조심",
+            "들어가",
+            "챙겨 먹",
+            "식사",
             "그때 보자",
             "늦지 않게",
         )
@@ -817,6 +865,22 @@ object AnalysisSafetyRules {
             "볼 수",
             "언제",
         )
+    }
+
+    private fun String.hasRestClosingSignal(): Boolean {
+        return containsAny(this, "잘 자", "잘자", "굿밤", "좋은 밤", "푹 쉬", "편히 쉬")
+    }
+
+    private fun String.hasCareClosingSignal(): Boolean {
+        return containsAny(this, "잘 들어가", "조심히", "조심해서", "도착하면", "집 잘")
+    }
+
+    private fun String.hasEffortClosingSignal(): Boolean {
+        return containsAny(this, "수고했", "수고해", "고생했", "고생 많")
+    }
+
+    private fun String.hasMealCheckSignal(): Boolean {
+        return containsAny(this, "밥 먹었", "밥은 먹", "식사했", "식사는", "끼니")
     }
 
     private fun AnalysisInput.hasCounterpartRepairSignal(): Boolean {

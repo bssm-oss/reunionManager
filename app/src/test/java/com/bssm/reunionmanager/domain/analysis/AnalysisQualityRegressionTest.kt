@@ -43,6 +43,10 @@ class AnalysisQualityRegressionTest {
             qualityCase("no pressure phrase", counterpartReply("부담 없으면 천천히 답해도 돼"), "아주 가볍게 가능", "메시지 봤어", "오랜만이야"),
             qualityCase("not trying to pressure", counterpartReply("부담 주려는 건 아니고 잘 지내는지만 궁금했어"), "아주 가볍게 가능", "메시지 봤어", "오랜만이야"),
             qualityCase("well-being reply", counterpartReply("잘 지내?"), "아주 가볍게 가능", "나는 잘 지내고 있어", "오랜만이야"),
+            qualityCase("counterpart says good night", counterpartReply("잘 자"), "아주 가볍게 가능", "너도 잘 자", "안부"),
+            qualityCase("counterpart says good work", counterpartReply("오늘 수고했어"), "아주 가볍게 가능", "너도 수고했어", "안부"),
+            qualityCase("counterpart says get home safe", counterpartReply("조심히 들어가"), "아주 가볍게 가능", "조심히 들어가", "안부"),
+            qualityCase("counterpart asks meal check", counterpartReply("밥 먹었어?"), "아주 가볍게 가능", "챙겨 먹었어", "안부"),
             qualityCase("schedule question", counterpartReply("토요일 저녁에 시간 돼?"), "아주 가볍게 가능", "가능한지 확인", "약속한 시간"),
             qualityCase("concrete meeting", counterpartReply("내일 7시에 카페에서 보자"), "아주 가볍게 가능", "약속한 시간", "안부부터"),
             qualityCase("counterpart asks why now", counterpartReply("왜 이제 와?"), "먼저 사과 필요", "미안", "안부"),
@@ -56,7 +60,7 @@ class AnalysisQualityRegressionTest {
             qualityCase("light positive signal", lightPositive(), "아주 가볍게 가능", "짧게", "보내지 않습니다"),
         )
 
-        assertEquals(43, cases.size)
+        assertEquals(47, cases.size)
         cases.forEach { case ->
             val report = AnalysisSafetyRules.finalizeReport(optimisticGemmaReport, case.input)
 
@@ -139,6 +143,22 @@ class AnalysisQualityRegressionTest {
         assertEquals("답을 재촉하지 말고 상대의 속도를 존중하세요.", report.caution)
         assertFalse(report.alternativeDrafts.contains("왜 답"))
         assertFalse(report.alternativeDrafts.contains("읽씹"))
+    }
+
+    @Test
+    fun finalizeReport_keepsEverydayCounterpartRepliesLowPressure() {
+        val report = AnalysisSafetyRules.finalizeReport(
+            optimisticGemmaReport.copy(
+                messageDraft = "오랜만이야. 잘 지냈어?",
+                alternativeDrafts = "오랜만이야\n잘 지내?\n잠깐 얘기할 수 있어?",
+            ),
+            counterpartReply("잘 자"),
+        )
+
+        assertEquals("응, 너도 잘 자.", report.messageDraft)
+        assertTrue(report.alternativeDrafts.contains("편히 쉬어"))
+        assertFalse(report.messageDraft.contains("오랜만"))
+        assertFalse(report.alternativeDrafts.contains("안부 전하고 싶었어"))
     }
 
     private data class QualityCase(
