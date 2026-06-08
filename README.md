@@ -62,6 +62,15 @@
 ./gradlew connectedDebugAndroidTest
 ```
 
+실제 `.litertlm` 모델 파일까지 확인하려면 모델을 기기에 올린 뒤 smoke test에 경로를 넘깁니다. 에뮬레이터에서는 LiteRT-LM 네이티브 런타임이 `SIGILL`로 종료될 수 있으므로, 최종 모델 추론 검증은 실제 ARM64 기기에서 확인해야 합니다.
+
+```bash
+adb push /path/to/gemma-4-E2B-it.litertlm /data/local/tmp/gemma-4-E2B-it.litertlm
+./gradlew connectedDebugAndroidTest \
+  -Pandroid.testInstrumentationRunnerArguments.class=com.bssm.reunionmanager.data.analysis.Gemma4AnalysisProviderDeviceSmokeTest \
+  -Pandroid.testInstrumentationRunnerArguments.gemmaModelPath=/data/local/tmp/gemma-4-E2B-it.litertlm
+```
+
 직접 실행하려면 debug APK를 설치한 뒤 앱을 시작합니다.
 
 ```bash
