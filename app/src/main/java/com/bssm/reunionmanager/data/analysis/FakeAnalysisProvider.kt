@@ -130,22 +130,25 @@ class FakeAnalysisProvider : AnalysisProvider {
             decision.action == AnalysisSafetyRules.AnalysisAction.HoldContact -> "지금은 보류"
             decision.action == AnalysisSafetyRules.AnalysisAction.CheckContext -> "정보 부족"
             AnalysisSafetyRules.counterpartFinalRunCount(this) > 0 &&
-                AnalysisSafetyRules.containsAny(
-                    combined,
-                    "생각났",
-                    "잘 지내",
-                    "잘지내",
-                    "괜찮",
-                    "좋아",
-                    "고마워",
-                    "안부",
-                    "보자",
-                    "만나",
-                    "카페",
-                    "밥",
-                    "시간",
-                    "약속",
-                ) -> "아주 가볍게 가능"
+                (
+                    AnalysisSafetyRules.hasCounterpartPermissionSignal(combined) ||
+                        AnalysisSafetyRules.containsAny(
+                            combined,
+                            "생각났",
+                            "잘 지내",
+                            "잘지내",
+                            "괜찮",
+                            "좋아",
+                            "고마워",
+                            "안부",
+                            "보자",
+                            "만나",
+                            "카페",
+                            "밥",
+                            "시간",
+                            "약속",
+                        )
+                    ) -> "아주 가볍게 가능"
             AnalysisSafetyRules.containsAny(combined, "미안", "사과", "화나", "힘들") -> "먼저 사과 필요"
             AnalysisSafetyRules.containsAny(combined, "보고싶", "보고 싶", "생각났", "잘 지내", "잘지내", "괜찮", "좋아") -> "아주 가볍게 가능"
             else -> "정보 부족"

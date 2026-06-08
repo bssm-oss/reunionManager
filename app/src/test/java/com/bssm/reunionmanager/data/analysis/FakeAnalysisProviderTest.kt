@@ -126,6 +126,23 @@ class FakeAnalysisProviderTest {
     }
 
     @Test
+    fun analyze_treatsExplicitPermissionAsReplyOpportunity() = runTest {
+        val result = FakeAnalysisProvider().analyze(
+            inputWithSignals(
+                recentExcerpt = "Alex: 괜찮다면 짧게 이야기할 수 있을까?\nMinji: 연락해도 돼",
+                signalExcerpt = "Minji: 연락해도 돼",
+                statsSummary = "마지막 메시지: 연락해도 돼\n마지막 발신자의 연속 발화: 1개",
+                perspectiveSummary = "내 카톡 이름: Alex\n상대 후보: Minji\n마지막 메시지 발신자 역할: 상대\n마지막 연속 발화 역할: 상대 1개\n내 최근 메시지: 괜찮다면 짧게 이야기할 수 있을까?\n상대 최근 메시지: 연락해도 돼\n내 마지막 연속 발화: 0개\n상대 마지막 연속 발화: 1개",
+            ),
+        )
+
+        assertTrue(result.contactReadiness.contains("가볍게"))
+        assertTrue(result.messageDraft.contains("고마워"))
+        assertTrue(result.messageDraft.contains("부담 없이"))
+        assertFalse(result.messageDraft.contains("오랜만이야"))
+    }
+
+    @Test
     fun analyze_mentionsLateReplyOnlyWhenExportShowsDelay() = runTest {
         val result = FakeAnalysisProvider().analyze(
             inputWithSignals(

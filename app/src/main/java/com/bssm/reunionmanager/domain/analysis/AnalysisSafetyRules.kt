@@ -320,6 +320,28 @@ object AnalysisSafetyRules {
         "미안한 줄",
         "늦었",
     )
+    private val counterpartPermissionPhrases = listOf(
+        "연락해도 돼",
+        "연락해도 됩니다",
+        "연락해도 괜찮",
+        "답해도 돼",
+        "답해도 됩니다",
+        "답해도 괜찮",
+        "답장해도 돼",
+        "답장해도 됩니다",
+        "답장해도 괜찮",
+        "카톡해도 돼",
+        "카톡해도 됩니다",
+        "카톡해도 괜찮",
+        "문자해도 돼",
+        "문자해도 됩니다",
+        "문자해도 괜찮",
+        "편하게 연락",
+        "편히 연락",
+        "연락 줘",
+        "연락줘",
+        "연락해줘",
+    )
     private val impairedTimingPhrases = listOf(
         "술 마",
         "술마",
@@ -533,6 +555,9 @@ object AnalysisSafetyRules {
             containsAny(lastMessage, "고마워", "고맙") -> {
                 "${opening}고마워. 부담 없으면 천천히 이야기해도 괜찮아."
             }
+            hasCounterpartPermissionSignal(lastMessage) -> {
+                "${opening}고마워. 부담 없이 천천히 안부부터 이야기하자."
+            }
             containsAny(lastMessage, "미안", "사과") -> {
                 "말해줘서 고마워. 나도 차분히 듣고 싶어. 부담 없으면 천천히 이야기하자."
             }
@@ -591,6 +616,12 @@ object AnalysisSafetyRules {
                 "${opening}좋아, 가능한 시간 확인해서 알려줄게.",
                 "${opening}괜찮다면 시간 맞춰보자. 고마워.",
             )
+        } else if (hasCounterpartPermissionSignal(lastMessage)) {
+            listOf(
+                counterpartReplyDraft(input),
+                "${opening}고마워. 나도 천천히 이야기하고 싶어.",
+                "${opening}부담 없으면 짧게 안부부터 나누자.",
+            )
         } else if (lastMessage.hasRestClosingSignal()) {
             listOf(
                 counterpartReplyDraft(input),
@@ -638,6 +669,11 @@ object AnalysisSafetyRules {
 
     fun containsAny(text: String, vararg keywords: String): Boolean {
         return keywords.any { keyword -> text.contains(keyword, ignoreCase = true) }
+    }
+
+    fun hasCounterpartPermissionSignal(text: String): Boolean {
+        val normalized = text.replace(Regex("\\s+"), " ").trim().lowercase()
+        return counterpartPermissionPhrases.any { phrase -> normalized.contains(phrase) }
     }
 
     private fun applyDecision(

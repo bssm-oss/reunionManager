@@ -124,6 +124,33 @@ class LocalAnalysisSwarmProviderTest {
     }
 
     @Test
+    fun analyze_rewritesPermissionSignalAsLowPressureReply() = runTest {
+        val provider = LocalAnalysisSwarmProvider(
+            draftProvider = StaticProvider(
+                optimisticDraft.copy(
+                    messageDraft = "오랜만이야. 잘 지냈어?",
+                    alternativeDrafts = "오랜만이야\n잘 지내?\n잠깐 얘기할 수 있어?",
+                ),
+            ),
+            baselineProvider = StaticProvider(optimisticDraft),
+        )
+
+        val result = provider.analyze(
+            input(
+                recentExcerpt = "현우: 괜찮다면 짧게 이야기할 수 있을까?\n민지: 연락해도 돼",
+                signalExcerpt = "민지: 연락해도 돼",
+                perspectiveSummary = configuredPerspective(lastSenderRole = "상대", counterpartFinalRun = 1),
+            ),
+        )
+
+        assertEquals("아주 가볍게 가능", result.contactReadiness)
+        assertTrue(result.messageDraft.contains("고마워"))
+        assertTrue(result.messageDraft.contains("부담 없이"))
+        assertFalse(result.messageDraft.contains("오랜만이야"))
+        assertTrue(result.evidence.contains("로컬 병렬 검수"))
+    }
+
+    @Test
     fun analyze_addsConcreteParallelReviewEvidence() = runTest {
         val provider = LocalAnalysisSwarmProvider(
             draftProvider = StaticProvider(optimisticDraft),
