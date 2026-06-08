@@ -78,6 +78,33 @@ class AnalysisQualityRegressionTest {
         assertEquals("답을 재촉하지 말고 상대의 속도를 존중하세요.", report.caution)
     }
 
+    @Test
+    fun finalizeReport_replacesHighPressureModelGuidance() {
+        val rawReport = optimisticGemmaReport.copy(
+            contactReadiness = "아주 가볍게 가능",
+            reunionObjective = "다시 만나자고 설득해서 관계를 회복합니다.",
+            nextStep = "지금 바로 집 앞에 찾아가 다시 시작하자고 말하세요.",
+            messageDraft = "보고 싶어. 다시 시작하자. 한 번만 기회 줘.",
+            alternativeDrafts = """
+                사랑해. 다시 만나자.
+                집 앞에서 기다릴게.
+                오랜만이야. 잘 지내?
+            """.trimIndent(),
+            caution = "선물을 들고 직접 만나러 가세요.",
+        )
+
+        val report = AnalysisSafetyRules.finalizeReport(rawReport, lightPositive())
+
+        assertEquals("아주 가볍게 가능", report.contactReadiness)
+        assertEquals("가벼운 안부 한 문장으로 상대의 현재 온도를 확인하는 것이 목표입니다.", report.reunionObjective)
+        assertEquals("긴 설명을 보내지 말고 최근 대화를 한 번 읽은 뒤 짧은 한 문장만 준비하세요.", report.nextStep)
+        assertEquals("오랜만이야. 갑자기 부담 주려는 건 아니고, 괜찮다면 짧게 안부만 묻고 싶어.", report.messageDraft)
+        assertEquals("답을 재촉하지 말고 상대의 속도를 존중하세요.", report.caution)
+        assertFalse(report.alternativeDrafts.contains("사랑"))
+        assertFalse(report.alternativeDrafts.contains("집 앞"))
+        assertFalse(report.alternativeDrafts.contains("기회"))
+    }
+
     private data class QualityCase(
         val name: String,
         val input: AnalysisInput,

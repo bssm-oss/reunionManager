@@ -9,7 +9,33 @@ object AnalysisSafetyRules {
     private const val LIGHT_CONTACT = "아주 가볍게 가능"
     private const val UNKNOWN = "정보 부족"
     private const val MAX_DRAFT_LENGTH = 90
+    private const val MAX_GUIDANCE_LENGTH = 110
     private val allowedReadiness = listOf(HOLD, APOLOGY, LIGHT_CONTACT, UNKNOWN)
+    private val highPressureContactPhrases = listOf(
+        "적극 연락",
+        "지금 바로",
+        "바로 만나",
+        "바로 전화",
+        "직접 만나",
+        "집 근처",
+        "학교 앞",
+        "회사 앞",
+        "선물",
+        "꽃",
+        "사랑해",
+        "사랑했",
+        "보고 싶",
+        "보고싶",
+        "그리워",
+        "다시 만나",
+        "다시 시작",
+        "재회하자",
+        "기회 줘",
+        "기회를 줘",
+        "기회 한 번",
+        "돌아와",
+        "돌아와줘",
+    )
     private val unsafeDraftPhrases = listOf(
         "여러 번",
         "계속 보내",
@@ -32,7 +58,7 @@ object AnalysisSafetyRules {
         "길게 설명",
         "붙잡",
         "당장",
-    )
+    ) + highPressureContactPhrases
     private val unsafeInstructionPhrases = listOf(
         "여러 번 보내",
         "계속 보내",
@@ -48,7 +74,7 @@ object AnalysisSafetyRules {
         "전화할게",
         "바로 전화",
         "당장",
-    )
+    ) + highPressureContactPhrases
     private val hardBoundaryPhrases = listOf(
         "연락하지",
         "답장하지",
@@ -285,8 +311,14 @@ object AnalysisSafetyRules {
             headline = report.headline.trim().ifBlank { "다시 연락하기 전 확인할 점" },
             evidence = report.evidence.trim().ifBlank { "대화 근거가 부족해 최근 흐름을 더 확인해야 합니다." },
             relationshipSummary = report.relationshipSummary.trim().ifBlank { "대화 흐름을 단정하지 말고 천천히 확인하세요." },
-            reunionObjective = report.reunionObjective.trim().ifBlank { defaultObjective(readiness, input) },
-            nextStep = report.nextStep.trim().ifBlank { defaultNextStep(readiness, input) },
+            reunionObjective = sanitizeGuidance(
+                value = report.reunionObjective,
+                fallback = defaultObjective(readiness, input),
+            ),
+            nextStep = sanitizeGuidance(
+                value = report.nextStep,
+                fallback = defaultNextStep(readiness, input),
+            ),
             messageDraft = sanitizeDraft(readiness, report.messageDraft, input),
             alternativeDrafts = sanitizeAlternatives(readiness, report.alternativeDrafts),
             caution = sanitizeCaution(readiness, report.caution),
@@ -508,6 +540,14 @@ object AnalysisSafetyRules {
             }
         }
         return lines.take(3).joinToString(separator = "\n")
+    }
+
+    private fun sanitizeGuidance(value: String, fallback: String): String {
+        val trimmed = value.firstDraftLine()
+        return when {
+            trimmed.isBlank() || trimmed.length > MAX_GUIDANCE_LENGTH || trimmed.hasUnsafeInstructionPhrase() -> fallback
+            else -> trimmed
+        }
     }
 
     private fun sanitizeCaution(readiness: String, caution: String): String {
