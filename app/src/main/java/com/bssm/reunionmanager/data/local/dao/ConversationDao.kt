@@ -23,4 +23,7 @@ interface ConversationDao {
 
     @Query("SELECT id FROM conversations WHERE sourceHash = :sourceHash LIMIT 1")
     suspend fun findIdBySourceHash(sourceHash: String): Long?
+
+    @Query("DELETE FROM conversations WHERE id = :conversationId")
+    suspend fun deleteById(conversationId: Long): Int
 }

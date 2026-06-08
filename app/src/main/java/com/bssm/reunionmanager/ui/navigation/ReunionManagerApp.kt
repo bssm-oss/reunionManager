@@ -179,6 +179,10 @@ fun ReunionManagerApp() {
                     onOpenAnalysis = {
                         navController.navigate(ReunionDestination.Analysis.createRoute(conversationId))
                     },
+                    onDeleteConversation = {
+                        viewModel.deleteConversation(conversationId)
+                        navController.popBackStack()
+                    },
                 )
             }
             composable(

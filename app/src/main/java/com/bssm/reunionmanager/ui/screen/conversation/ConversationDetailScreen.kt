@@ -34,6 +34,7 @@ import java.time.format.DateTimeFormatter
 fun ConversationDetailScreen(
     detail: ConversationDetail?,
     onOpenAnalysis: () -> Unit,
+    onDeleteConversation: () -> Unit = {},
 ) {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
 
@@ -52,6 +53,7 @@ fun ConversationDetailScreen(
     }
 
     var showAllMessages by remember(detail.id) { mutableStateOf(false) }
+    var isConfirmingDelete by remember(detail.id) { mutableStateOf(false) }
     val visibleMessages = detail.messages.visibleMessagePreview(showAllMessages)
 
     LazyColumn(
@@ -130,6 +132,33 @@ fun ConversationDetailScreen(
                 )
             }
         }
+        item {
+            ReunionPane(
+                title = "대화 관리",
+                supportingText = deleteConversationSupportingText(isConfirmingDelete),
+                containerColor = if (isConfirmingDelete) {
+                    MaterialTheme.colorScheme.errorContainer
+                } else {
+                    MaterialTheme.colorScheme.surface
+                },
+            ) {
+                if (isConfirmingDelete) {
+                    ReunionSecondaryButton(
+                        text = "삭제 취소",
+                        onClick = { isConfirmingDelete = false },
+                    )
+                    ReunionSecondaryButton(
+                        text = "정말 삭제",
+                        onClick = onDeleteConversation,
+                    )
+                } else {
+                    ReunionSecondaryButton(
+                        text = "대화 삭제",
+                        onClick = { isConfirmingDelete = true },
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -159,6 +188,14 @@ private fun ConversationDetail.infoSummary(): String {
 
 internal fun ConversationDetail.analysisEntryButtonText(): String {
     return if (latestAnalysis == null) "다음 행동 정리하기" else "정리 결과 보기"
+}
+
+internal fun deleteConversationSupportingText(isConfirmingDelete: Boolean): String {
+    return if (isConfirmingDelete) {
+        "이 대화와 정리 결과를 이 기기에서 삭제합니다."
+    } else {
+        "필요 없어진 대화는 언제든 이 기기에서 지울 수 있어요."
+    }
 }
 
 private fun AnalysisReport.detailReadinessTone(): ReunionBadgeTone {

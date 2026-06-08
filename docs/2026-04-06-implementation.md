@@ -8,9 +8,10 @@ The current MVP implementation supports one grounded local-first flow:
 2. The app parses the supported export structure.
 3. The app stores the imported conversation locally in Room.
 4. The user opens the saved conversation list and a conversation detail view.
-5. The user generates a reunion plan.
-6. The app extracts early messages, recent messages, emotion/boundary signal windows, conversation stats, and user/counterpart perspective before calling the active provider.
-7. The result is saved locally and shown as a compact Korean action plan with contact readiness, evidence, a next step, a first-contact message draft or no-send action, and caution.
+5. The user can delete a saved conversation and its local analysis result from the detail view.
+6. The user generates a reunion plan.
+7. The app extracts early messages, recent messages, emotion/boundary signal windows, conversation stats, and user/counterpart perspective before calling the active provider.
+8. The result is saved locally and shown as a compact Korean action plan with contact readiness, evidence, a next step, a first-contact message draft or no-send action, and caution.
 
 ## Architecture
 
@@ -38,6 +39,7 @@ The current MVP implementation supports one grounded local-first flow:
   - analysis results
   - provider settings
   - optional local user display name
+- deleting a conversation cascades to its local participants, messages, and analysis results
 - `FakeAnalysisProvider` keeps the MVP workflow available without remote configuration.
 - `Gemma4AnalysisProvider` runs a verified Gemma 4 `.litertlm` model on-device through LiteRT-LM.
 - `LocalAnalysisSwarmProvider` blends the verified Gemma draft with local safety, last-message, context, and baseline checks before saving a result.
@@ -66,6 +68,7 @@ Current automated coverage focuses on the highest-risk behaviors:
 
 - parser behavior for supported, multiline, and unsupported KakaoTalk text
 - Room-backed conversation import and duplicate handling
+- Room-backed conversation deletion with related local data cleanup
 - fake-provider behavior
 - analysis fallback behavior when no Gemma model path is configured or a copied model has not passed execution check
 - persisted first-contact draft behavior

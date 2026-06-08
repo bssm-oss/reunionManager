@@ -158,6 +158,10 @@ class ConversationRepository(
         )
     }
 
+    suspend fun deleteConversation(conversationId: Long): Boolean {
+        return conversationDao.deleteById(conversationId) > 0
+    }
+
     private fun String.sha256(): String {
         val bytes = MessageDigest.getInstance("SHA-256").digest(toByteArray())
         return bytes.joinToString(separator = "") { byte -> "%02x".format(byte) }

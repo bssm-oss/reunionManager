@@ -109,6 +109,18 @@ class ConversationDetailScreenTest {
         )
     }
 
+    @Test
+    fun deleteConversationSupportingText_keepsPrivacyCopyShort() {
+        assertEquals(
+            "필요 없어진 대화는 언제든 이 기기에서 지울 수 있어요.",
+            deleteConversationSupportingText(isConfirmingDelete = false),
+        )
+        assertEquals(
+            "이 대화와 정리 결과를 이 기기에서 삭제합니다.",
+            deleteConversationSupportingText(isConfirmingDelete = true),
+        )
+    }
+
     private fun messages(count: Int): List<ConversationMessage> {
         return (1..count).map { index ->
             ConversationMessage(

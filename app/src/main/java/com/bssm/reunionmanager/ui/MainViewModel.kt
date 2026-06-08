@@ -190,6 +190,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun deleteConversation(conversationId: Long) {
+        viewModelScope.launch {
+            appContainer.conversationRepository.deleteConversation(conversationId)
+            _analysisStates.update { states -> states - conversationId }
+        }
+    }
+
     private fun resolveDisplayName(contentResolver: ContentResolver, uri: Uri): String {
         val fallbackName = uri.lastPathSegment ?: "kakaotalk-export.txt"
         return contentResolver.query(uri, null, null, null, null)?.use { cursor ->

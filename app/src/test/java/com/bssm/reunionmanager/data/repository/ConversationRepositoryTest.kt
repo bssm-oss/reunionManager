@@ -133,6 +133,40 @@ class ConversationRepositoryTest {
     }
 
     @Test
+    fun deleteConversation_removesConversationAndRelatedLocalData() = runTest {
+        val result = repository.importConversation(
+            parsedConversation = sampleParsedConversation,
+            rawText = "delete raw text",
+            sourceName = "delete.txt",
+        )
+        val importedId = (result as ImportConversationResult.Imported).conversationId
+        AnalysisRepository(database.analysisResultDao()).saveLatest(
+            conversationId = importedId,
+            providerType = "fake",
+            report = AnalysisReport(
+                headline = "삭제 테스트",
+                contactReadiness = "정보 부족",
+                evidence = "테스트 근거",
+                relationshipSummary = "테스트 요약",
+                reunionObjective = "테스트 목표",
+                nextStep = "테스트 다음 행동",
+                messageDraft = "지금은 보낼 문장을 만들지 않습니다.",
+                alternativeDrafts = "대화 삭제하기",
+                caution = "테스트 주의",
+            ),
+        )
+
+        val deleted = repository.deleteConversation(importedId)
+
+        assertTrue(deleted)
+        assertTrue(repository.observeConversationSummaries().first().isEmpty())
+        assertEquals(null, repository.observeConversationDetail(importedId).first())
+        assertEquals(null, database.analysisResultDao().getLatestForConversation(importedId))
+        assertTrue(database.messageDao().getByConversationId(importedId).isEmpty())
+        assertTrue(database.participantDao().getByConversationId(importedId).isEmpty())
+    }
+
+    @Test
     fun buildAnalysisInput_includesRecentSignalsAndStats() = runTest {
         val result = repository.importConversation(
             parsedConversation = signalHeavyConversation,
