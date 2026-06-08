@@ -27,6 +27,8 @@ fun HomeScreen(
     onConversationsClick: () -> Unit,
     onSettingsClick: () -> Unit,
 ) {
+    val hasConversations = conversationCount > 0
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -36,28 +38,23 @@ fun HomeScreen(
     ) {
         ReunionBadge(text = "내 기기에서 보관")
         Text(
-            text = "보내기 전, 차분히 정리해요.",
+            text = "보내기 전, 한 번만 정리해요.",
             style = MaterialTheme.typography.headlineMedium,
         )
         Text(
-            text = "카카오톡 대화에서 연락 판단, 오늘 할 일, 보낼 문장만 조용히 정리합니다.",
+            text = "대화는 기기 안에 두고, 오늘 보낼지 말지만 먼저 봅니다.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        ReunionPrimaryButton(text = "카카오톡 대화 가져오기", onClick = onImportClick)
-        ReunionSecondaryButton(text = "저장한 대화 보기", onClick = onConversationsClick)
-        ReunionSecondaryButton(text = "분석 설정", onClick = onSettingsClick)
         ReunionPane(
-            title = "결과",
-            supportingText = "연락 판단, 오늘 할 일, 보낼 문장만 먼저 보여줍니다.",
-        )
-        ReunionPane(
-            title = "AI 모드",
-            supportingText = modelModeDescription(
+            title = if (hasConversations) "이어볼 대화가 있어요" else "대화 파일부터 가져오세요",
+            supportingText = homeStateDescription(
+                conversationCount = conversationCount,
                 modelConfigured = modelConfigured,
                 modelVerified = modelVerified,
             ),
         ) {
+            ReunionBadge(text = "${conversationCount}개 저장")
             ReunionBadge(
                 text = modelModeBadge(
                     modelConfigured = modelConfigured,
@@ -69,20 +66,35 @@ fun HomeScreen(
                 ),
             )
         }
-        ReunionPane(
-            title = "저장한 대화",
-            supportingText = "${conversationCount}개의 대화가 저장되어 있습니다.",
-        ) {
-            ReunionBadge(text = "${conversationCount}개 저장")
+
+        if (hasConversations) {
+            ReunionPrimaryButton(text = "저장한 대화 보기", onClick = onConversationsClick)
+            ReunionSecondaryButton(text = "새 대화 가져오기", onClick = onImportClick)
+        } else {
+            ReunionPrimaryButton(text = "카카오톡 대화 가져오기", onClick = onImportClick)
         }
+        ReunionSecondaryButton(text = "분석 설정", onClick = onSettingsClick)
     }
+}
+
+private fun homeStateDescription(
+    conversationCount: Int,
+    modelConfigured: Boolean,
+    modelVerified: Boolean,
+): String {
+    val conversationText = if (conversationCount > 0) {
+        "${conversationCount}개 대화에서 바로 다음 행동을 정리할 수 있어요."
+    } else {
+        "카카오톡 내보내기 파일 하나면 시작할 수 있어요."
+    }
+    return "$conversationText ${modelModeDescription(modelConfigured, modelVerified)}"
 }
 
 private fun modelModeDescription(modelConfigured: Boolean, modelVerified: Boolean): String {
     return when {
-        modelVerified -> "분석과 초안 생성이 이 기기에서 실행됩니다."
-        modelConfigured -> "모델 실행 점검 전에는 참고용 데모로 정리합니다."
-        else -> "모델이 없으면 참고용 데모로 확인합니다."
+        modelVerified -> "AI는 이 기기에서 실행됩니다."
+        modelConfigured -> "점검 전에는 데모로 정리합니다."
+        else -> "모델이 없어도 데모로 확인할 수 있어요."
     }
 }
 

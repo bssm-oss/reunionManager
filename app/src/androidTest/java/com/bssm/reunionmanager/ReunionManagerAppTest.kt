@@ -35,7 +35,7 @@ class ReunionManagerAppTest {
     fun homeScreen_showsCoreTrustSignals() {
         waitForText("재회 매니저")
         assertNotNull(device.findObject(By.text("내 기기에서 보관")))
-        assertNotNull(device.findObject(By.text("결과")))
+        assertNotNull(device.findObject(By.text("대화 파일부터 가져오세요")))
         assertNotNull(device.findObject(By.text("카카오톡 대화 가져오기")))
     }
 
@@ -45,6 +45,22 @@ class ReunionManagerAppTest {
 
         waitForText("카카오톡 대화 가져오기")
         assertNotNull(device.findObject(By.text("대화 파일 선택")))
+    }
+
+    @Test
+    fun homeScreen_prioritizesSavedConversationsWhenConversationExists() {
+        runBlocking {
+            application.appContainer.importConversationUseCase(
+                sourceName = "sample.txt",
+                rawText = sampleConversation,
+            )
+        }
+
+        launchMainActivity()
+
+        waitForText("이어볼 대화가 있어요")
+        clickText("저장한 대화 보기")
+        waitForText("샘플 채팅방")
     }
 
     @Test
