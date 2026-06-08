@@ -72,7 +72,7 @@ fun ConversationDetailScreen(
         item {
             ReunionPane(
                 title = detail.latestAnalysis?.let { "최근 정리" } ?: "아직 정리하지 않았어요",
-                supportingText = detail.latestAnalysis?.headline ?: "대화를 훑기 전에 오늘 할 일만 먼저 정리할 수 있어요.",
+                supportingText = detail.latestAnalysis?.detailHeadline() ?: "오늘 보낼지 말지만 먼저 정리할 수 있어요.",
                 containerColor = detail.latestAnalysis?.detailContainerColor() ?: MaterialTheme.colorScheme.surface,
             ) {
                 detail.latestAnalysis?.let { report ->
@@ -81,7 +81,7 @@ fun ConversationDetailScreen(
                         tone = report.detailReadinessTone(),
                     )
                     Text(
-                        text = report.nextStep.limitForDetail(maxLength = 88),
+                        text = report.detailNextAction(),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -146,9 +146,9 @@ internal fun List<ConversationMessage>.hasHiddenMessages(showAllMessages: Boolea
 internal fun List<ConversationMessage>.messagePreviewSummary(showAllMessages: Boolean): String {
     return when {
         isEmpty() -> "저장된 메시지가 없습니다."
-        showAllMessages -> "전체 ${size}개 메시지를 보고 있습니다."
-        size > RecentMessagePreviewCount -> "전체 ${size}개 중 최근 ${RecentMessagePreviewCount}개만 먼저 보여줍니다."
-        else -> "전체 ${size}개 메시지를 보고 있습니다."
+        showAllMessages -> "전체 ${size}개 메시지"
+        size > RecentMessagePreviewCount -> "최근 ${RecentMessagePreviewCount}개만 먼저 보기"
+        else -> "전체 ${size}개 메시지"
     }
 }
 
@@ -176,6 +176,32 @@ private fun AnalysisReport.detailContainerColor() = when (detailReadinessTone())
     ReunionBadgeTone.Success -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.16f)
     ReunionBadgeTone.Accent -> MaterialTheme.colorScheme.primaryContainer
     ReunionBadgeTone.Neutral -> MaterialTheme.colorScheme.surface
+}
+
+internal fun AnalysisReport.detailHeadline(): String {
+    return when (contactReadiness) {
+        "지금은 보류" -> "오늘은 보내지 않는 쪽이 안전해요."
+        "정보 부족" -> "먼저 확인할 정보가 있어요."
+        "먼저 사과 필요" -> "짧은 인정부터 준비해요."
+        else -> if (detailLooksLikeReply()) {
+            "짧게 답장하면 충분해요."
+        } else {
+            "부담 없는 한 문장만 준비해요."
+        }
+    }
+}
+
+internal fun AnalysisReport.detailNextAction(): String {
+    return when (contactReadiness) {
+        "지금은 보류" -> "오늘은 보내지 말고 기다려요."
+        "정보 부족" -> "내 이름과 최근 대화가 맞는지 확인하세요."
+        "먼저 사과 필요" -> nextStep.limitForDetail(maxLength = 52)
+        else -> nextStep.limitForDetail(maxLength = 52)
+    }
+}
+
+private fun AnalysisReport.detailLooksLikeReply(): Boolean {
+    return nextStep.contains("상대의 마지막 메시지") || reunionObjective.contains("상대가 남긴 말")
 }
 
 private fun String.limitForDetail(maxLength: Int): String {
