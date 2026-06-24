@@ -70,38 +70,43 @@ class ConversationDetailScreenTest {
     fun detailHeadline_summarizesLatestAnalysisAsAction() {
         assertEquals(
             "부담을 낮추는 구간이에요.",
-            report(contactReadiness = "지금은 보류").detailHeadline(),
+            report(headline = "", contactReadiness = "지금은 보류").detailHeadline(),
         )
         assertEquals(
             "상황을 먼저 읽는 구간이에요.",
-            report(contactReadiness = "정보 부족").detailHeadline(),
+            report(headline = "", contactReadiness = "정보 부족").detailHeadline(),
         )
         assertEquals(
             "관계를 조심스럽게 낮추는 구간이에요.",
-            report(contactReadiness = "먼저 사과 필요").detailHeadline(),
+            report(headline = "", contactReadiness = "먼저 사과 필요").detailHeadline(),
+        )
+        assertEquals(
+            "상대 답장에 짧게 응답",
+            report(contactReadiness = "지금은 보류").detailHeadline(),
         )
         assertEquals(
             "대화를 다시 열 수 있는 구간이에요.",
             report(
+                headline = "",
                 reunionObjective = "상대가 남긴 말에 답하는 것이 목표입니다.",
                 nextStep = "상대의 마지막 메시지에 짧게 답하세요.",
             ).detailHeadline(),
         )
         assertEquals(
             "작은 연결을 준비할 수 있어요.",
-            report().detailHeadline(),
+            report(headline = "").detailHeadline(),
         )
     }
 
     @Test
     fun detailNextAction_keepsLatestAnalysisCardShort() {
         assertEquals(
-            "상대 반응을 더 지켜보면 안정적이에요.",
-            report(contactReadiness = "지금은 보류").detailNextAction(),
+            "오늘은 거리를 두고 최근 대화를 확인해보면 좋아요.",
+            report(contactReadiness = "지금은 보류", nextStep = "오늘은 보내지 말고 최근 대화를 확인하세요.").detailNextAction(),
         )
         assertEquals(
-            "내 이름과 최근 대화가 맞는지 보면 좋아요.",
-            report(contactReadiness = "정보 부족").detailNextAction(),
+            "내 카톡 이름을 확인해보면 좋아요.",
+            report(contactReadiness = "정보 부족", nextStep = "내 카톡 이름을 확인하세요.").detailNextAction(),
         )
         assertEquals(
             52,
@@ -144,12 +149,13 @@ class ConversationDetailScreenTest {
     }
 
     private fun report(
+        headline: String = "상대 답장에 짧게 응답",
         contactReadiness: String = "아주 가볍게 가능",
         reunionObjective: String = "안부만 확인합니다.",
         nextStep: String = "짧게 답장하세요.",
     ): AnalysisReport {
         return AnalysisReport(
-            headline = "상대 답장에 짧게 응답",
+            headline = headline,
             contactReadiness = contactReadiness,
             evidence = "상대가 마지막에 답장을 남겼습니다.",
             relationshipSummary = "짧은 답장이 자연스럽습니다.",

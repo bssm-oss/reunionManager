@@ -242,25 +242,28 @@ private fun AnalysisReport.detailContainerColor() = when (detailReadinessTone())
 }
 
 internal fun AnalysisReport.detailHeadline(): String {
-    return when (contactReadiness) {
-        "지금은 보류" -> "부담을 낮추는 구간이에요."
-        "정보 부족" -> "상황을 먼저 읽는 구간이에요."
-        "먼저 사과 필요" -> "관계를 조심스럽게 낮추는 구간이에요."
-        else -> if (detailLooksLikeReply()) {
-            "대화를 다시 열 수 있는 구간이에요."
-        } else {
-            "작은 연결을 준비할 수 있어요."
+    return headline.trim()
+        .softenedForDetail()
+        .ifBlank {
+            when (contactReadiness) {
+                "지금은 보류" -> "부담을 낮추는 구간이에요."
+                "정보 부족" -> "상황을 먼저 읽는 구간이에요."
+                "먼저 사과 필요" -> "관계를 조심스럽게 낮추는 구간이에요."
+                else -> if (detailLooksLikeReply()) {
+                    "대화를 다시 열 수 있는 구간이에요."
+                } else {
+                    "작은 연결을 준비할 수 있어요."
+                }
+            }
         }
-    }
+        .limitForDetail(maxLength = 36)
 }
 
 internal fun AnalysisReport.detailNextAction(): String {
-    return when (contactReadiness) {
-        "지금은 보류" -> "상대 반응을 더 지켜보면 안정적이에요."
-        "정보 부족" -> "내 이름과 최근 대화가 맞는지 보면 좋아요."
-        "먼저 사과 필요" -> nextStep.limitForDetail(maxLength = 52)
-        else -> nextStep.limitForDetail(maxLength = 52)
-    }
+    return nextStep
+        .ifBlank { relationshipSummary }
+        .softenedForDetail()
+        .limitForDetail(maxLength = 52)
 }
 
 private fun AnalysisReport.detailLooksLikeReply(): Boolean {
@@ -269,4 +272,21 @@ private fun AnalysisReport.detailLooksLikeReply(): Boolean {
 
 private fun String.limitForDetail(maxLength: Int): String {
     return if (length <= maxLength) this else take(maxLength - 1).trimEnd() + "…"
+}
+
+private fun String.softenedForDetail(): String {
+    return replace("상대의 마지막 메시지에 바로 답하세요.", "상대의 마지막 메시지에 짧게 답해볼 수 있어요.")
+        .replace("오늘은 보내지 않기", "오늘은 거리 두기")
+        .replace("오늘은 보내지 말고,", "오늘은 거리를 두고,")
+        .replace("오늘은 보내지 말고", "오늘은 거리를 두고")
+        .replace("오늘은 보내지 않습니다.", "오늘은 거리를 두는 쪽이 안정적이에요.")
+        .replace("바로 답하세요.", "짧게 열어둘 수 있어요.")
+        .replace("답장하세요.", "답장해볼 수 있어요.")
+        .replace("바로 답하되", "짧게 이어가되")
+        .replace("전하세요.", "남겨볼 수 있어요.")
+        .replace("확인하세요.", "확인해보면 좋아요.")
+        .replace("준비하세요.", "준비해볼 수 있어요.")
+        .replace("읽으세요.", "읽어보면 좋아요.")
+        .replace("기다리세요.", "기다려도 괜찮아요.")
+        .replace("마세요.", "않아도 괜찮아요.")
 }

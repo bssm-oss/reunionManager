@@ -203,7 +203,7 @@ class ReunionManagerAppTest {
         waitForText("재회 회복 맵", timeoutMillis = timeoutMillis)
         waitForText("대화 열기", timeoutMillis = timeoutMillis)
         waitForText("상대 반응", timeoutMillis = timeoutMillis)
-        waitForText("현재 단계", timeoutMillis = timeoutMillis)
+        waitForText("내 상황 플랜", timeoutMillis = timeoutMillis)
         if (!openRouterConfigured()) {
             waitForText("대화를 다시 열 수 있는 구간이에요.", timeoutMillis = timeoutMillis)
             waitForText("보내기 전 한 번 더 쉬어가도 괜찮아요.", timeoutMillis = timeoutMillis)

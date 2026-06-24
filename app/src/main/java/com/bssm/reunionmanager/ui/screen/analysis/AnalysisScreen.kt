@@ -324,7 +324,7 @@ private fun AnalysisConclusionPane(report: AnalysisReport) {
     }
 
     ReunionPane(
-        title = "현재 단계",
+        title = "내 상황 플랜",
         containerColor = containerColor,
     ) {
         ReunionBadge(text = report.recoveryStageLabel(), tone = tone)
@@ -335,11 +335,33 @@ private fun AnalysisConclusionPane(report: AnalysisReport) {
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                text = report.nextStepBodyForUi(),
+                text = report.summaryBody(),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        PlanPointRow(label = "지금 목표", body = report.objectiveBodyForUi())
+        PlanPointRow(label = "다음 움직임", body = report.nextMoveBodyForUi())
+        PlanPointRow(label = "조심할 점", body = report.cautionBodyForUi())
+    }
+}
+
+@Composable
+private fun PlanPointRow(
+    label: String,
+    body: String,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        Text(
+            text = body,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
     }
 }
 
@@ -384,13 +406,18 @@ internal fun AnalysisReport.readinessTone(): ReunionBadgeTone {
 }
 
 internal fun AnalysisReport.conclusionHeadline(): String {
-    return when {
-        contactReadiness == "지금은 보류" -> "부담을 낮추는 구간이에요."
-        contactReadiness == "정보 부족" || isCheckOnlyResult() -> "상황을 먼저 읽는 구간이에요."
-        contactReadiness == "먼저 사과 필요" -> "조심스럽게 낮추는 구간이에요."
-        messageSectionTitle() == "짧은 답장 참고" -> "대화를 다시 열 수 있는 구간이에요."
-        else -> "작은 연결을 준비할 수 있어요."
-    }
+    return headline.trim()
+        .softenedForPlanUi()
+        .limitForUi(maxLength = 36)
+        .ifBlank {
+            when {
+                contactReadiness == "지금은 보류" -> "부담을 낮추는 구간이에요."
+                contactReadiness == "정보 부족" || isCheckOnlyResult() -> "상황을 먼저 읽는 구간이에요."
+                contactReadiness == "먼저 사과 필요" -> "조심스럽게 낮추는 구간이에요."
+                messageSectionTitle() == "짧은 답장 참고" -> "대화를 다시 열 수 있는 구간이에요."
+                else -> "작은 연결을 준비할 수 있어요."
+            }
+        }
 }
 
 internal fun AnalysisReport.alternativeSectionTitle(): String {
@@ -414,11 +441,28 @@ internal fun AnalysisReport.canCopyMessageDraft(): Boolean {
 }
 
 internal fun AnalysisReport.nextStepBodyForUi(): String {
-    return when {
-        contactReadiness == "지금은 보류" -> "상대 반응을 더 지켜보면 안정적이에요."
-        contactReadiness == "정보 부족" || isCheckOnlyResult() -> "대화와 내 이름이 맞는지 먼저 보면 좋아요."
-        else -> nextStep.softenedForPlanUi().limitForUi(maxLength = 96)
-    }
+    return nextStep
+        .softenedForPlanUi()
+        .ifBlank { "카톡 내용을 기준으로 지금 할 수 있는 작은 움직임을 정리했어요." }
+        .limitForUi(maxLength = 96)
+}
+
+internal fun AnalysisReport.objectiveBodyForUi(): String {
+    return reunionObjective
+        .softenedForPlanUi()
+        .ifBlank { "상대에게 부담을 주지 않는 선에서 관계 온도를 확인해요." }
+        .limitForUi(maxLength = 88)
+}
+
+internal fun AnalysisReport.nextMoveBodyForUi(): String {
+    return nextStepBodyForUi()
+}
+
+internal fun AnalysisReport.cautionBodyForUi(): String {
+    return caution
+        .softenedForPlanUi()
+        .ifBlank { "답을 재촉하지 않고 상대의 속도를 존중해요." }
+        .limitForUi(maxLength = 88)
 }
 
 internal fun AnalysisReport.messageBodyForUi(): String {
@@ -508,14 +552,8 @@ internal fun AnalysisReport.summaryTitle(): String {
 }
 
 internal fun AnalysisReport.summaryBody(): String {
-    val focusedSummary = when {
-        contactReadiness == "지금은 보류" -> "상대 반응을 더 지켜보면 안정적이에요."
-        contactReadiness == "정보 부족" || isCheckOnlyResult() -> "내 이름과 최근 대화가 맞는지 보면 좋아요."
-        contactReadiness == "먼저 사과 필요" -> "상대 부담을 낮추는 쪽이 먼저예요."
-        messageSectionTitle() == "짧은 답장 참고" -> "상대가 마지막에 답장을 남긴 상태라 짧은 연결이 자연스럽습니다."
-        else -> relationshipSummary.trim()
-    }
-    return focusedSummary
+    return relationshipSummary.trim()
+        .softenedForPlanUi()
         .ifBlank { "최근 카톡 내용을 기준으로 회복 단계를 정리했습니다." }
         .limitForUi(maxLength = 96)
 }
@@ -611,11 +649,20 @@ private fun String.limitForUi(maxLength: Int): String {
 }
 
 private fun String.softenedForPlanUi(): String {
-    return replace("오늘은 보내지 말고,", "오늘은 거리를 두고,")
+    return replace("상대의 마지막 메시지에 바로 답하세요.", "상대의 마지막 메시지에 짧게 답해볼 수 있어요.")
+        .replace("오늘은 보내지 않기", "오늘은 거리 두기")
+        .replace("오늘은 보내지 말고,", "오늘은 거리를 두고,")
+        .replace("오늘은 보내지 말고", "오늘은 거리를 두고")
         .replace("오늘은 보내지 않습니다.", "오늘은 거리를 두는 쪽이 안정적이에요.")
         .replace("바로 답하세요.", "짧게 열어둘 수 있어요.")
+        .replace("답장하세요.", "답장해볼 수 있어요.")
         .replace("바로 답하되", "짧게 이어가되")
         .replace("전하세요.", "남겨볼 수 있어요.")
+        .replace("확인하세요.", "확인해보면 좋아요.")
+        .replace("준비하세요.", "준비해볼 수 있어요.")
+        .replace("읽으세요.", "읽어보면 좋아요.")
+        .replace("기다리세요.", "기다려도 괜찮아요.")
+        .replace("마세요.", "않아도 괜찮아요.")
 }
 
 private fun String.containsAny(vararg values: String): Boolean {

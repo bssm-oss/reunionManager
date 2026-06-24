@@ -107,35 +107,41 @@ class AnalysisScreenTitleTest {
     @Test
     fun conclusionHeadline_summarizesActionWithoutExtraDetail() {
         assertEquals(
+            "상대가 시간을 요청함",
+            report(headline = "상대가 시간을 요청함", contactReadiness = "지금은 보류").conclusionHeadline(),
+        )
+        assertEquals(
             "부담을 낮추는 구간이에요.",
-            report(contactReadiness = "지금은 보류").conclusionHeadline(),
+            report(headline = "", contactReadiness = "지금은 보류").conclusionHeadline(),
         )
         assertEquals(
             "상황을 먼저 읽는 구간이에요.",
-            report(contactReadiness = "정보 부족").conclusionHeadline(),
+            report(headline = "", contactReadiness = "정보 부족").conclusionHeadline(),
         )
         assertEquals(
             "대화를 다시 열 수 있는 구간이에요.",
             report(
+                headline = "",
                 reunionObjective = "새 연락보다 상대가 남긴 말에 답하는 것이 목표입니다.",
                 nextStep = "상대의 마지막 메시지에 바로 답하세요.",
             ).conclusionHeadline(),
         )
         assertEquals(
             "작은 연결을 준비할 수 있어요.",
-            report().conclusionHeadline(),
+            report(headline = "").conclusionHeadline(),
         )
     }
 
     @Test
-    fun conclusionHeadline_prioritizesApologyEvenForCounterpartReply() {
+    fun conclusionHeadline_keepsSpecificApologyHeadline() {
         val report = report(
+            headline = "먼저 짧은 인정",
             contactReadiness = "먼저 사과 필요",
             reunionObjective = "상대가 남긴 말에 변명 없이 짧게 인정하는 것이 목표입니다.",
             nextStep = "상대의 마지막 메시지에 답하되 먼저 미안하다고만 전하세요.",
         )
 
-        assertEquals("조심스럽게 낮추는 구간이에요.", report.conclusionHeadline())
+        assertEquals("먼저 짧은 인정", report.conclusionHeadline())
     }
 
     @Test
@@ -154,7 +160,7 @@ class AnalysisScreenTitleTest {
         )
 
         assertEquals(
-            "상대가 마지막에 답장을 남긴 상태라 짧은 연결이 자연스럽습니다.",
+            "상대가 마지막에 답장을 남긴 상태라 새 연락보다 짧은 답장이 자연스럽습니다.",
             report.summaryBody(),
         )
     }
@@ -230,8 +236,21 @@ class AnalysisScreenTitleTest {
             messageDraft = "오늘은 보내지 않습니다. 상대가 먼저 답하면 다시 판단하세요.",
         )
 
-        assertEquals("상대 반응을 더 지켜보면 안정적이에요.", report.nextStepBodyForUi())
+        assertEquals("오늘은 거리를 두고 최근 대화를 확인해보면 좋아요.", report.nextStepBodyForUi())
         assertEquals("지금은 보낼 문장보다 거리 조절이 먼저예요.", report.messageBodyForUi())
+    }
+
+    @Test
+    fun planUiText_keepsSituationSpecificPlanFields() {
+        val report = report(
+            reunionObjective = "상대가 시간이 필요하다고 말해 거리 조절을 우선합니다.",
+            nextStep = "오늘은 보내지 말고 상대 마지막 말을 다시 읽으세요.",
+            caution = "답을 재촉하지 마세요.",
+        )
+
+        assertEquals("상대가 시간이 필요하다고 말해 거리 조절을 우선합니다.", report.objectiveBodyForUi())
+        assertEquals("오늘은 거리를 두고 상대 마지막 말을 다시 읽어보면 좋아요.", report.nextMoveBodyForUi())
+        assertEquals("답을 재촉하지 않아도 괜찮아요.", report.cautionBodyForUi())
     }
 
     @Test
