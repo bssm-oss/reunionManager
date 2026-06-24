@@ -34,7 +34,7 @@ fun ConversationListScreen(
             verticalArrangement = Arrangement.spacedBy(ScreenSectionSpacing),
         ) {
             ReunionEmptyState(
-                title = "아직 지난 플랜이 없어요",
+                title = "아직 저장된 플랜이 없어요",
                 body = "카톡 내용을 불러오면 여기에서 다시 볼 수 있어요.",
             )
         }
@@ -48,7 +48,7 @@ fun ConversationListScreen(
     ) {
         item {
             Text(
-                text = "대화를 눌러 회복 플랜을 이어서 볼 수 있어요.",
+                text = "이전 플랜을 눌러 이어서 볼 수 있어요.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -61,7 +61,7 @@ fun ConversationListScreen(
             ) {
                 if (conversation.latestAnalysisHeadline != null) {
                     ReunionBadge(
-                        text = "플랜 있음",
+                        text = conversation.stageText(),
                         tone = ReunionBadgeTone.Accent,
                     )
                 }
@@ -76,9 +76,18 @@ fun ConversationListScreen(
 }
 
 private fun ConversationSummary.summaryText(): String {
-    val base = "참여자 ${participantCount}명 · 메시지 ${messageCount}개"
+    val base = "카톡 ${messageCount}개로 만든 기록"
     return latestAnalysisHeadline
         ?.takeIf { headline -> headline.isNotBlank() }
         ?.let { headline -> "$base\n최근 플랜: $headline" }
         ?: base
+}
+
+private fun ConversationSummary.stageText(): String {
+    return when (latestAnalysisContactReadiness) {
+        "지금은 보류" -> "부담 낮추기"
+        "먼저 사과 필요" -> "부담 낮추기"
+        "아주 가볍게 가능" -> "대화 열기"
+        else -> "상황 읽기"
+    }
 }

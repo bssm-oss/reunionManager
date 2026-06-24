@@ -96,6 +96,9 @@ class ConversationRepositoryTest {
         val summary = repository.observeConversationSummaries().first().single()
 
         assertEquals("상대 답장에 짧게 응답", summary.latestAnalysisHeadline)
+        assertEquals("아주 가볍게 가능", summary.latestAnalysisContactReadiness)
+        assertEquals("한 문장만 준비하세요.", summary.latestAnalysisNextStep)
+        assertTrue(summary.latestAnalysisCreatedAtEpochMillis != null)
     }
 
     @Test

@@ -7,6 +7,7 @@ local.properties
 !.env.example
 .idea/
 .sisyphus/
+.omc/
 .omx/
 firebase-debug.log
 *.iml

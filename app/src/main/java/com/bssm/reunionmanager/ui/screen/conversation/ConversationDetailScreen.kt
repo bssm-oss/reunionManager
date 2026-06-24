@@ -83,7 +83,7 @@ fun ConversationDetailScreen(
         }
         item {
             ReunionPane(
-                title = detail.latestAnalysis?.let { "최근 플랜" } ?: "아직 플랜이 없어요",
+                title = detail.latestAnalysis?.let { "이 대화의 회복 상태" } ?: "아직 플랜이 없어요",
                 supportingText = detail.latestAnalysis?.detailHeadline() ?: "카톡 내용으로 재회 플랜을 만들 수 있어요.",
                 containerColor = detail.latestAnalysis?.detailContainerColor() ?: MaterialTheme.colorScheme.surface,
             ) {
@@ -106,7 +106,7 @@ fun ConversationDetailScreen(
         }
         item {
             ReunionPane(
-                title = "대화 정보",
+                title = "플랜에 쓴 대화",
                 supportingText = detail.infoSummary(),
             ) {
                 ReunionBadge(text = "비공개 보관")
@@ -130,17 +130,17 @@ fun ConversationDetailScreen(
         }
         item {
             ReunionPane(
-                title = if (showAllMessages) "전체 메시지" else "최근 메시지",
+                title = if (showAllMessages) "전체 대화 근거" else "최근 대화 근거",
                 supportingText = detail.messages.messagePreviewSummary(showAllMessages),
             ) {
                 if (detail.messages.hasHiddenMessages(showAllMessages)) {
                     ReunionSecondaryButton(
-                        text = "전체 메시지 보기",
+                        text = "전체 대화 보기",
                         onClick = { showAllMessages = true },
                     )
                 } else if (showAllMessages && detail.messages.size > RecentMessagePreviewCount) {
                     ReunionSecondaryButton(
-                        text = "최근 메시지만 보기",
+                        text = "최근 대화만 보기",
                         onClick = { showAllMessages = false },
                     )
                 }
@@ -286,9 +286,12 @@ private fun String.softenedForDetail(): String {
         .replace("답장하세요.", "답장해볼 수 있어요.")
         .replace("바로 답하되", "짧게 이어가되")
         .replace("전하세요.", "남겨볼 수 있어요.")
+        .replace("정리해보세요.", "정리해봐요.")
         .replace("정리하세요.", "정리해보면 좋아요.")
+        .replace("확인해보세요.", "확인해봐요.")
         .replace("확인하세요.", "확인해보면 좋아요.")
         .replace("준비하세요.", "준비해볼 수 있어요.")
+        .replace("읽어보세요.", "읽어봐요.")
         .replace("읽으세요.", "읽어보면 좋아요.")
         .replace("기다리세요.", "기다려도 괜찮아요.")
         .replace("마세요.", "않아도 괜찮아요.")

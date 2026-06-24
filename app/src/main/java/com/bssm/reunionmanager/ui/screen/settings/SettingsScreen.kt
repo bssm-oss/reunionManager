@@ -46,11 +46,12 @@ fun SettingsScreen(
     var userDisplayName by remember(providerSettings.userDisplayName) {
         mutableStateOf(providerSettings.userDisplayName)
     }
+    var showTechnicalDetails by remember { mutableStateOf(false) }
     val modelStatusTitle = "기술 정보"
     val modelStatusBadge = when {
-        openRouterConfigured -> "외부 연결"
+        openRouterConfigured -> "준비됨"
         !providerSettings.isConfigured -> "기본 정리"
-        providerSettings.isModelVerified -> "기기 모델 준비"
+        providerSettings.isModelVerified -> "준비됨"
         else -> "점검 전"
     }
     val modelStatusTone = when {
@@ -60,10 +61,10 @@ fun SettingsScreen(
         else -> ReunionBadgeTone.Accent
     }
     val modelStatusDescription = when {
-        openRouterConfigured -> "OpenRouter로 플랜을 만들고, 필요한 대화 일부만 전송됩니다."
-        !providerSettings.isConfigured -> "모델 파일 없이 기본 정리로 플랜을 만들 수 있어요."
-        providerSettings.isModelVerified -> "선택한 모델 파일의 실행을 확인했습니다."
-        else -> "모델 파일은 저장됐고, 실행 전에는 기본 정리로 진행합니다."
+        openRouterConfigured -> "플랜을 만들 때 필요한 대화 일부만 분석 연결에 사용합니다."
+        !providerSettings.isConfigured -> "추가 설정 없이 기본 정리로 플랜을 만들 수 있어요."
+        providerSettings.isModelVerified -> "기기 안의 분석 파일 실행을 확인했습니다."
+        else -> "분석 파일은 저장됐고, 실행 전에는 기본 정리로 진행합니다."
     }
     val modelMessageTitle = modelMessageTitle(providerSettings, modelSettingsState.message)
     val modelMessageTone = if (providerSettings.isModelVerified) {
@@ -86,7 +87,7 @@ fun SettingsScreen(
         verticalArrangement = Arrangement.spacedBy(ScreenSectionSpacing),
     ) {
         Text(
-            text = "내 카톡 이름을 저장하면 답장인지 첫 연락인지 더 정확히 구분합니다.",
+            text = "내 이름이 맞으면 플랜이 더 정확해져요.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -115,13 +116,21 @@ fun SettingsScreen(
         )
         ReunionPane(
             title = modelStatusTitle,
-            supportingText = modelStatusDescription,
+            supportingText = if (showTechnicalDetails) {
+                modelStatusDescription
+            } else {
+                "분석 연결과 기기 분석 설정은 여기서만 확인해요."
+            },
         ) {
             ReunionBadge(
                 text = modelStatusBadge,
                 tone = modelStatusTone,
             )
-            if (providerSettings.isConfigured) {
+            ReunionSecondaryButton(
+                text = if (showTechnicalDetails) "기술 정보 닫기" else "기술 정보 보기",
+                onClick = { showTechnicalDetails = !showTechnicalDetails },
+            )
+            if (showTechnicalDetails && providerSettings.isConfigured) {
                 ReunionSecondaryButton(
                     text = when {
                         modelSettingsState.isChecking -> "점검 중..."
@@ -132,54 +141,60 @@ fun SettingsScreen(
                     enabled = !modelSettingsState.isChecking && !modelSettingsState.isLoading,
                 )
             }
-            if (modelSettingsState.isChecking) {
+            if (showTechnicalDetails && modelSettingsState.isChecking) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
                     strokeWidth = 2.dp,
                 )
             }
-        }
-        ReunionPane(
-            title = "모델 파일",
-            supportingText = if (openRouterConfigured) {
-                "OpenRouter 연결이 없을 때 쓰는 선택 기능입니다."
-            } else {
-                "선택한 파일은 앱 안에만 보관됩니다."
-            },
-        ) {
-            ReunionSecondaryButton(
-                text = if (modelSettingsState.isLoading) "파일 저장 중..." else "모델 파일 선택",
-                onClick = { modelPickerLauncher.launch(arrayOf("application/octet-stream", "*/*")) },
-                enabled = !modelSettingsState.isLoading && !modelSettingsState.isChecking,
-            )
-            if (modelSettingsState.isLoading) {
+            if (showTechnicalDetails) {
+                Text(
+                    text = if (openRouterConfigured) {
+                        "외부 분석 연결이 없을 때 기기 분석 파일을 사용할 수 있어요."
+                    } else {
+                        "선택한 분석 파일은 앱 안에만 보관됩니다."
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                ReunionSecondaryButton(
+                    text = if (modelSettingsState.isLoading) "파일 저장 중..." else "분석 파일 선택",
+                    onClick = { modelPickerLauncher.launch(arrayOf("application/octet-stream", "*/*")) },
+                    enabled = !modelSettingsState.isLoading && !modelSettingsState.isChecking,
+                )
+            }
+            if (showTechnicalDetails && modelSettingsState.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
                     strokeWidth = 2.dp,
                 )
             }
+            if (showTechnicalDetails && providerSettings.isConfigured) {
+                ReunionSecondaryButton(
+                    text = "분석 파일 제거",
+                    onClick = {
+                        providerSettings.demoModeSaveRequest(userDisplayName).dispatchTo(onSave)
+                    },
+                )
+            }
         }
-        modelSettingsState.message?.let { message ->
-            ReunionEmptyState(
-                title = modelMessageTitle,
-                body = message,
-                tone = modelMessageTone,
-            )
+        if (showTechnicalDetails) {
+            modelSettingsState.message?.let { message ->
+                ReunionEmptyState(
+                    title = modelMessageTitle,
+                    body = message,
+                    tone = modelMessageTone,
+                )
+            }
         }
-        modelSettingsState.errorMessage?.let { errorMessage ->
-            ReunionEmptyState(
-                title = "모델을 확인하지 못했습니다",
-                body = errorMessage,
-                tone = ReunionBadgeTone.Error,
-            )
-        }
-        if (providerSettings.isConfigured) {
-            ReunionSecondaryButton(
-                text = "모델 파일 제거",
-                onClick = {
-                    providerSettings.demoModeSaveRequest(userDisplayName).dispatchTo(onSave)
-                },
-            )
+        if (showTechnicalDetails) {
+            modelSettingsState.errorMessage?.let { errorMessage ->
+                ReunionEmptyState(
+                    title = "분석 파일을 확인하지 못했습니다",
+                    body = errorMessage,
+                    tone = ReunionBadgeTone.Error,
+                )
+            }
         }
     }
 }
@@ -214,9 +229,9 @@ internal fun modelMessageTitle(
     message: String?,
 ): String {
     return when {
-        message?.contains("제거") == true -> "모델 파일 제거됨"
-        providerSettings.isModelVerified -> "모델 준비됨"
-        else -> "모델 파일 저장됨"
+        message?.contains("제거") == true -> "분석 파일 제거됨"
+        providerSettings.isModelVerified -> "분석 준비됨"
+        else -> "분석 파일 저장됨"
     }
 }
 

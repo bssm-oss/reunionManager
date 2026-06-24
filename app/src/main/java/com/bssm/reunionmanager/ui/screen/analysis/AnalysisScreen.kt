@@ -50,6 +50,7 @@ fun AnalysisScreen(
     userDisplayName: String = "",
     providerConfigured: Boolean = true,
     onGenerate: () -> Unit,
+    onOpenCalendar: () -> Unit = {},
     onOpenSettings: () -> Unit = {},
     onSaveUserDisplayName: (String) -> Unit = {},
 ) {
@@ -136,6 +137,12 @@ fun AnalysisScreen(
         report?.let { currentReport ->
             val messageTitle = currentReport.messageSectionTitle()
             item { AnalysisConclusionPane(currentReport) }
+            item {
+                WeeklyPlanPane(
+                    report = currentReport,
+                    onOpenCalendar = onOpenCalendar,
+                )
+            }
             item { RecoveryMapPane(currentReport) }
             item {
                 AnalysisMessagePane(
@@ -190,6 +197,73 @@ fun AnalysisScreen(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun WeeklyPlanPane(
+    report: AnalysisReport,
+    onOpenCalendar: () -> Unit,
+) {
+    val planItems = report.weeklyPlanItems().take(3)
+    ReunionPane(
+        title = "이번 주 플랜",
+        supportingText = "하루에 하나씩만 확인해도 충분해요.",
+    ) {
+        planItems.forEach { item ->
+            PlannerDayPreviewRow(item)
+        }
+        ReunionSecondaryButton(
+            text = "달력으로 보기",
+            onClick = onOpenCalendar,
+        )
+    }
+}
+
+@Composable
+private fun PlannerDayPreviewRow(item: PlannerDayItem) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Surface(
+            modifier = Modifier.size(44.dp),
+            shape = CircleShape,
+            color = if (item.isToday) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant
+            },
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    text = item.dayLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (item.isToday) {
+                        MaterialTheme.colorScheme.onPrimary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                text = item.title,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = item.body,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
@@ -584,6 +658,13 @@ internal data class RecoveryEvidenceItem(
     val value: String,
 )
 
+internal data class PlannerDayItem(
+    val dayLabel: String,
+    val title: String,
+    val body: String,
+    val isToday: Boolean = false,
+)
+
 internal val RecoveryStageLabels = listOf(
     "상황 읽기",
     "부담 낮추기",
@@ -612,6 +693,56 @@ internal fun AnalysisReport.recoveryEvidenceItems(): List<RecoveryEvidenceItem> 
         RecoveryEvidenceItem("연락 부담", contactBurdenValue()),
         RecoveryEvidenceItem("대화 여지", conversationOpeningValue()),
     )
+}
+
+internal fun AnalysisReport.weeklyPlanItems(): List<PlannerDayItem> {
+    return when (contactReadiness) {
+        "지금은 보류" -> listOf(
+            PlannerDayItem("오늘", "거리 두기", "추가 연락 없이 마지막 흐름을 다시 봐요.", isToday = true),
+            PlannerDayItem("내일", "부담 신호 체크", "상대가 불편했던 표현과 내가 반복한 말을 표시해요."),
+            PlannerDayItem("3일", "내 마음 정리", "보내고 싶은 말보다 내가 원하는 관계의 속도를 적어요."),
+            PlannerDayItem("4일", "새 반응 확인", "상대가 먼저 남긴 말이 있을 때만 다음 단계를 봐요."),
+            PlannerDayItem("5일", "문장 보류", "아직 반응이 없으면 연락 문장은 그대로 쉬어둬요."),
+            PlannerDayItem("6일", "대화 다시 읽기", "최근 흐름이 바뀌었는지 조용히 확인해요."),
+            PlannerDayItem("7일", "플랜 다시 보기", "새 대화가 생기면 플랜을 다시 만들어요."),
+        )
+        "먼저 사과 필요" -> listOf(
+            PlannerDayItem("오늘", "인정할 부분 정리", "내가 책임질 수 있는 한 문장만 적어요.", isToday = true),
+            PlannerDayItem("내일", "변명 덜어내기", "설명과 요구를 빼고 사과 문장을 짧게 다듬어요."),
+            PlannerDayItem("3일", "답 요구 빼기", "상대가 답하지 않아도 괜찮은 문장인지 확인해요."),
+            PlannerDayItem("4일", "상대 속도 보기", "반응이 있으면 같은 속도로만 이어가요."),
+            PlannerDayItem("5일", "감정 정리", "다시 만나자는 말보다 미안했던 지점을 정리해요."),
+            PlannerDayItem("6일", "대화 여지 확인", "상대가 열어둔 주제가 있는지 다시 봐요."),
+            PlannerDayItem("7일", "다음 단계 보기", "대화가 부드러워졌을 때만 다음 코스를 확인해요."),
+        )
+        "아주 가볍게 가능" -> {
+            val replyLike = nextStep.contains("상대의 마지막 메시지") ||
+                reunionObjective.contains("상대가 남긴 말")
+            listOf(
+                PlannerDayItem(
+                    "오늘",
+                    if (replyLike) "짧은 답장 준비" else "짧은 연결 준비",
+                    if (replyLike) "상대가 남긴 말에 한 문장만 이어요." else "안부나 확인을 한 문장으로 줄여요.",
+                    isToday = true,
+                ),
+                PlannerDayItem("내일", "반응 기다리기", "답장이 오면 같은 온도로만 이어가요."),
+                PlannerDayItem("3일", "대화 여지 보기", "상대가 편하게 받은 주제만 남겨요."),
+                PlannerDayItem("4일", "감정 회복 주제", "가벼웠던 기억이나 일상 얘기만 확인해요."),
+                PlannerDayItem("5일", "속도 맞추기", "상대 답장 간격보다 빠르게 몰아가지 않아요."),
+                PlannerDayItem("6일", "다음 대화 준비", "부담 없는 질문 하나만 남겨둬요."),
+                PlannerDayItem("7일", "만남은 천천히", "대화가 자연스럽게 이어질 때만 다음 단계를 봐요."),
+            )
+        }
+        else -> listOf(
+            PlannerDayItem("오늘", "내 이름 확인", "대화방에서 내가 어떤 이름인지 먼저 맞춰요.", isToday = true),
+            PlannerDayItem("내일", "대화 맥락 보기", "1:1 관계 대화가 맞는지 확인해요."),
+            PlannerDayItem("3일", "최근 파일 확인", "더 최근 카톡 내용이 있으면 그 파일을 불러와요."),
+            PlannerDayItem("4일", "상대 반응 찾기", "상대가 마지막에 남긴 말과 경계 표현을 봐요."),
+            PlannerDayItem("5일", "연락 부담 보기", "내가 연속으로 보낸 메시지가 많은지 확인해요."),
+            PlannerDayItem("6일", "플랜 다시 만들기", "관점이 맞으면 같은 대화로 플랜을 다시 만들어요."),
+            PlannerDayItem("7일", "회복 코스 열기", "충분한 대화가 모이면 다음 단계를 확인해요."),
+        )
+    }
 }
 
 private fun AnalysisReport.counterpartReactionValue(): String {
@@ -660,9 +791,12 @@ private fun String.softenedForPlanUi(): String {
         .replace("답장하세요.", "답장해볼 수 있어요.")
         .replace("바로 답하되", "짧게 이어가되")
         .replace("전하세요.", "남겨볼 수 있어요.")
+        .replace("정리해보세요.", "정리해봐요.")
         .replace("정리하세요.", "정리해보면 좋아요.")
+        .replace("확인해보세요.", "확인해봐요.")
         .replace("확인하세요.", "확인해보면 좋아요.")
         .replace("준비하세요.", "준비해볼 수 있어요.")
+        .replace("읽어보세요.", "읽어봐요.")
         .replace("읽으세요.", "읽어보면 좋아요.")
         .replace("기다리세요.", "기다려도 괜찮아요.")
         .replace("마세요.", "않아도 괜찮아요.")

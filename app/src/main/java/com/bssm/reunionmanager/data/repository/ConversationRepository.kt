@@ -35,6 +35,7 @@ class ConversationRepository(
         ) { conversations, latestAnalyses ->
             val latestAnalysisByConversationId = latestAnalyses.associateBy { analysis -> analysis.conversationId }
             conversations.map { entity ->
+                val latestAnalysis = latestAnalysisByConversationId[entity.id]
                 ConversationSummary(
                     id = entity.id,
                     title = entity.title,
@@ -42,7 +43,10 @@ class ConversationRepository(
                     messageCount = entity.messageCount,
                     importedAtEpochMillis = entity.importedAtEpochMillis,
                     sourceName = entity.sourceName,
-                    latestAnalysisHeadline = latestAnalysisByConversationId[entity.id]?.headline,
+                    latestAnalysisHeadline = latestAnalysis?.headline,
+                    latestAnalysisContactReadiness = latestAnalysis?.contactReadiness,
+                    latestAnalysisNextStep = latestAnalysis?.nextStep,
+                    latestAnalysisCreatedAtEpochMillis = latestAnalysis?.createdAtEpochMillis,
                 )
             }
         }

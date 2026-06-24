@@ -8,4 +8,7 @@ data class ConversationSummary(
     val importedAtEpochMillis: Long,
     val sourceName: String,
     val latestAnalysisHeadline: String?,
+    val latestAnalysisContactReadiness: String?,
+    val latestAnalysisNextStep: String?,
+    val latestAnalysisCreatedAtEpochMillis: Long?,
 )

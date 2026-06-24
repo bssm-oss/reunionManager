@@ -33,7 +33,7 @@ class ReunionManagerAppTest {
 
     @Test
     fun homeScreen_showsCoreTrustSignals() {
-        waitForText("재회 플랜")
+        waitForText("오늘")
         assertNotNull(device.findObject(By.text("재회 가능성을\n높이는 플랜")))
         assertNotNull(device.findObject(By.text("카톡 내용 불러오기")))
         assertNull(device.findObject(By.text("AI로 정리")))
@@ -59,27 +59,22 @@ class ReunionManagerAppTest {
 
         launchMainActivity()
 
-        waitForText("지난 플랜")
-        clickText("지난 플랜")
+        waitForText("지난 기록")
+        clickText("지난 기록")
         waitForText("샘플 채팅방")
     }
 
     @Test
     fun homeScreen_navigatesToSettingsScreen() {
-        clickText("설정")
+        clickText("내 정보")
 
         waitForText("내 카톡 이름")
         waitForText("데이터 보관")
         waitForText("기술 정보")
-        if (openRouterConfigured()) {
-            waitForText("OpenRouter로 플랜을 만들고, 필요한 대화 일부만 전송됩니다.")
-            waitForText("OpenRouter 연결이 없을 때 쓰는 선택 기능입니다.")
-        } else {
-            waitForText("모델 파일")
-            waitForText("선택한 파일은 앱 안에만 보관됩니다.")
-        }
-        assertNotNull(device.findObject(By.text("모델 파일 선택")))
-        assertNotNull(device.findObject(By.text(if (openRouterConfigured()) "외부 연결" else "기본 정리")))
+        waitForText("기술 정보 보기")
+        clickText("기술 정보 보기")
+        findTextWithScroll("분석 파일 선택")
+        assertNotNull(device.findObject(By.text(if (openRouterConfigured()) "준비됨" else "기본 정리")))
     }
 
     @Test
@@ -96,14 +91,15 @@ class ReunionManagerAppTest {
 
         launchMainActivity()
 
-        clickText("설정")
+        clickText("내 정보")
+        clickText("기술 정보 보기")
         if (openRouterConfigured()) {
             waitForText("기술 정보")
-            waitForText("OpenRouter로 플랜을 만들고, 필요한 대화 일부만 전송됩니다.")
-            waitForText("외부 연결")
+            waitForText("플랜을 만들 때 필요한 대화 일부만 분석 연결에 사용합니다.")
+            waitForText("준비됨")
         } else {
             waitForText("기술 정보")
-            waitForText("모델 파일은 저장됐고, 실행 전에는 기본 정리로 진행합니다.")
+            waitForText("분석 파일은 저장됐고, 실행 전에는 기본 정리로 진행합니다.")
             waitForText("점검 전")
         }
         waitForText("실행 점검")
@@ -126,14 +122,15 @@ class ReunionManagerAppTest {
 
         launchMainActivity()
 
-        clickText("설정")
+        clickText("내 정보")
+        clickText("기술 정보 보기")
         if (openRouterConfigured()) {
             waitForText("기술 정보")
-            waitForText("외부 연결")
+            waitForText("준비됨")
         } else {
             waitForText("기술 정보")
-            waitForText("선택한 모델 파일의 실행을 확인했습니다.")
-            waitForText("기기 모델 준비")
+            waitForText("기기 안의 분석 파일 실행을 확인했습니다.")
+            waitForText("준비됨")
         }
         waitForText("다시 점검")
     }
@@ -149,7 +146,7 @@ class ReunionManagerAppTest {
 
         launchMainActivity()
 
-        clickText("지난 플랜")
+        clickText("지난 기록")
         clickText("샘플 채팅방")
         clickText("플랜 만들기")
         waitForText("내 이름 확인")
@@ -170,14 +167,14 @@ class ReunionManagerAppTest {
 
         launchMainActivity()
 
-        clickText("지난 플랜")
+        clickText("지난 기록")
         clickText("긴 샘플 채팅방")
         waitForText("아직 플랜이 없어요")
-        waitForText("최근 메시지")
+        waitForText("최근 대화 근거")
         waitForText("최근 8개만 먼저 보기")
-        waitForText("전체 메시지 보기")
-        clickText("전체 메시지 보기")
-        waitForText("전체 메시지")
+        waitForText("전체 대화 보기")
+        clickText("전체 대화 보기")
+        waitForText("전체 대화 근거")
     }
 
     @Test
@@ -194,7 +191,7 @@ class ReunionManagerAppTest {
 
         launchMainActivity()
 
-        clickText("지난 플랜")
+        clickText("지난 기록")
         clickText("샘플 채팅방")
         clickText("플랜 만들기")
         waitForText("플랜 만들기")
@@ -204,6 +201,8 @@ class ReunionManagerAppTest {
         waitForText("목표", timeoutMillis = timeoutMillis)
         waitForText("다음 선택", timeoutMillis = timeoutMillis)
         waitForText("지켜둘 선", timeoutMillis = timeoutMillis)
+        findTextWithScroll("이번 주 플랜")
+        findTextWithScroll("달력으로 보기")
         if (!openRouterConfigured()) {
             waitForText("대화를 다시 열 수 있는 구간이에요.", timeoutMillis = timeoutMillis)
             waitForText("보내기 전 한 번 더 쉬어가도 괜찮아요.", timeoutMillis = timeoutMillis)
@@ -231,8 +230,8 @@ class ReunionManagerAppTest {
 
         launchMainActivity()
 
-        waitForText("재회 플랜")
-        clickText("지난 플랜")
+        waitForText("오늘")
+        clickText("지난 기록")
         clickText("샘플 채팅방")
         clickText("플랜 만들기")
         waitForText("플랜 만들기")

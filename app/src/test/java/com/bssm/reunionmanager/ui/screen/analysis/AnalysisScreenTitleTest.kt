@@ -359,6 +359,22 @@ class AnalysisScreenTitleTest {
     }
 
     @Test
+    fun weeklyPlanItems_changeByReadinessAndStayPlannerLike() {
+        val holdPlan = report(contactReadiness = "지금은 보류").weeklyPlanItems()
+        val apologyPlan = report(contactReadiness = "먼저 사과 필요").weeklyPlanItems()
+        val lightPlan = report(contactReadiness = "아주 가볍게 가능").weeklyPlanItems()
+        val infoPlan = report(contactReadiness = "정보 부족").weeklyPlanItems()
+
+        assertEquals(7, holdPlan.size)
+        assertEquals("거리 두기", holdPlan.first().title)
+        assertEquals("인정할 부분 정리", apologyPlan.first().title)
+        assertEquals("짧은 연결 준비", lightPlan.first().title)
+        assertEquals("내 이름 확인", infoPlan.first().title)
+        assertEquals("오늘", holdPlan.first().dayLabel)
+        assertTrue(holdPlan.first().isToday)
+    }
+
+    @Test
     fun needsPerspectiveSetupForAnalysis_detectsMissingOrMismatchedName() {
         val participants = listOf("민지", "현우")
 

@@ -36,6 +36,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.bssm.reunionmanager.ui.MainViewModel
 import com.bssm.reunionmanager.ui.screen.analysis.AnalysisScreen
+import com.bssm.reunionmanager.ui.screen.analysis.PlanCalendarScreen
 import com.bssm.reunionmanager.ui.screen.conversation.ConversationDetailScreen
 import com.bssm.reunionmanager.ui.screen.conversation.ConversationListScreen
 import com.bssm.reunionmanager.ui.screen.home.HomeScreen
@@ -61,6 +62,7 @@ fun ReunionManagerApp() {
         currentRoute == ReunionDestination.Settings.route -> ReunionDestination.Settings.title
         currentRoute == ReunionDestination.ConversationDetail.route -> ReunionDestination.ConversationDetail.title
         currentRoute == ReunionDestination.Analysis.route -> ReunionDestination.Analysis.title
+        currentRoute == ReunionDestination.PlanCalendar.route -> ReunionDestination.PlanCalendar.title
         else -> ReunionDestination.Home.title
     }
     val canGoBack = backStackEntry?.destination?.hierarchy?.any { it.route == ReunionDestination.Home.route } == false
@@ -124,13 +126,13 @@ fun ReunionManagerApp() {
                     actions = {
                         if (currentRoute == ReunionDestination.Home.route) {
                             TextButton(onClick = { navController.navigate(ReunionDestination.Conversations.route) }) {
-                                Text("지난 플랜")
+                                Text("지난 기록")
                             }
                             TextButton(
                                 onClick = { navController.navigate(ReunionDestination.Settings.route) },
                                 modifier = Modifier.padding(end = 4.dp),
                             ) {
-                                Text("설정")
+                                Text("내 정보")
                             }
                         }
                     },
@@ -145,7 +147,14 @@ fun ReunionManagerApp() {
         ) {
             composable(route = ReunionDestination.Home.route) {
                 HomeScreen(
+                    conversations = conversations,
                     onImportClick = { navController.navigate(ReunionDestination.Import.route) },
+                    onOpenPlanClick = { conversationId ->
+                        navController.navigate(ReunionDestination.Analysis.createRoute(conversationId))
+                    },
+                    onOpenCalendarClick = { conversationId ->
+                        navController.navigate(ReunionDestination.PlanCalendar.createRoute(conversationId))
+                    },
                 )
             }
             composable(route = ReunionDestination.Import.route) {
@@ -208,8 +217,24 @@ fun ReunionManagerApp() {
                     userDisplayName = providerSettings.userDisplayName,
                     providerConfigured = openRouterConfigured || providerSettings.isModelVerified,
                     onGenerate = { viewModel.generateAnalysis(conversationId) },
+                    onOpenCalendar = { navController.navigate(ReunionDestination.PlanCalendar.createRoute(conversationId)) },
                     onOpenSettings = { navController.navigate(ReunionDestination.Settings.route) },
                     onSaveUserDisplayName = viewModel::saveUserDisplayName,
+                )
+            }
+            composable(
+                route = ReunionDestination.PlanCalendar.route,
+                arguments = listOf(navArgument("conversationId") { type = NavType.LongType }),
+            ) { entry ->
+                val conversationId = entry.arguments?.getLong("conversationId") ?: return@composable
+                val detail by viewModel.observeConversationDetail(conversationId).collectAsStateWithLifecycle(initialValue = null)
+                PlanCalendarScreen(
+                    detail = detail,
+                    onOpenAnalysis = {
+                        navController.navigate(ReunionDestination.Analysis.createRoute(conversationId)) {
+                            launchSingleTop = true
+                        }
+                    },
                 )
             }
         }
