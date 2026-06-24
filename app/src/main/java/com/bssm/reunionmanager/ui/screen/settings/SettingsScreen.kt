@@ -46,17 +46,12 @@ fun SettingsScreen(
     var userDisplayName by remember(providerSettings.userDisplayName) {
         mutableStateOf(providerSettings.userDisplayName)
     }
-    val modelStatusTitle = when {
-        openRouterConfigured -> "OpenRouter AI 사용 중"
-        !providerSettings.isConfigured -> "안전 정리 사용 중"
-        providerSettings.isModelVerified -> "로컬 AI 준비됨"
-        else -> "로컬 AI 점검 필요"
-    }
+    val modelStatusTitle = "기술 정보"
     val modelStatusBadge = when {
-        openRouterConfigured -> "AI 정리"
-        !providerSettings.isConfigured -> "안전 정리"
-        providerSettings.isModelVerified -> "준비됨"
-        else -> "점검 필요"
+        openRouterConfigured -> "외부 연결"
+        !providerSettings.isConfigured -> "기본 정리"
+        providerSettings.isModelVerified -> "기기 모델 준비"
+        else -> "점검 전"
     }
     val modelStatusTone = when {
         openRouterConfigured -> ReunionBadgeTone.Success
@@ -65,10 +60,10 @@ fun SettingsScreen(
         else -> ReunionBadgeTone.Accent
     }
     val modelStatusDescription = when {
-        openRouterConfigured -> "DeepSeek로 정리합니다. 대화 일부가 OpenRouter로 전송됩니다."
-        !providerSettings.isConfigured -> "모델 없이도 안전 정리로 시작합니다."
-        providerSettings.isModelVerified -> "로컬 AI 모델을 이 기기에서 실행 확인했습니다."
-        else -> "파일은 저장됐지만, 점검 전에는 안전 정리로 진행합니다."
+        openRouterConfigured -> "OpenRouter로 플랜을 만들고, 필요한 대화 일부만 전송됩니다."
+        !providerSettings.isConfigured -> "모델 파일 없이 기본 정리로 플랜을 만들 수 있어요."
+        providerSettings.isModelVerified -> "선택한 모델 파일의 실행을 확인했습니다."
+        else -> "모델 파일은 저장됐고, 실행 전에는 기본 정리로 진행합니다."
     }
     val modelMessageTitle = modelMessageTitle(providerSettings, modelSettingsState.message)
     val modelMessageTone = if (providerSettings.isModelVerified) {
@@ -115,6 +110,10 @@ fun SettingsScreen(
             )
         }
         ReunionPane(
+            title = "데이터 보관",
+            supportingText = "가져온 대화와 플랜은 이 기기에 보관돼요. 필요 없으면 대화 기록에서 삭제할 수 있어요.",
+        )
+        ReunionPane(
             title = modelStatusTitle,
             supportingText = modelStatusDescription,
         ) {
@@ -141,15 +140,15 @@ fun SettingsScreen(
             }
         }
         ReunionPane(
-            title = if (openRouterConfigured) "로컬 모델 파일" else "AI 모델 파일",
+            title = "모델 파일",
             supportingText = if (openRouterConfigured) {
-                "키가 없을 때만 쓰는 선택 기능입니다."
+                "OpenRouter 연결이 없을 때 쓰는 선택 기능입니다."
             } else {
-                "선택한 파일은 이 기기에만 저장됩니다."
+                "선택한 파일은 앱 안에만 보관됩니다."
             },
         ) {
             ReunionSecondaryButton(
-                text = if (modelSettingsState.isLoading) "파일 저장 중..." else "파일 선택",
+                text = if (modelSettingsState.isLoading) "파일 저장 중..." else "모델 파일 선택",
                 onClick = { modelPickerLauncher.launch(arrayOf("application/octet-stream", "*/*")) },
                 enabled = !modelSettingsState.isLoading && !modelSettingsState.isChecking,
             )
@@ -176,7 +175,7 @@ fun SettingsScreen(
         }
         if (providerSettings.isConfigured) {
             ReunionSecondaryButton(
-                text = "AI 모델 파일 제거",
+                text = "모델 파일 제거",
                 onClick = {
                     providerSettings.demoModeSaveRequest(userDisplayName).dispatchTo(onSave)
                 },
@@ -215,9 +214,9 @@ internal fun modelMessageTitle(
     message: String?,
 ): String {
     return when {
-        message?.contains("제거") == true -> "AI 모델 파일 제거됨"
-        providerSettings.isModelVerified -> "AI 모델 준비됨"
-        else -> "AI 모델 파일 저장됨"
+        message?.contains("제거") == true -> "모델 파일 제거됨"
+        providerSettings.isModelVerified -> "모델 준비됨"
+        else -> "모델 파일 저장됨"
     }
 }
 

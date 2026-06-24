@@ -17,6 +17,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -33,7 +34,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.bssm.reunionmanager.domain.model.ProviderSettings
 import com.bssm.reunionmanager.ui.MainViewModel
 import com.bssm.reunionmanager.ui.screen.analysis.AnalysisScreen
 import com.bssm.reunionmanager.ui.screen.conversation.ConversationDetailScreen
@@ -41,8 +41,6 @@ import com.bssm.reunionmanager.ui.screen.conversation.ConversationListScreen
 import com.bssm.reunionmanager.ui.screen.home.HomeScreen
 import com.bssm.reunionmanager.ui.screen.importing.ImportScreen
 import com.bssm.reunionmanager.ui.screen.settings.SettingsScreen
-import com.bssm.reunionmanager.ui.theme.ReunionBadge
-import com.bssm.reunionmanager.ui.theme.ReunionBadgeTone
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -124,11 +122,17 @@ fun ReunionManagerApp() {
                         }
                     },
                     actions = {
-                        ReunionBadge(
-                            text = providerSettings.runtimeBadgeText(openRouterConfigured),
-                            tone = providerSettings.runtimeBadgeTone(openRouterConfigured),
-                            modifier = Modifier.padding(end = 12.dp),
-                        )
+                        if (currentRoute == ReunionDestination.Home.route) {
+                            TextButton(onClick = { navController.navigate(ReunionDestination.Conversations.route) }) {
+                                Text("지난 플랜")
+                            }
+                            TextButton(
+                                onClick = { navController.navigate(ReunionDestination.Settings.route) },
+                                modifier = Modifier.padding(end = 4.dp),
+                            ) {
+                                Text("설정")
+                            }
+                        }
                     },
                 )
             }
@@ -141,13 +145,7 @@ fun ReunionManagerApp() {
         ) {
             composable(route = ReunionDestination.Home.route) {
                 HomeScreen(
-                    conversationCount = conversations.size,
-                    modelConfigured = providerSettings.isConfigured,
-                    modelVerified = providerSettings.isModelVerified,
-                    openRouterConfigured = openRouterConfigured,
                     onImportClick = { navController.navigate(ReunionDestination.Import.route) },
-                    onConversationsClick = { navController.navigate(ReunionDestination.Conversations.route) },
-                    onSettingsClick = { navController.navigate(ReunionDestination.Settings.route) },
                 )
             }
             composable(route = ReunionDestination.Import.route) {
@@ -215,23 +213,5 @@ fun ReunionManagerApp() {
                 )
             }
         }
-    }
-}
-
-private fun ProviderSettings.runtimeBadgeText(openRouterConfigured: Boolean): String {
-    return when {
-        openRouterConfigured -> "AI 정리"
-        !isConfigured -> "안전 정리"
-        isModelVerified -> "실행 확인됨"
-        else -> "점검 필요"
-    }
-}
-
-private fun ProviderSettings.runtimeBadgeTone(openRouterConfigured: Boolean): ReunionBadgeTone {
-    return when {
-        openRouterConfigured -> ReunionBadgeTone.Success
-        !isConfigured -> ReunionBadgeTone.Neutral
-        isModelVerified -> ReunionBadgeTone.Success
-        else -> ReunionBadgeTone.Accent
     }
 }

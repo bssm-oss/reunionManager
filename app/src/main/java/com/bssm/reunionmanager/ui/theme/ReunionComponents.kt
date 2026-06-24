@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -20,10 +21,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
-val ScreenPadding = 16.dp
-val ScreenSectionSpacing = 14.dp
-private val CardContentPadding = 18.dp
-private val CardItemSpacing = 12.dp
+val ScreenPadding = 20.dp
+val ScreenSectionSpacing = 16.dp
+private val CardContentPadding = 20.dp
+private val CardItemSpacing = 14.dp
 
 enum class ReunionBadgeTone {
     Neutral,
@@ -46,7 +47,7 @@ fun ReunionPane(
         shape = MaterialTheme.shapes.medium,
         color = containerColor,
         tonalElevation = 0.dp,
-        shadowElevation = 0.dp,
+        shadowElevation = 2.dp,
         border = BorderStroke(1.dp, borderColor),
     ) {
         Column(
@@ -93,7 +94,7 @@ fun ReunionBadge(
 
     Surface(
         modifier = modifier,
-        shape = MaterialTheme.shapes.small,
+        shape = CircleShape,
         color = containerColor,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
@@ -119,7 +120,7 @@ fun ReunionPrimaryButton(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .defaultMinSize(minHeight = 48.dp),
+            .defaultMinSize(minHeight = 54.dp),
         enabled = enabled,
         shape = MaterialTheme.shapes.small,
         colors = ButtonDefaults.buttonColors(
@@ -144,7 +145,7 @@ fun ReunionSecondaryButton(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .defaultMinSize(minHeight = 48.dp),
+            .defaultMinSize(minHeight = 54.dp),
         enabled = enabled,
         shape = MaterialTheme.shapes.small,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),

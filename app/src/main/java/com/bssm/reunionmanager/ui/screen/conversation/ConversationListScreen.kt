@@ -34,8 +34,8 @@ fun ConversationListScreen(
             verticalArrangement = Arrangement.spacedBy(ScreenSectionSpacing),
         ) {
             ReunionEmptyState(
-                title = "저장한 대화가 없습니다.",
-                body = "먼저 카카오톡 대화 파일을 가져오세요.",
+                title = "아직 지난 플랜이 없어요",
+                body = "대화 흐름을 불러오면 여기에서 다시 볼 수 있어요.",
             )
         }
         return
@@ -48,7 +48,7 @@ fun ConversationListScreen(
     ) {
         item {
             Text(
-                text = "대화를 눌러 메시지와 다음 행동을 확인하세요.",
+                text = "대화를 눌러 회복 플랜을 이어서 볼 수 있어요.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -61,7 +61,7 @@ fun ConversationListScreen(
             ) {
                 if (conversation.latestAnalysisHeadline != null) {
                     ReunionBadge(
-                        text = "정리됨",
+                        text = "플랜 있음",
                         tone = ReunionBadgeTone.Accent,
                     )
                 }
@@ -79,6 +79,6 @@ private fun ConversationSummary.summaryText(): String {
     val base = "참여자 ${participantCount}명 · 메시지 ${messageCount}개"
     return latestAnalysisHeadline
         ?.takeIf { headline -> headline.isNotBlank() }
-        ?.let { headline -> "$base\n최근 정리: $headline" }
+        ?.let { headline -> "$base\n최근 플랜: $headline" }
         ?: base
 }

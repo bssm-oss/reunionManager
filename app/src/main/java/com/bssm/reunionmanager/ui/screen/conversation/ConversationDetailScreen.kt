@@ -83,8 +83,8 @@ fun ConversationDetailScreen(
         }
         item {
             ReunionPane(
-                title = detail.latestAnalysis?.let { "최근 정리" } ?: "아직 정리하지 않았어요",
-                supportingText = detail.latestAnalysis?.detailHeadline() ?: "오늘 보낼지 말지만 먼저 정리할 수 있어요.",
+                title = detail.latestAnalysis?.let { "최근 플랜" } ?: "아직 플랜이 없어요",
+                supportingText = detail.latestAnalysis?.detailHeadline() ?: "대화 흐름으로 재회 플랜을 만들 수 있어요.",
                 containerColor = detail.latestAnalysis?.detailContainerColor() ?: MaterialTheme.colorScheme.surface,
             ) {
                 detail.latestAnalysis?.let { report ->
@@ -109,7 +109,7 @@ fun ConversationDetailScreen(
                 title = "대화 정보",
                 supportingText = detail.infoSummary(),
             ) {
-                ReunionBadge(text = "기기 내 저장")
+                ReunionBadge(text = "비공개 보관")
             }
         }
         if (showPerspectivePicker) {
@@ -213,12 +213,12 @@ private fun ConversationDetail.infoSummary(): String {
 }
 
 internal fun ConversationDetail.analysisEntryButtonText(): String {
-    return if (latestAnalysis == null) "다음 행동 정리하기" else "정리 결과 보기"
+    return if (latestAnalysis == null) "플랜 만들기" else "플랜 보기"
 }
 
 internal fun deleteConversationSupportingText(isConfirmingDelete: Boolean): String {
     return if (isConfirmingDelete) {
-        "이 대화와 정리 결과를 이 기기에서 삭제합니다."
+        "이 대화와 플랜을 이 기기에서 삭제합니다."
     } else {
         "필요 없어진 대화는 언제든 이 기기에서 지울 수 있어요."
     }
@@ -243,21 +243,21 @@ private fun AnalysisReport.detailContainerColor() = when (detailReadinessTone())
 
 internal fun AnalysisReport.detailHeadline(): String {
     return when (contactReadiness) {
-        "지금은 보류" -> "오늘은 보내지 않는 쪽이 안전해요."
-        "정보 부족" -> "먼저 확인할 정보가 있어요."
-        "먼저 사과 필요" -> "짧은 인정부터 준비해요."
+        "지금은 보류" -> "부담을 낮추는 구간이에요."
+        "정보 부족" -> "상황을 먼저 읽는 구간이에요."
+        "먼저 사과 필요" -> "관계를 조심스럽게 낮추는 구간이에요."
         else -> if (detailLooksLikeReply()) {
-            "짧게 답장하면 충분해요."
+            "대화를 다시 열 수 있는 구간이에요."
         } else {
-            "부담 없는 한 문장만 준비해요."
+            "작은 연결을 준비할 수 있어요."
         }
     }
 }
 
 internal fun AnalysisReport.detailNextAction(): String {
     return when (contactReadiness) {
-        "지금은 보류" -> "오늘은 보내지 말고 기다려요."
-        "정보 부족" -> "내 이름과 최근 대화가 맞는지 확인하세요."
+        "지금은 보류" -> "상대 반응을 더 지켜보면 안정적이에요."
+        "정보 부족" -> "내 이름과 최근 대화가 맞는지 보면 좋아요."
         "먼저 사과 필요" -> nextStep.limitForDetail(maxLength = 52)
         else -> nextStep.limitForDetail(maxLength = 52)
     }

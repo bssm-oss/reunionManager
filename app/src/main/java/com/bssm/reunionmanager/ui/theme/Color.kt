@@ -2,25 +2,25 @@ package com.bssm.reunionmanager.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val AppBackground = Color(0xFFF5F4ED)
-val AppPanel = Color(0xFFFAF9F5)
+val AppBackground = Color(0xFFFFF1F3)
+val AppPanel = Color(0xFFFFFFFF)
 val AppSurface = Color(0xFFFFFFFF)
-val AppSurfaceHigh = Color(0xFFE8E6DC)
-val AppSurfaceAccent = Color(0xFFF2DDD3)
+val AppSurfaceHigh = Color(0xFFFFE6EA)
+val AppSurfaceAccent = Color(0xFFFFD4DC)
 
-val AppTextPrimary = Color(0xFF171513)
-val AppTextSecondary = Color(0xFF5E5A52)
-val AppTextMuted = Color(0xFF817B70)
-val AppTextFaint = Color(0xFFA29B90)
+val AppTextPrimary = Color(0xFF241C1F)
+val AppTextSecondary = Color(0xFF6E5E63)
+val AppTextMuted = Color(0xFF8A777D)
+val AppTextFaint = Color(0xFFB39DA4)
 
-val AppAccent = Color(0xFFC96442)
-val AppAccentActive = Color(0xFF99482F)
-val AppAccentContainer = Color(0xFFF1D6CB)
+val AppAccent = Color(0xFFFF5A6E)
+val AppAccentActive = Color(0xFFE34458)
+val AppAccentContainer = Color(0xFFFFE0E5)
 
 val AppSuccess = Color(0xFF2F7D5B)
 val AppSuccessContainer = Color(0xFFDFF1E8)
 val AppError = Color(0xFFB53333)
 val AppErrorContainer = Color(0xFFF5DAD7)
 
-val AppBorderSubtle = Color(0xFFF0EEE6)
-val AppBorder = Color(0xFFD1CFC5)
+val AppBorderSubtle = Color(0xFFFFE3E8)
+val AppBorder = Color(0xFFEAC6CE)

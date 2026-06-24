@@ -14,7 +14,7 @@ class AnalysisScreenTitleTest {
     fun messageSectionTitle_returnsNoSendTitleWhenContactIsOnHold() {
         val report = report(contactReadiness = "지금은 보류")
 
-        assertEquals("보내지 않기", report.messageSectionTitle())
+        assertEquals("지금은 보류해도 괜찮아요", report.messageSectionTitle())
     }
 
     @Test
@@ -26,14 +26,14 @@ class AnalysisScreenTitleTest {
             alternativeDrafts = "내 카톡 이름 저장하기\n같은 대화 다시 분석하기\n최근 대화 파일인지 확인하기",
         )
 
-        assertEquals("확인할 일", report.messageSectionTitle())
+        assertEquals("먼저 확인할 것", report.messageSectionTitle())
     }
 
     @Test
     fun messageSectionTitle_returnsCheckTitleWhenInformationIsInsufficientEvenIfDraftExists() {
         val report = report(contactReadiness = "정보 부족")
 
-        assertEquals("확인할 일", report.messageSectionTitle())
+        assertEquals("먼저 확인할 것", report.messageSectionTitle())
     }
 
     @Test
@@ -43,14 +43,14 @@ class AnalysisScreenTitleTest {
             nextStep = "상대의 마지막 메시지에 바로 답하세요.",
         )
 
-        assertEquals("답장 문장", report.messageSectionTitle())
+        assertEquals("짧은 답장 참고", report.messageSectionTitle())
     }
 
     @Test
     fun messageSectionTitle_returnsFirstContactTitleByDefault() {
         val report = report()
 
-        assertEquals("첫 연락 문장", report.messageSectionTitle())
+        assertEquals("필요할 때 참고할 문장", report.messageSectionTitle())
     }
 
     @Test
@@ -107,22 +107,22 @@ class AnalysisScreenTitleTest {
     @Test
     fun conclusionHeadline_summarizesActionWithoutExtraDetail() {
         assertEquals(
-            "오늘은 보내지 않는 쪽이 안전합니다.",
+            "부담을 낮추는 구간이에요.",
             report(contactReadiness = "지금은 보류").conclusionHeadline(),
         )
         assertEquals(
-            "먼저 확인할 정보가 있습니다.",
+            "상황을 먼저 읽는 구간이에요.",
             report(contactReadiness = "정보 부족").conclusionHeadline(),
         )
         assertEquals(
-            "새 연락보다 짧은 답장이 자연스럽습니다.",
+            "대화를 다시 열 수 있는 구간이에요.",
             report(
                 reunionObjective = "새 연락보다 상대가 남긴 말에 답하는 것이 목표입니다.",
                 nextStep = "상대의 마지막 메시지에 바로 답하세요.",
             ).conclusionHeadline(),
         )
         assertEquals(
-            "짧고 부담 없는 한 문장만 준비하세요.",
+            "작은 연결을 준비할 수 있어요.",
             report().conclusionHeadline(),
         )
     }
@@ -135,7 +135,7 @@ class AnalysisScreenTitleTest {
             nextStep = "상대의 마지막 메시지에 답하되 먼저 미안하다고만 전하세요.",
         )
 
-        assertEquals("재회보다 짧은 인정이 먼저입니다.", report.conclusionHeadline())
+        assertEquals("조심스럽게 낮추는 구간이에요.", report.conclusionHeadline())
     }
 
     @Test
@@ -154,7 +154,7 @@ class AnalysisScreenTitleTest {
         )
 
         assertEquals(
-            "상대가 마지막에 답장을 남긴 상태라 짧은 답장이 자연스럽습니다.",
+            "상대가 마지막에 답장을 남긴 상태라 짧은 연결이 자연스럽습니다.",
             report.summaryBody(),
         )
     }
@@ -223,12 +223,24 @@ class AnalysisScreenTitleTest {
     }
 
     @Test
+    fun planUiText_softensHoldDirectives() {
+        val report = report(
+            contactReadiness = "지금은 보류",
+            nextStep = "오늘은 보내지 말고 최근 대화를 확인하세요.",
+            messageDraft = "오늘은 보내지 않습니다. 상대가 먼저 답하면 다시 판단하세요.",
+        )
+
+        assertEquals("상대 반응을 더 지켜보면 안정적이에요.", report.nextStepBodyForUi())
+        assertEquals("지금은 보낼 문장보다 거리 조절이 먼저예요.", report.messageBodyForUi())
+    }
+
+    @Test
     fun copySafetyNote_usesOneShortLine() {
         val report = report(
             caution = "답을 재촉하지 마세요.\n상대가 답하지 않으면 기다리세요.",
         )
 
-        assertEquals("한 번만 보내고 기다려요.", report.copySafetyNote())
+        assertEquals("보내기 전 한 번 더 쉬어가도 괜찮아요.", report.copySafetyNote())
     }
 
     @Test
@@ -242,7 +254,7 @@ class AnalysisScreenTitleTest {
     @Test
     fun copySafetyNote_simplifiesBoundaryAndUncertainCautions() {
         assertEquals(
-            "상대가 불편하면 멈춰요.",
+            "상대가 불편하면 쉬어가요.",
             report(caution = "상대가 다시 불편함을 보이면 추가 메시지를 보내지 마세요.").copySafetyNote(),
         )
         assertEquals(
@@ -254,23 +266,23 @@ class AnalysisScreenTitleTest {
     @Test
     fun copyPromptText_switchesToPostCopyGuardrail() {
         assertEquals(
-            "한 번만 보내고 기다려요.",
-            copyPromptText(copied = false, safetyNote = "한 번만 보내고 기다려요."),
+            "보내기 전 한 번 더 쉬어가도 괜찮아요.",
+            copyPromptText(copied = false, safetyNote = "보내기 전 한 번 더 쉬어가도 괜찮아요."),
         )
         assertEquals(
-            "복사됐어요. 한 번만 보내고 기다려요.",
-            copyPromptText(copied = true, safetyNote = "한 번만 보내고 기다려요."),
+            "복사됐어요. 보내기 전 한 번 더 쉬어가도 괜찮아요.",
+            copyPromptText(copied = true, safetyNote = "보내기 전 한 번 더 쉬어가도 괜찮아요."),
         )
     }
 
     @Test
     fun copyPromptText_preservesContextualSafetyAfterCopy() {
         assertEquals(
-            "복사됐어요. 상대가 불편하면 멈춰요.",
-            copyPromptText(copied = true, safetyNote = "상대가 불편하면 멈춰요."),
+            "복사됐어요. 상대가 불편하면 쉬어가요.",
+            copyPromptText(copied = true, safetyNote = "상대가 불편하면 쉬어가요."),
         )
         assertEquals(
-            "한 번만 보내고 기다려요.",
+            "보내기 전 한 번 더 쉬어가도 괜찮아요.",
             copyPromptText(copied = false, safetyNote = ""),
         )
     }
@@ -278,21 +290,53 @@ class AnalysisScreenTitleTest {
     @Test
     fun analysisGenerateButtonText_separatesInitialDraftFromRegeneration() {
         assertEquals(
-            "다음 행동 정리하기",
+            "플랜 만들기",
             analysisGenerateButtonText(providerConfigured = true, hasReport = false),
         )
         assertEquals(
-            "안전하게 정리하기",
+            "플랜 만들기",
             analysisGenerateButtonText(providerConfigured = false, hasReport = false),
         )
         assertEquals(
-            "다시 정리하기",
+            "플랜 다시 만들기",
             analysisGenerateButtonText(providerConfigured = true, hasReport = true),
         )
         assertEquals(
-            "다시 정리하기",
+            "플랜 다시 만들기",
             analysisGenerateButtonText(providerConfigured = false, hasReport = true),
         )
+    }
+
+    @Test
+    fun recoveryStageIndex_mapsReadinessToRecoveryMap() {
+        assertEquals(0, report(contactReadiness = "정보 부족").recoveryStageIndex())
+        assertEquals(1, report(contactReadiness = "지금은 보류").recoveryStageIndex())
+        assertEquals(1, report(contactReadiness = "먼저 사과 필요").recoveryStageIndex())
+        assertEquals(2, report(contactReadiness = "아주 가볍게 가능").recoveryStageIndex())
+        assertEquals("대화 열기", report(contactReadiness = "아주 가볍게 가능").recoveryStageLabel())
+    }
+
+    @Test
+    fun recoveryEvidenceItems_keepCurrentNodeBubbleShortAndConcrete() {
+        val holdItems = report(contactReadiness = "지금은 보류").recoveryEvidenceItems()
+
+        assertEquals(
+            listOf(
+                RecoveryEvidenceItem("상대 반응", "조심"),
+                RecoveryEvidenceItem("연락 부담", "높음"),
+                RecoveryEvidenceItem("대화 여지", "낮음"),
+            ),
+            holdItems,
+        )
+
+        val openItems = report(
+            reunionObjective = "상대가 남긴 말에 답하는 것이 목표입니다.",
+            nextStep = "상대의 마지막 메시지에 짧게 답하세요.",
+        ).recoveryEvidenceItems()
+
+        assertEquals("짧게 열림", openItems.first().value)
+        assertEquals("낮음", openItems[1].value)
+        assertEquals("있음", openItems[2].value)
     }
 
     @Test

@@ -44,12 +44,12 @@ fun ImportScreen(
         verticalArrangement = Arrangement.spacedBy(ScreenSectionSpacing),
     ) {
         Text(
-            text = "카카오톡 내보내기 파일을 선택하세요. 대화는 기기에만 저장됩니다.",
+            text = "카카오톡 대화 흐름을 불러오면 재회 플랜을 만들 수 있어요.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         ReunionPrimaryButton(
-            text = if (importState.isLoading) "가져오는 중..." else "대화 파일 선택",
+            text = if (importState.isLoading) "불러오는 중..." else "대화 흐름 불러오기",
             onClick = {
                 pickerLauncher.launch(
                     arrayOf(
@@ -66,8 +66,8 @@ fun ImportScreen(
 
         if (importState.isLoading) {
             ReunionEmptyState(
-                title = "가져오는 중",
-                body = "선택한 파일을 이 기기에서 읽고 있습니다.",
+                title = "대화 흐름을 읽는 중",
+                body = "최근 대화에서 회복 단서를 정리하고 있어요.",
                 tone = ReunionBadgeTone.Accent,
             ) {
                 CircularProgressIndicator(
@@ -79,13 +79,13 @@ fun ImportScreen(
 
         importState.message?.let { message ->
             ReunionEmptyState(
-                title = "가져오기 완료",
+                title = "대화 흐름을 불러왔어요",
                 body = message,
                 tone = ReunionBadgeTone.Success,
             ) {
                 importState.importedConversationId?.let { conversationId ->
                     ReunionSecondaryButton(
-                        text = "다음 행동 정리하기",
+                        text = "플랜 보기",
                         onClick = { onOpenPlanClick(conversationId) },
                     )
                 }
@@ -94,7 +94,7 @@ fun ImportScreen(
 
         importState.errorMessage?.let { errorMessage ->
             ReunionEmptyState(
-                title = "가져오지 못했습니다",
+                title = "불러오지 못했습니다",
                 body = errorMessage,
                 tone = ReunionBadgeTone.Error,
             )

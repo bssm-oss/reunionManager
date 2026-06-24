@@ -33,22 +33,19 @@ class ReunionManagerAppTest {
 
     @Test
     fun homeScreen_showsCoreTrustSignals() {
-        waitForText("재회 매니저")
-        if (openRouterConfigured()) {
-            assertNotNull(device.findObject(By.text("AI로 정리")))
-        } else {
-            assertNotNull(device.findObject(By.text("내 기기에서 보관")))
-        }
-        assertNotNull(device.findObject(By.text("대화 파일을 가져오세요")))
-        assertNotNull(device.findObject(By.text("카카오톡 대화 가져오기")))
+        waitForText("재회 플랜")
+        assertNotNull(device.findObject(By.text("재회 가능성을\n높이는 플랜")))
+        assertNotNull(device.findObject(By.text("대화로 플랜 만들기")))
+        assertNull(device.findObject(By.text("AI로 정리")))
+        assertNull(device.findObject(By.text("내 기기에서 보관")))
     }
 
     @Test
     fun homeScreen_navigatesToImportScreen() {
-        clickText("카카오톡 대화 가져오기")
+        clickText("대화로 플랜 만들기")
 
-        waitForText("카카오톡 내보내기 파일을 선택하세요. 대화는 기기에만 저장됩니다.")
-        assertNotNull(device.findObject(By.text("대화 파일 선택")))
+        waitForText("카카오톡 대화 흐름을 불러오면 재회 플랜을 만들 수 있어요.")
+        assertNotNull(device.findObject(By.text("대화 흐름 불러오기")))
     }
 
     @Test
@@ -62,27 +59,27 @@ class ReunionManagerAppTest {
 
         launchMainActivity()
 
-        waitForText("이어서 정리하기")
-        clickText("저장한 대화 보기")
+        waitForText("지난 플랜")
+        clickText("지난 플랜")
         waitForText("샘플 채팅방")
     }
 
     @Test
     fun homeScreen_navigatesToSettingsScreen() {
-        clickTextWithScroll("분석 설정")
+        clickText("설정")
 
         waitForText("내 카톡 이름")
+        waitForText("데이터 보관")
+        waitForText("기술 정보")
         if (openRouterConfigured()) {
-            waitForText("OpenRouter AI 사용 중")
-            waitForText("DeepSeek로 정리합니다. 대화 일부가 OpenRouter로 전송됩니다.")
-            waitForText("로컬 모델 파일")
-            waitForText("키가 없을 때만 쓰는 선택 기능입니다.")
+            waitForText("OpenRouter로 플랜을 만들고, 필요한 대화 일부만 전송됩니다.")
+            waitForText("OpenRouter 연결이 없을 때 쓰는 선택 기능입니다.")
         } else {
-            waitForText("AI 모델 파일")
-            waitForText("선택한 파일은 이 기기에만 저장됩니다.")
+            waitForText("모델 파일")
+            waitForText("선택한 파일은 앱 안에만 보관됩니다.")
         }
-        assertNotNull(device.findObject(By.text("파일 선택")))
-        assertNotNull(device.findObject(By.text(if (openRouterConfigured()) "AI 정리" else "안전 정리")))
+        assertNotNull(device.findObject(By.text("모델 파일 선택")))
+        assertNotNull(device.findObject(By.text(if (openRouterConfigured()) "외부 연결" else "기본 정리")))
     }
 
     @Test
@@ -99,15 +96,15 @@ class ReunionManagerAppTest {
 
         launchMainActivity()
 
-        clickTextWithScroll("분석 설정")
+        clickText("설정")
         if (openRouterConfigured()) {
-            waitForText("OpenRouter AI 사용 중")
-            waitForText("DeepSeek로 정리합니다. 대화 일부가 OpenRouter로 전송됩니다.")
-            waitForText("AI 정리")
+            waitForText("기술 정보")
+            waitForText("OpenRouter로 플랜을 만들고, 필요한 대화 일부만 전송됩니다.")
+            waitForText("외부 연결")
         } else {
-            waitForText("로컬 AI 점검 필요")
-            waitForText("파일은 저장됐지만, 점검 전에는 안전 정리로 진행합니다.")
-            waitForText("점검 필요")
+            waitForText("기술 정보")
+            waitForText("모델 파일은 저장됐고, 실행 전에는 기본 정리로 진행합니다.")
+            waitForText("점검 전")
         }
         waitForText("실행 점검")
     }
@@ -129,14 +126,14 @@ class ReunionManagerAppTest {
 
         launchMainActivity()
 
-        clickTextWithScroll("분석 설정")
+        clickText("설정")
         if (openRouterConfigured()) {
-            waitForText("OpenRouter AI 사용 중")
-            waitForText("AI 정리")
+            waitForText("기술 정보")
+            waitForText("외부 연결")
         } else {
-            waitForText("로컬 AI 준비됨")
-            waitForText("로컬 AI 모델을 이 기기에서 실행 확인했습니다.")
-            waitForText("준비됨")
+            waitForText("기술 정보")
+            waitForText("선택한 모델 파일의 실행을 확인했습니다.")
+            waitForText("기기 모델 준비")
         }
         waitForText("다시 점검")
     }
@@ -152,9 +149,9 @@ class ReunionManagerAppTest {
 
         launchMainActivity()
 
-        clickText("저장한 대화 보기")
+        clickText("지난 플랜")
         clickText("샘플 채팅방")
-        clickText("다음 행동 정리하기")
+        clickText("플랜 만들기")
         waitForText("내 이름 확인")
         waitForText("현우 선택")
         waitForText("민지 선택")
@@ -173,9 +170,9 @@ class ReunionManagerAppTest {
 
         launchMainActivity()
 
-        clickText("저장한 대화 보기")
+        clickText("지난 플랜")
         clickText("긴 샘플 채팅방")
-        waitForText("아직 정리하지 않았어요")
+        waitForText("아직 플랜이 없어요")
         waitForText("최근 메시지")
         waitForText("최근 8개만 먼저 보기")
         waitForText("전체 메시지 보기")
@@ -197,20 +194,19 @@ class ReunionManagerAppTest {
 
         launchMainActivity()
 
-        clickText("저장한 대화 보기")
+        clickText("지난 플랜")
         clickText("샘플 채팅방")
-        clickText("다음 행동 정리하기")
-        val generateButtonText = if (openRouterConfigured()) "다음 행동 정리하기" else "안전하게 정리하기"
-        waitForText(generateButtonText)
-        clickText(generateButtonText)
+        clickText("플랜 만들기")
+        waitForText("플랜 만들기")
+        clickText("플랜 만들기")
         val timeoutMillis = if (openRouterConfigured()) 70_000L else 20_000L
-        waitForText("오늘의 결론", timeoutMillis = timeoutMillis)
-        waitForText("아주 가볍게 가능", timeoutMillis = timeoutMillis)
-        waitForText("답장 문장", timeoutMillis = timeoutMillis)
-        waitForText("문장 복사", timeoutMillis = timeoutMillis)
+        waitForText("재회 회복 맵", timeoutMillis = timeoutMillis)
+        waitForText("대화 열기", timeoutMillis = timeoutMillis)
+        waitForText("상대 반응", timeoutMillis = timeoutMillis)
+        waitForText("현재 단계", timeoutMillis = timeoutMillis)
         if (!openRouterConfigured()) {
-            waitForText("새 연락보다 짧은 답장이 자연스럽습니다.", timeoutMillis = timeoutMillis)
-            waitForText("한 번만 보내고 기다려요.", timeoutMillis = timeoutMillis)
+            waitForText("대화를 다시 열 수 있는 구간이에요.", timeoutMillis = timeoutMillis)
+            waitForText("보내기 전 한 번 더 쉬어가도 괜찮아요.", timeoutMillis = timeoutMillis)
         }
     }
 
@@ -232,11 +228,11 @@ class ReunionManagerAppTest {
 
         launchMainActivity()
 
-        waitForText(if (openRouterConfigured()) "AI 정리" else "점검 필요")
-        clickText("저장한 대화 보기")
+        waitForText("재회 플랜")
+        clickText("지난 플랜")
         clickText("샘플 채팅방")
-        clickText("다음 행동 정리하기")
-        waitForText(if (openRouterConfigured()) "다음 행동 정리하기" else "안전하게 정리하기")
+        clickText("플랜 만들기")
+        waitForText("플랜 만들기")
         if (!openRouterConfigured()) {
             assertNull(device.findObject(By.text("기기에서 정리하기")))
         }
