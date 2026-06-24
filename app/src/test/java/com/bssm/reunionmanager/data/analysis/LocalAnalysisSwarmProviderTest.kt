@@ -3,10 +3,12 @@ package com.bssm.reunionmanager.data.analysis
 import com.bssm.reunionmanager.domain.analysis.AnalysisProvider
 import com.bssm.reunionmanager.domain.model.AnalysisInput
 import com.bssm.reunionmanager.domain.model.AnalysisReport
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Test
 
 class LocalAnalysisSwarmProviderTest {
@@ -151,6 +153,40 @@ class LocalAnalysisSwarmProviderTest {
     }
 
     @Test
+    fun analyze_fallsBackToBaselineWhenDraftProviderFails() = runTest {
+        val provider = LocalAnalysisSwarmProvider(
+            draftProvider = FailingProvider(),
+            baselineProvider = StaticProvider(
+                optimisticDraft.copy(
+                    messageDraft = "오랜만이야. 괜찮다면 짧게 안부만 묻고 싶어.",
+                ),
+            ),
+        )
+
+        val result = provider.analyze(input())
+
+        assertEquals("아주 가볍게 가능", result.contactReadiness)
+        assertTrue(result.messageDraft.contains("오랜만이야"))
+        assertTrue(result.evidence.contains("모델 응답 실패"))
+        assertTrue(result.evidence.contains("로컬 병렬 검수"))
+    }
+
+    @Test
+    fun analyze_rethrowsDraftCancellation() = runTest {
+        val provider = LocalAnalysisSwarmProvider(
+            draftProvider = CancellingProvider(),
+            baselineProvider = StaticProvider(optimisticDraft),
+        )
+
+        try {
+            provider.analyze(input())
+            fail("CancellationException should be rethrown.")
+        } catch (exception: CancellationException) {
+            assertEquals("draft cancelled", exception.message)
+        }
+    }
+
+    @Test
     fun analyze_addsConcreteParallelReviewEvidence() = runTest {
         val provider = LocalAnalysisSwarmProvider(
             draftProvider = StaticProvider(optimisticDraft),
@@ -169,6 +205,18 @@ class LocalAnalysisSwarmProviderTest {
         private val report: AnalysisReport,
     ) : AnalysisProvider {
         override suspend fun analyze(input: AnalysisInput): AnalysisReport = report
+    }
+
+    private class FailingProvider : AnalysisProvider {
+        override suspend fun analyze(input: AnalysisInput): AnalysisReport {
+            error("draft failed")
+        }
+    }
+
+    private class CancellingProvider : AnalysisProvider {
+        override suspend fun analyze(input: AnalysisInput): AnalysisReport {
+            throw CancellationException("draft cancelled")
+        }
     }
 
     private class CountingProvider(

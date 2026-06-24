@@ -4,6 +4,7 @@ import android.content.Context
 import com.bssm.reunionmanager.data.analysis.FakeAnalysisProvider
 import com.bssm.reunionmanager.data.analysis.Gemma4AnalysisProvider
 import com.bssm.reunionmanager.data.analysis.LocalAnalysisSwarmProvider
+import com.bssm.reunionmanager.data.analysis.OpenRouterAnalysisProvider
 import com.bssm.reunionmanager.data.importer.KakaoTalkConversationParser
 import com.bssm.reunionmanager.data.local.ReunionManagerDatabase
 import com.bssm.reunionmanager.data.repository.AnalysisRepository
@@ -44,6 +45,9 @@ class AppContainer(context: Context) {
 
     private val fakeAnalysisProvider by lazy { FakeAnalysisProvider() }
 
+    val openRouterConfigured: Boolean
+        get() = openRouterApiKey().isNotBlank()
+
     val importConversationUseCase: ImportConversationUseCase by lazy {
         ImportConversationUseCase(
             parser = parser,
@@ -63,6 +67,17 @@ class AppContainer(context: Context) {
                     baselineProvider = fakeAnalysisProvider,
                 )
             },
+            openRouterProviderFactory = {
+                openRouterApiKey().takeIf { apiKey -> apiKey.isNotBlank() }?.let { apiKey ->
+                    LocalAnalysisSwarmProvider(
+                        draftProvider = OpenRouterAnalysisProvider(
+                            apiKey = apiKey,
+                            model = BuildConfig.OPENROUTER_MODEL,
+                        ),
+                        baselineProvider = fakeAnalysisProvider,
+                    )
+                }
+            },
         )
     }
 
@@ -72,4 +87,6 @@ class AppContainer(context: Context) {
             gemmaProviderFactory = { settings -> Gemma4AnalysisProvider(applicationContext, settings) },
         )
     }
+
+    private fun openRouterApiKey(): String = BuildConfig.OPENROUTER_API_KEY.trim()
 }

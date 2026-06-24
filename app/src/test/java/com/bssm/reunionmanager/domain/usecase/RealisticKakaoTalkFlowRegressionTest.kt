@@ -167,9 +167,28 @@ class RealisticKakaoTalkFlowRegressionTest {
                 messageMustContain = "보내지 않습니다",
                 messageMustNotContain = "안부",
             ),
+            flowCase(
+                name = "dramatic boundary with fear and new partner",
+                sourceName = "dramatic-boundary.txt",
+                rawText = """
+                    민지 님과 카카오톡 대화
+                    저장한 날짜 : 2026-06-08 12:00:00
+
+                    --------------- 2026년 6월 8일 월요일 ---------------
+                    [현우] [오후 11:40] 제발 한 번만 만나줘. 집 앞이라도 갈게.
+                    [현우] [오후 11:42] 나 너 없으면 안 될 것 같아. 마지막으로 얘기하자.
+                    [민지] [오후 11:50] 그러지 마. 무서워. 나 새로 만나는 사람 있고 다시 볼 생각 없어.
+                    [민지] [오후 11:51] 연락하지 말아줘. 오면 신고할게.
+                """.trimIndent(),
+                userDisplayName = "현우",
+                expectedTitle = "민지",
+                expectedReadiness = "지금은 보류",
+                messageMustContain = "보내지 않습니다",
+                messageMustNotContain = "한 번만",
+            ),
         )
 
-        assertEquals(6, cases.size)
+        assertEquals(7, cases.size)
         cases.forEach { case ->
             providerSettingsRepository.save(ProviderSettings(userDisplayName = case.userDisplayName))
 

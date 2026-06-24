@@ -2,8 +2,13 @@
 build/
 */build/
 local.properties
+.env
+.env.*
+!.env.example
 .idea/
 .sisyphus/
+.omx/
+firebase-debug.log
 *.iml
 .DS_Store
 captures/

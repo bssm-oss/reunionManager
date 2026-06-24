@@ -23,6 +23,7 @@ fun HomeScreen(
     conversationCount: Int,
     modelConfigured: Boolean,
     modelVerified: Boolean,
+    openRouterConfigured: Boolean,
     onImportClick: () -> Unit,
     onConversationsClick: () -> Unit,
     onSettingsClick: () -> Unit,
@@ -36,13 +37,17 @@ fun HomeScreen(
             .padding(ScreenPadding),
         verticalArrangement = Arrangement.spacedBy(ScreenSectionSpacing),
     ) {
-        ReunionBadge(text = "내 기기에서 보관")
+        ReunionBadge(text = if (openRouterConfigured) "AI로 정리" else "내 기기에서 보관")
         Text(
             text = "보내기 전, 한 번만 정리해요.",
             style = MaterialTheme.typography.headlineMedium,
         )
         Text(
-            text = "대화는 기기 안에 두고, 오늘 보낼지 말지만 봅니다.",
+            text = if (openRouterConfigured) {
+                "파일은 기기에 저장하고, 분석은 DeepSeek로 정리합니다."
+            } else {
+                "대화는 기기 안에 두고, 오늘 보낼지 말지만 봅니다."
+            },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -52,6 +57,7 @@ fun HomeScreen(
                 conversationCount = conversationCount,
                 modelConfigured = modelConfigured,
                 modelVerified = modelVerified,
+                openRouterConfigured = openRouterConfigured,
             ),
         ) {
             ReunionBadge(text = "${conversationCount}개 저장")
@@ -59,10 +65,12 @@ fun HomeScreen(
                 text = modelModeBadge(
                     modelConfigured = modelConfigured,
                     modelVerified = modelVerified,
+                    openRouterConfigured = openRouterConfigured,
                 ),
                 tone = modelModeTone(
                     modelConfigured = modelConfigured,
                     modelVerified = modelVerified,
+                    openRouterConfigured = openRouterConfigured,
                 ),
             )
         }
@@ -81,33 +89,49 @@ private fun homeStateDescription(
     conversationCount: Int,
     modelConfigured: Boolean,
     modelVerified: Boolean,
+    openRouterConfigured: Boolean,
 ): String {
     val conversationText = if (conversationCount > 0) {
         "저장한 대화 ${conversationCount}개에서 바로 정리할 수 있어요."
     } else {
         "카카오톡 내보내기 파일 하나면 됩니다."
     }
-    return "$conversationText ${modelModeDescription(modelConfigured, modelVerified)}"
+    return "$conversationText ${modelModeDescription(modelConfigured, modelVerified, openRouterConfigured)}"
 }
 
-private fun modelModeDescription(modelConfigured: Boolean, modelVerified: Boolean): String {
+private fun modelModeDescription(
+    modelConfigured: Boolean,
+    modelVerified: Boolean,
+    openRouterConfigured: Boolean,
+): String {
     return when {
-        modelVerified -> "AI는 이 기기에서 실행됩니다."
+        openRouterConfigured -> "DeepSeek AI로 정리합니다."
+        modelVerified -> "로컬 AI로 정리합니다."
         modelConfigured -> "점검 전에는 안전 정리로 진행합니다."
         else -> "모델이 없어도 안전 정리로 시작합니다."
     }
 }
 
-private fun modelModeBadge(modelConfigured: Boolean, modelVerified: Boolean): String {
+private fun modelModeBadge(
+    modelConfigured: Boolean,
+    modelVerified: Boolean,
+    openRouterConfigured: Boolean,
+): String {
     return when {
+        openRouterConfigured -> "AI 정리"
         modelVerified -> "실행 확인됨"
         modelConfigured -> "점검 필요"
         else -> "안전 정리"
     }
 }
 
-private fun modelModeTone(modelConfigured: Boolean, modelVerified: Boolean): ReunionBadgeTone {
+private fun modelModeTone(
+    modelConfigured: Boolean,
+    modelVerified: Boolean,
+    openRouterConfigured: Boolean,
+): ReunionBadgeTone {
     return when {
+        openRouterConfigured -> ReunionBadgeTone.Success
         modelVerified -> ReunionBadgeTone.Success
         modelConfigured -> ReunionBadgeTone.Accent
         else -> ReunionBadgeTone.Neutral

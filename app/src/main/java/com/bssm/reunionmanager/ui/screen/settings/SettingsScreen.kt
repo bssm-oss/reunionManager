@@ -37,6 +37,7 @@ import com.bssm.reunionmanager.ui.theme.reunionOutlinedTextFieldColors
 @Composable
 fun SettingsScreen(
     providerSettings: ProviderSettings,
+    openRouterConfigured: Boolean,
     modelSettingsState: ModelSettingsUiState,
     onSave: (String, String, String, String) -> Unit,
     onModelFileSelected: (Uri) -> Unit,
@@ -46,23 +47,27 @@ fun SettingsScreen(
         mutableStateOf(providerSettings.userDisplayName)
     }
     val modelStatusTitle = when {
+        openRouterConfigured -> "OpenRouter AI 사용 중"
         !providerSettings.isConfigured -> "안전 정리 사용 중"
-        providerSettings.isModelVerified -> "AI 모델 준비됨"
-        else -> "AI 모델 점검 필요"
+        providerSettings.isModelVerified -> "로컬 AI 준비됨"
+        else -> "로컬 AI 점검 필요"
     }
     val modelStatusBadge = when {
+        openRouterConfigured -> "AI 정리"
         !providerSettings.isConfigured -> "안전 정리"
         providerSettings.isModelVerified -> "준비됨"
         else -> "점검 필요"
     }
     val modelStatusTone = when {
+        openRouterConfigured -> ReunionBadgeTone.Success
         !providerSettings.isConfigured -> ReunionBadgeTone.Neutral
         providerSettings.isModelVerified -> ReunionBadgeTone.Success
         else -> ReunionBadgeTone.Accent
     }
     val modelStatusDescription = when {
+        openRouterConfigured -> "DeepSeek로 정리합니다. 대화 일부가 OpenRouter로 전송됩니다."
         !providerSettings.isConfigured -> "모델 없이도 안전 정리로 시작합니다."
-        providerSettings.isModelVerified -> "AI 모델을 이 기기에서 실행 확인했습니다."
+        providerSettings.isModelVerified -> "로컬 AI 모델을 이 기기에서 실행 확인했습니다."
         else -> "파일은 저장됐지만, 점검 전에는 안전 정리로 진행합니다."
     }
     val modelMessageTitle = modelMessageTitle(providerSettings, modelSettingsState.message)
@@ -136,8 +141,12 @@ fun SettingsScreen(
             }
         }
         ReunionPane(
-            title = "AI 모델 파일",
-            supportingText = "선택한 파일은 이 기기에만 저장됩니다.",
+            title = if (openRouterConfigured) "로컬 모델 파일" else "AI 모델 파일",
+            supportingText = if (openRouterConfigured) {
+                "키가 없을 때만 쓰는 선택 기능입니다."
+            } else {
+                "선택한 파일은 이 기기에만 저장됩니다."
+            },
         ) {
             ReunionSecondaryButton(
                 text = if (modelSettingsState.isLoading) "파일 저장 중..." else "파일 선택",

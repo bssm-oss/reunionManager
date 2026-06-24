@@ -1,6 +1,6 @@
 # 재회 매니저
 
-재회 매니저는 카카오톡 대화 내보내기 파일을 가져와 대화를 기기 안에서 정리하고, 연락 가능 여부와 다음 행동, 첫 문장 또는 보류 판단을 만들어 주는 로컬 우선 Android 앱입니다.
+재회 매니저는 카카오톡 대화 내보내기 파일을 가져와 연락 가능 여부와 다음 행동, 첫 문장 또는 보류 판단을 만들어 주는 Android 앱입니다. 디버그 빌드에 OpenRouter 키가 있으면 DeepSeek V4 Flash로 정리하고, 키가 없거나 모델 호출이 실패하면 안전 정리로 돌아갑니다.
 
 ## 현재 상태
 
@@ -13,15 +13,18 @@
 - 저장한 대화와 정리 결과를 기기에서 삭제
 - 연락 판단, 오늘 할 일, 첫 연락 문장 또는 보류 행동으로 구성된 다음 행동 정리
 - 대화 참여자 중 내 카톡 이름을 선택하거나 직접 저장하면 새 연락인지 상대 메시지에 대한 답장인지 구분
+- `.env`의 `OPENROUTER_API_KEY`가 있으면 OpenRouter DeepSeek V4 Flash 우선 사용
 - Gemma 모델 파일이 없을 때도 전체 흐름을 확인할 수 있는 안전 정리 모드
 - Gemma 4 `.litertlm` 모델 파일을 선택하고 실행 점검을 통과하면 LiteRT-LM으로 기기 내 분석 실행
 
 ## 제품 원칙
 
 - 가져온 대화와 분석 결과는 기기 안에만 저장합니다.
+- OpenRouter 모드에서는 분석에 필요한 대화 일부가 OpenRouter로 전송됩니다.
 - 필요 없어진 대화와 분석 결과는 기기에서 삭제할 수 있습니다.
 - 로그인, 로그아웃, 회원 관리 기능은 넣지 않습니다.
-- 클라우드 동기화, 분석 추적, 원격 업로드, 내장 비밀키는 사용하지 않습니다.
+- 클라우드 동기화, 분석 추적, 내장 비밀키는 사용하지 않습니다.
+- release 빌드에는 OpenRouter 키를 넣지 않습니다.
 - 앱 모듈은 하나로 유지합니다.
 - 내부 패키지는 `ui`, `domain`, `data` 경계를 유지합니다.
 
@@ -45,19 +48,33 @@
 
 - 앱은 분석 전에 초반 대화, 최근 대화, 감정/경계 신호 주변 메시지, 긴 공백과 마지막 발신자 같은 지표를 먼저 추립니다.
 - 내 카톡 이름이 설정되어 있으면 마지막 발신자가 나인지 상대인지 구분해 보류와 답장 제안을 다르게 냅니다.
-- Gemma 4 모델이 없거나 실행 점검 전이면 안전 정리 provider를 사용합니다.
+- 디버그 빌드에 `OPENROUTER_API_KEY`가 있으면 OpenRouter DeepSeek V4 Flash provider를 먼저 사용합니다.
+- OpenRouter 키가 없거나 모델 호출이 실패하면 안전 정리 provider를 사용합니다.
 - Gemma 4 `.litertlm` 파일을 선택한 뒤 앱 안의 모델 실행 점검을 통과해야 LiteRT-LM provider가 실제 분석에 사용됩니다.
-- 검증된 모델 분석은 로컬 병렬 검수 provider가 안전, 마지막 메시지, 관계 맥락을 다시 확인한 뒤 저장합니다.
+- OpenRouter와 Gemma 분석은 로컬 병렬 검수 provider가 안전, 마지막 메시지, 관계 맥락을 다시 확인한 뒤 저장합니다.
 - 모델 파일은 APK에 포함하지 않습니다. 앱의 로컬 AI 설정에서 `gemma-4-E4B-it.litertlm` 같은 모델 파일을 선택하면 앱 전용 저장소로 복사합니다.
 - 로컬 AI 설정에서 모델 파일을 제거하거나 다른 모델로 교체하면 앱 전용 저장소의 기존 복사본만 정리하고 안전 정리로 돌아갈 수 있습니다.
 - 분석 결과는 로컬에 저장되며, 확정적인 판단 대신 `지금은 보류`, `먼저 사과 필요`, `아주 가볍게 가능`, `정보 부족` 같은 조심스러운 연락 판단으로 표시됩니다. 보류 판단에서는 보낼 문장을 만들지 않고 오늘 보내지 않는 행동을 제안합니다.
 
 ## 로컬 검증
 
+OpenRouter를 직접 확인하려면 루트에 `.env`를 만들고 키를 넣습니다. `.env`는 git에 올리지 않습니다.
+
+```bash
+OPENROUTER_API_KEY=sk-or-v1-...
+```
+
 ```bash
 ./gradlew testDebugUnitTest
 ./gradlew lintDebug
 ./gradlew assembleDebug
+```
+
+실제 OpenRouter 호출 smoke는 네트워크와 과금 상태에 영향을 받으므로 명시적으로 켭니다.
+
+```bash
+RUN_OPENROUTER_LIVE_TESTS=true ./gradlew :app:testDebugUnitTest \
+  --tests 'com.bssm.reunionmanager.data.analysis.OpenRouterAnalysisProviderTest.analyze_liveOpenRouterSmokeUsesDeepSeekV4FlashWhenKeyIsAvailable'
 ```
 
 에뮬레이터가 준비되어 있다면 사용자 흐름까지 확인할 수 있습니다.

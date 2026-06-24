@@ -14,6 +14,7 @@ class GenerateReunionPlanUseCase(
     private val providerSettingsRepository: ProviderSettingsRepository,
     private val fakeAnalysisProvider: FakeAnalysisProvider,
     private val gemmaProviderFactory: (ProviderSettings) -> AnalysisProvider,
+    private val openRouterProviderFactory: () -> AnalysisProvider? = { null },
 ) {
     suspend operator fun invoke(conversationId: Long): Result<String> {
         return runCatching {
@@ -26,8 +27,11 @@ class GenerateReunionPlanUseCase(
 
             val provider: AnalysisProvider
             val providerType: String
-            // The fake provider keeps the MVP usable until a local Gemma model has actually executed once.
-            if (settings.isModelVerified) {
+            val openRouterProvider = openRouterProviderFactory()
+            if (openRouterProvider != null) {
+                provider = openRouterProvider
+                providerType = "openrouter-deepseek-v4-flash"
+            } else if (settings.isModelVerified) {
                 provider = gemmaProviderFactory(settings)
                 providerType = "gemma4"
             } else {

@@ -197,6 +197,67 @@ class GenerateReunionPlanUseCaseTest {
     }
 
     @Test
+    fun invoke_prefersOpenRouterProviderWhenConfiguredEvenIfGemmaIsVerified() = runTest {
+        val importedId = (conversationRepository.importConversation(
+            parsedConversation = counterpartWaitingConversation,
+            rawText = "openrouter priority raw text",
+            sourceName = "openrouter-priority.txt",
+        ) as ImportConversationResult.Imported).conversationId
+        providerSettingsRepository.save(verifiedProviderSettings())
+        var gemmaCalled = false
+
+        val useCase = GenerateReunionPlanUseCase(
+            conversationRepository = conversationRepository,
+            analysisRepository = analysisRepository,
+            providerSettingsRepository = providerSettingsRepository,
+            fakeAnalysisProvider = FakeAnalysisProvider(),
+            gemmaProviderFactory = {
+                gemmaCalled = true
+                StaticAnalysisProvider(
+                    AnalysisReport(
+                        headline = "Gemma should not run",
+                        contactReadiness = "아주 가볍게 가능",
+                        evidence = "Gemma should not run",
+                        relationshipSummary = "Gemma should not run",
+                        reunionObjective = "Gemma should not run",
+                        nextStep = "Gemma should not run",
+                        messageDraft = "Gemma should not run",
+                        alternativeDrafts = "Gemma should not run",
+                        caution = "Gemma should not run",
+                    ),
+                )
+            },
+            openRouterProviderFactory = {
+                StaticAnalysisProvider(
+                    AnalysisReport(
+                        headline = "OpenRouter mock",
+                        contactReadiness = "아주 가볍게 가능",
+                        evidence = "OpenRouter DeepSeek mock evidence",
+                        relationshipSummary = "상대가 마지막에 낮은 압박의 답장을 남긴 상태입니다.",
+                        reunionObjective = "상대의 속도를 존중하며 짧게 답합니다.",
+                        nextStep = "상대가 남긴 말에 짧게 답하세요.",
+                        messageDraft = "말해줘서 고마워. 부담 없이 천천히 이야기하자.",
+                        alternativeDrafts = "말해줘서 고마워.\n부담 없이 천천히 이야기하자.\n답은 편할 때 해도 괜찮아.",
+                        caution = "답을 재촉하지 마세요.",
+                    ),
+                )
+            },
+        )
+
+        val result = useCase(importedId)
+
+        assertTrue(result.isSuccess)
+        assertEquals("openrouter-deepseek-v4-flash", result.getOrNull())
+        assertFalse(gemmaCalled)
+        val detail = conversationRepository.observeConversationDetail(importedId).first()
+        requireNotNull(detail)
+        val report = requireNotNull(detail.latestAnalysis)
+        assertTrue(report.evidence.contains("OpenRouter DeepSeek mock evidence"))
+        assertTrue(report.evidence.contains("상대가 마지막에 메시지를 남긴 상태"))
+        assertFalse(report.messageDraft.contains("Gemma should not run"))
+    }
+
+    @Test
     fun invoke_usesFakeProviderWhenModelPathExistsButIsNotVerified() = runTest {
         val importedId = importSampleConversation()
         providerSettingsRepository.save(

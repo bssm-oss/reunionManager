@@ -4,14 +4,15 @@ import com.bssm.reunionmanager.domain.analysis.AnalysisProvider
 import com.bssm.reunionmanager.domain.analysis.AnalysisSafetyRules
 import com.bssm.reunionmanager.domain.model.AnalysisInput
 import com.bssm.reunionmanager.domain.model.AnalysisReport
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.supervisorScope
 
 class LocalAnalysisSwarmProvider(
     private val draftProvider: AnalysisProvider,
     private val baselineProvider: AnalysisProvider,
 ) : AnalysisProvider {
-    override suspend fun analyze(input: AnalysisInput): AnalysisReport = coroutineScope {
+    override suspend fun analyze(input: AnalysisInput): AnalysisReport = supervisorScope {
         val decisionDeferred = async { AnalysisSafetyRules.evaluate(input) }
         val lastMessageReviewDeferred = async { input.lastMessageReviewLabel() }
         val contextReviewDeferred = async { input.contextReviewLabel() }
@@ -32,7 +33,15 @@ class LocalAnalysisSwarmProvider(
             AnalysisSafetyRules.AnalysisAction.ModelDraft -> {
                 val draftDeferred = async { draftProvider.analyze(input) }
                 val baseline = baselineDeferred.await()
-                val rawDraft = draftDeferred.await()
+                val rawDraft = runCatching { draftDeferred.await() }.getOrElse {
+                    if (it is CancellationException) throw it
+                    return@supervisorScope baseline.copy(
+                        evidence = AnalysisSafetyRules.appendEvidence(
+                            baseline.evidence,
+                            "모델 응답 실패: 안전 정리로 대체했습니다.",
+                        ),
+                    ).withSwarmEvidence(review)
+                }
                 val sanitizedDraft = AnalysisSafetyRules.sanitizeReport(rawDraft, input)
                 val selected = selectReport(
                     rawDraft = rawDraft,

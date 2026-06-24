@@ -31,6 +31,7 @@ import java.io.File
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val appContainer = (application as ReunionManagerApplication).appContainer
     private val contentResolver = application.contentResolver
+    val openRouterConfigured: Boolean = appContainer.openRouterConfigured
 
     val conversations: StateFlow<List<ConversationSummary>> = appContainer.conversationRepository
         .observeConversationSummaries()

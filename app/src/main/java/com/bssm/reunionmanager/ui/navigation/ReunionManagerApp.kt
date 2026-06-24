@@ -51,6 +51,7 @@ fun ReunionManagerApp() {
     val viewModel: MainViewModel = viewModel()
     val conversations by viewModel.conversations.collectAsStateWithLifecycle()
     val providerSettings by viewModel.providerSettings.collectAsStateWithLifecycle()
+    val openRouterConfigured = viewModel.openRouterConfigured
     val importState by viewModel.importState.collectAsStateWithLifecycle()
     val analysisStates by viewModel.analysisStates.collectAsStateWithLifecycle()
     val modelSettingsState by viewModel.modelSettingsState.collectAsStateWithLifecycle()
@@ -124,8 +125,8 @@ fun ReunionManagerApp() {
                     },
                     actions = {
                         ReunionBadge(
-                            text = providerSettings.runtimeBadgeText(),
-                            tone = providerSettings.runtimeBadgeTone(),
+                            text = providerSettings.runtimeBadgeText(openRouterConfigured),
+                            tone = providerSettings.runtimeBadgeTone(openRouterConfigured),
                             modifier = Modifier.padding(end = 12.dp),
                         )
                     },
@@ -143,6 +144,7 @@ fun ReunionManagerApp() {
                     conversationCount = conversations.size,
                     modelConfigured = providerSettings.isConfigured,
                     modelVerified = providerSettings.isModelVerified,
+                    openRouterConfigured = openRouterConfigured,
                     onImportClick = { navController.navigate(ReunionDestination.Import.route) },
                     onConversationsClick = { navController.navigate(ReunionDestination.Conversations.route) },
                     onSettingsClick = { navController.navigate(ReunionDestination.Settings.route) },
@@ -169,6 +171,7 @@ fun ReunionManagerApp() {
             composable(route = ReunionDestination.Settings.route) {
                 SettingsScreen(
                     providerSettings = providerSettings,
+                    openRouterConfigured = openRouterConfigured,
                     modelSettingsState = modelSettingsState,
                     onSave = viewModel::saveProviderSettings,
                     onModelFileSelected = viewModel::importGemmaModel,
@@ -205,7 +208,7 @@ fun ReunionManagerApp() {
                     detail = detail,
                     analysisState = analysisState,
                     userDisplayName = providerSettings.userDisplayName,
-                    providerConfigured = providerSettings.isModelVerified,
+                    providerConfigured = openRouterConfigured || providerSettings.isModelVerified,
                     onGenerate = { viewModel.generateAnalysis(conversationId) },
                     onOpenSettings = { navController.navigate(ReunionDestination.Settings.route) },
                     onSaveUserDisplayName = viewModel::saveUserDisplayName,
@@ -215,16 +218,18 @@ fun ReunionManagerApp() {
     }
 }
 
-private fun ProviderSettings.runtimeBadgeText(): String {
+private fun ProviderSettings.runtimeBadgeText(openRouterConfigured: Boolean): String {
     return when {
+        openRouterConfigured -> "AI 정리"
         !isConfigured -> "안전 정리"
         isModelVerified -> "실행 확인됨"
         else -> "점검 필요"
     }
 }
 
-private fun ProviderSettings.runtimeBadgeTone(): ReunionBadgeTone {
+private fun ProviderSettings.runtimeBadgeTone(openRouterConfigured: Boolean): ReunionBadgeTone {
     return when {
+        openRouterConfigured -> ReunionBadgeTone.Success
         !isConfigured -> ReunionBadgeTone.Neutral
         isModelVerified -> ReunionBadgeTone.Success
         else -> ReunionBadgeTone.Accent

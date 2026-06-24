@@ -7,6 +7,34 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+fun loadDotEnv(rootDir: File): Map<String, String> {
+    val dotEnv = rootDir.resolve(".env")
+    if (!dotEnv.isFile) return emptyMap()
+    return dotEnv.readLines()
+        .asSequence()
+        .map { line -> line.trim() }
+        .filter { line -> line.isNotBlank() && !line.startsWith("#") && line.contains("=") }
+        .map { line ->
+            line.substringBefore("=")
+                .removePrefix("export")
+                .trim() to line.substringAfter("=")
+        }
+        .associate { (key, value) -> key.trim() to value.trim().trim('"', '\'') }
+}
+
+fun buildConfigString(value: String): String {
+    return "\"" + value
+        .replace("\\", "\\\\")
+        .replace("\"", "\\\"") + "\""
+}
+
+val dotEnv = loadDotEnv(rootProject.projectDir)
+val openRouterApiKey = (
+    providers.environmentVariable("OPENROUTER_API_KEY").orNull
+        ?: dotEnv["OPENROUTER_API_KEY"]
+        ?: ""
+).trim()
+
 android {
     namespace = "com.bssm.reunionmanager"
     compileSdk = 36
@@ -22,11 +50,17 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        buildConfigField("String", "OPENROUTER_MODEL", buildConfigString("deepseek/deepseek-v4-flash"))
+        buildConfigField("String", "OPENROUTER_API_KEY", buildConfigString(""))
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "OPENROUTER_API_KEY", buildConfigString(openRouterApiKey))
+        }
         release {
             isMinifyEnabled = false
+            buildConfigField("String", "OPENROUTER_API_KEY", buildConfigString(""))
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
