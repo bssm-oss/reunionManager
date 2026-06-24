@@ -84,7 +84,7 @@ fun ConversationDetailScreen(
         item {
             ReunionPane(
                 title = detail.latestAnalysis?.let { "최근 플랜" } ?: "아직 플랜이 없어요",
-                supportingText = detail.latestAnalysis?.detailHeadline() ?: "대화 흐름으로 재회 플랜을 만들 수 있어요.",
+                supportingText = detail.latestAnalysis?.detailHeadline() ?: "카톡 내용으로 재회 플랜을 만들 수 있어요.",
                 containerColor = detail.latestAnalysis?.detailContainerColor() ?: MaterialTheme.colorScheme.surface,
             ) {
                 detail.latestAnalysis?.let { report ->

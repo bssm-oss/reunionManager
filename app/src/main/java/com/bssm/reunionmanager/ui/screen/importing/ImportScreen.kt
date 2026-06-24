@@ -44,12 +44,12 @@ fun ImportScreen(
         verticalArrangement = Arrangement.spacedBy(ScreenSectionSpacing),
     ) {
         Text(
-            text = "카카오톡 대화 흐름을 불러오면 재회 플랜을 만들 수 있어요.",
+            text = "카톡 내용을 불러오면 내 상황에 맞는 재회 플랜을 만들 수 있어요.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         ReunionPrimaryButton(
-            text = if (importState.isLoading) "불러오는 중..." else "대화 흐름 불러오기",
+            text = if (importState.isLoading) "불러오는 중..." else "카톡 내용 불러오기",
             onClick = {
                 pickerLauncher.launch(
                     arrayOf(
@@ -66,8 +66,8 @@ fun ImportScreen(
 
         if (importState.isLoading) {
             ReunionEmptyState(
-                title = "대화 흐름을 읽는 중",
-                body = "최근 대화에서 회복 단서를 정리하고 있어요.",
+                title = "카톡 내용을 읽는 중",
+                body = "상대 반응과 연락 부담을 정리하고 있어요.",
                 tone = ReunionBadgeTone.Accent,
             ) {
                 CircularProgressIndicator(
@@ -79,7 +79,7 @@ fun ImportScreen(
 
         importState.message?.let { message ->
             ReunionEmptyState(
-                title = "대화 흐름을 불러왔어요",
+                title = "카톡 내용을 불러왔어요",
                 body = message,
                 tone = ReunionBadgeTone.Success,
             ) {

@@ -35,17 +35,17 @@ class ReunionManagerAppTest {
     fun homeScreen_showsCoreTrustSignals() {
         waitForText("재회 플랜")
         assertNotNull(device.findObject(By.text("재회 가능성을\n높이는 플랜")))
-        assertNotNull(device.findObject(By.text("대화로 플랜 만들기")))
+        assertNotNull(device.findObject(By.text("카톡 내용 불러오기")))
         assertNull(device.findObject(By.text("AI로 정리")))
         assertNull(device.findObject(By.text("내 기기에서 보관")))
     }
 
     @Test
     fun homeScreen_navigatesToImportScreen() {
-        clickText("대화로 플랜 만들기")
+        clickText("카톡 내용 불러오기")
 
-        waitForText("카카오톡 대화 흐름을 불러오면 재회 플랜을 만들 수 있어요.")
-        assertNotNull(device.findObject(By.text("대화 흐름 불러오기")))
+        waitForText("카톡 내용을 불러오면 내 상황에 맞는 재회 플랜을 만들 수 있어요.")
+        assertNotNull(device.findObject(By.text("카톡 내용 불러오기")))
     }
 
     @Test

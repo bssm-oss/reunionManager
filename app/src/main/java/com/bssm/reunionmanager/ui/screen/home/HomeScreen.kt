@@ -1,5 +1,6 @@
 package com.bssm.reunionmanager.ui.screen.home
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,8 +16,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.bssm.reunionmanager.R
 import com.bssm.reunionmanager.ui.theme.ReunionPrimaryButton
 import com.bssm.reunionmanager.ui.theme.ScreenPadding
 
@@ -36,18 +40,17 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
             Surface(
-                modifier = Modifier.size(104.dp),
+                modifier = Modifier.size(116.dp),
                 shape = MaterialTheme.shapes.extraLarge,
-                color = MaterialTheme.colorScheme.primaryContainer,
-                shadowElevation = 4.dp,
+                color = MaterialTheme.colorScheme.surface,
+                shadowElevation = 6.dp,
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "Re",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
+                Image(
+                    painter = painterResource(id = R.drawable.reunion_logo_mark),
+                    contentDescription = "재회 플랜 로고",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                )
             }
             Text(
                 text = "재회 가능성을\n높이는 플랜",
@@ -56,14 +59,14 @@ fun HomeScreen(
                 textAlign = TextAlign.Center,
             )
             Text(
-                text = "대화 흐름을 읽고 다시 가까워질 길을 정리해요.",
+                text = "카톡 내용을 보고 다시 가까워질 길을 정리해요.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.height(10.dp))
             ReunionPrimaryButton(
-                text = "대화로 플랜 만들기",
+                text = "카톡 내용 불러오기",
                 onClick = onImportClick,
             )
         }

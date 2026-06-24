@@ -35,7 +35,7 @@ fun ConversationListScreen(
         ) {
             ReunionEmptyState(
                 title = "아직 지난 플랜이 없어요",
-                body = "대화 흐름을 불러오면 여기에서 다시 볼 수 있어요.",
+                body = "카톡 내용을 불러오면 여기에서 다시 볼 수 있어요.",
             )
         }
         return

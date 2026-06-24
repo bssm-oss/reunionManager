@@ -77,7 +77,7 @@ fun AnalysisScreen(
             if (analysisState?.isRunning == true) {
                 ReunionEmptyState(
                     title = "플랜을 만드는 중",
-                    body = "대화 흐름에서 다시 가까워질 단서를 찾고 있어요.",
+                    body = "카톡 내용에서 다시 가까워질 단서를 찾고 있어요.",
                     tone = ReunionBadgeTone.Accent,
                 ) {
                     CircularProgressIndicator(
@@ -186,7 +186,7 @@ fun AnalysisScreen(
                 item {
                     ReunionEmptyState(
                         title = "아직 플랜이 없습니다",
-                        body = "대화 흐름으로 회복 맵을 열어보세요.",
+                        body = "카톡 내용으로 회복 맵을 열어보세요.",
                     )
                 }
             }
@@ -516,7 +516,7 @@ internal fun AnalysisReport.summaryBody(): String {
         else -> relationshipSummary.trim()
     }
     return focusedSummary
-        .ifBlank { "최근 대화 흐름을 기준으로 회복 단계를 정리했습니다." }
+        .ifBlank { "최근 카톡 내용을 기준으로 회복 단계를 정리했습니다." }
         .limitForUi(maxLength = 96)
 }
 
@@ -526,7 +526,7 @@ internal fun AnalysisReport.evidenceBody(): String {
         .filter { line -> line.isNotBlank() }
         .take(3)
         .joinToString(separator = "\n")
-        .ifBlank { "최근 대화 흐름과 마지막 발신자 기준으로 판단했습니다." }
+        .ifBlank { "최근 카톡 내용과 마지막 발신자 기준으로 판단했습니다." }
         .limitForUi(maxLength = 220)
 }
 

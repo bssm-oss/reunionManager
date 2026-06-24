@@ -5,7 +5,7 @@ sealed class ReunionDestination(
     val title: String,
 ) {
     data object Home : ReunionDestination(route = "home", title = "재회 플랜")
-    data object Import : ReunionDestination(route = "import", title = "대화 흐름")
+    data object Import : ReunionDestination(route = "import", title = "카톡 내용")
     data object Conversations : ReunionDestination(route = "conversations", title = "지난 플랜")
     data object Settings : ReunionDestination(route = "settings", title = "설정")
 

@@ -489,7 +489,7 @@ object AnalysisSafetyRules {
             contactReadiness = readiness,
             headline = report.headline.trim().ifBlank { "다시 연락하기 전 확인할 점" },
             evidence = report.evidence.trim().ifBlank { "대화 근거가 부족해 최근 흐름을 더 확인해야 합니다." },
-            relationshipSummary = report.relationshipSummary.trim().ifBlank { "대화 흐름을 단정하지 말고 천천히 확인하세요." },
+            relationshipSummary = report.relationshipSummary.trim().ifBlank { "카톡 내용을 단정하지 말고 천천히 확인하세요." },
             reunionObjective = sanitizeGuidance(
                 value = report.reunionObjective,
                 fallback = defaultObjective(readiness, input),

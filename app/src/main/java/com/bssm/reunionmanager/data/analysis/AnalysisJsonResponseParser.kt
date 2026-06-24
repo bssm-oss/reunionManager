@@ -16,7 +16,7 @@ object AnalysisJsonResponseParser {
             headline = parsedJson.textValue("headline", "다시 연락하기 전 확인할 점"),
             contactReadiness = parsedJson.textValue("contactReadiness", "정보 부족"),
             evidence = parsedJson.textValue("evidence", "최근 흐름과 감정 신호를 더 확인해야 합니다."),
-            relationshipSummary = parsedJson.textValue("relationshipSummary", "대화 흐름을 단정하지 말고 천천히 확인하세요."),
+            relationshipSummary = parsedJson.textValue("relationshipSummary", "카톡 내용을 단정하지 말고 천천히 확인하세요."),
             reunionObjective = parsedJson.textValue("reunionObjective", "상대에게 부담을 주지 않는 짧은 안부로 반응을 확인하세요."),
             nextStep = parsedJson.textValue("nextStep", "오늘은 긴 설명보다 짧고 차분한 첫 문장만 준비하세요."),
             messageDraft = parsedJson.textValue(
