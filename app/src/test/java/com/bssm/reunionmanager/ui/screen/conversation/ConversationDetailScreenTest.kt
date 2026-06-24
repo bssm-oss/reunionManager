@@ -101,8 +101,8 @@ class ConversationDetailScreenTest {
     @Test
     fun detailNextAction_keepsLatestAnalysisCardShort() {
         assertEquals(
-            "오늘은 거리를 두고 최근 대화를 확인해보면 좋아요.",
-            report(contactReadiness = "지금은 보류", nextStep = "오늘은 보내지 말고 최근 대화를 확인하세요.").detailNextAction(),
+            "오늘은 연락을 쉬고 최근 대화를 확인해보면 좋아요.",
+            report(contactReadiness = "지금은 보류", nextStep = "오늘은 연락을 쉬고 최근 대화를 확인하세요.").detailNextAction(),
         )
         assertEquals(
             "내 카톡 이름을 확인해보면 좋아요.",

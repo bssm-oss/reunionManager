@@ -47,7 +47,7 @@ class LocalAnalysisSwarmProviderTest {
 
         assertEquals(0, draftProvider.callCount)
         assertEquals("지금은 보류", result.contactReadiness)
-        assertTrue(result.messageDraft.contains("보내지 않습니다"))
+        assertTrue(result.messageDraft.contains("연락을 쉬는 쪽"))
         assertTrue(result.evidence.contains("로컬 병렬 검수"))
     }
 
@@ -70,7 +70,7 @@ class LocalAnalysisSwarmProviderTest {
         assertEquals(0, draftProvider.callCount)
         assertEquals("지금은 보류", result.contactReadiness)
         assertTrue(result.evidence.contains("자제 약속"))
-        assertTrue(result.messageDraft.contains("보내지 않습니다"))
+        assertTrue(result.messageDraft.contains("연락을 쉬는 쪽"))
     }
 
     @Test

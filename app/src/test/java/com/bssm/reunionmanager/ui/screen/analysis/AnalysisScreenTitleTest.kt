@@ -14,7 +14,7 @@ class AnalysisScreenTitleTest {
     fun messageSectionTitle_returnsNoSendTitleWhenContactIsOnHold() {
         val report = report(contactReadiness = "지금은 보류")
 
-        assertEquals("지금은 보류해도 괜찮아요", report.messageSectionTitle())
+        assertEquals("오늘은 쉬어가도 괜찮아요", report.messageSectionTitle())
     }
 
     @Test
@@ -26,14 +26,14 @@ class AnalysisScreenTitleTest {
             alternativeDrafts = "내 카톡 이름 저장하기\n같은 대화 다시 분석하기\n최근 대화 파일인지 확인하기",
         )
 
-        assertEquals("먼저 확인할 것", report.messageSectionTitle())
+        assertEquals("먼저 확인할 점", report.messageSectionTitle())
     }
 
     @Test
     fun messageSectionTitle_returnsCheckTitleWhenInformationIsInsufficientEvenIfDraftExists() {
         val report = report(contactReadiness = "정보 부족")
 
-        assertEquals("먼저 확인할 것", report.messageSectionTitle())
+        assertEquals("먼저 확인할 점", report.messageSectionTitle())
     }
 
     @Test
@@ -57,7 +57,7 @@ class AnalysisScreenTitleTest {
     fun alternativeSectionTitle_returnsActionTitleWhenContactIsOnHold() {
         val report = report(contactReadiness = "지금은 보류")
 
-        assertEquals("다음 선택지", report.alternativeSectionTitle())
+        assertEquals("다음 선택", report.alternativeSectionTitle())
     }
 
     @Test
@@ -69,14 +69,14 @@ class AnalysisScreenTitleTest {
             alternativeDrafts = "내 카톡 이름 저장하기\n같은 대화 다시 분석하기\n최근 대화 파일인지 확인하기",
         )
 
-        assertEquals("다음 선택지", report.alternativeSectionTitle())
+        assertEquals("다음 선택", report.alternativeSectionTitle())
     }
 
     @Test
     fun alternativeSectionTitle_returnsActionTitleWhenInformationIsInsufficientEvenIfDraftExists() {
         val report = report(contactReadiness = "정보 부족")
 
-        assertEquals("다음 선택지", report.alternativeSectionTitle())
+        assertEquals("다음 선택", report.alternativeSectionTitle())
     }
 
     @Test
@@ -232,24 +232,24 @@ class AnalysisScreenTitleTest {
     fun planUiText_softensHoldDirectives() {
         val report = report(
             contactReadiness = "지금은 보류",
-            nextStep = "오늘은 보내지 말고 최근 대화를 확인하세요.",
-            messageDraft = "오늘은 보내지 않습니다. 상대가 먼저 답하면 다시 판단하세요.",
+            nextStep = "오늘은 연락을 쉬고 최근 대화를 확인하세요.",
+            messageDraft = "오늘은 연락을 쉬는 쪽이 안정적입니다. 상대가 먼저 답하면 다시 판단하세요.",
         )
 
-        assertEquals("오늘은 거리를 두고 최근 대화를 확인해보면 좋아요.", report.nextStepBodyForUi())
-        assertEquals("지금은 보낼 문장보다 거리 조절이 먼저예요.", report.messageBodyForUi())
+        assertEquals("오늘은 연락을 쉬고 최근 대화를 확인해보면 좋아요.", report.nextStepBodyForUi())
+        assertEquals("지금은 연락 문장보다 거리 조절이 먼저예요.", report.messageBodyForUi())
     }
 
     @Test
     fun planUiText_keepsSituationSpecificPlanFields() {
         val report = report(
             reunionObjective = "상대가 시간이 필요하다고 말해 거리 조절을 우선합니다.",
-            nextStep = "오늘은 보내지 말고 상대 마지막 말을 다시 읽으세요.",
+            nextStep = "오늘은 연락을 쉬고 상대 마지막 말을 다시 읽으세요.",
             caution = "답을 재촉하지 마세요.",
         )
 
         assertEquals("상대가 시간이 필요하다고 말해 거리 조절을 우선합니다.", report.objectiveBodyForUi())
-        assertEquals("오늘은 거리를 두고 상대 마지막 말을 다시 읽어보면 좋아요.", report.nextMoveBodyForUi())
+        assertEquals("오늘은 연락을 쉬고 상대 마지막 말을 다시 읽어보면 좋아요.", report.nextMoveBodyForUi())
         assertEquals("답을 재촉하지 않아도 괜찮아요.", report.cautionBodyForUi())
     }
 

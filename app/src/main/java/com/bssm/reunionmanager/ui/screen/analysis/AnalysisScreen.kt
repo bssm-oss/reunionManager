@@ -135,8 +135,8 @@ fun AnalysisScreen(
         }
         report?.let { currentReport ->
             val messageTitle = currentReport.messageSectionTitle()
-            item { RecoveryMapPane(currentReport) }
             item { AnalysisConclusionPane(currentReport) }
+            item { RecoveryMapPane(currentReport) }
             item {
                 AnalysisMessagePane(
                     title = messageTitle,
@@ -152,7 +152,7 @@ fun AnalysisScreen(
             }
             item {
                 ReunionSecondaryButton(
-                    text = if (showDetails) "신호 닫기" else "대화 신호 보기",
+                    text = if (showDetails) "근거 닫기" else "근거 보기",
                     onClick = { showDetails = !showDetails },
                 )
             }
@@ -324,7 +324,7 @@ private fun AnalysisConclusionPane(report: AnalysisReport) {
     }
 
     ReunionPane(
-        title = "내 상황 플랜",
+        title = "내 플랜",
         containerColor = containerColor,
     ) {
         ReunionBadge(text = report.recoveryStageLabel(), tone = tone)
@@ -340,9 +340,9 @@ private fun AnalysisConclusionPane(report: AnalysisReport) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        PlanPointRow(label = "지금 목표", body = report.objectiveBodyForUi())
-        PlanPointRow(label = "다음 움직임", body = report.nextMoveBodyForUi())
-        PlanPointRow(label = "조심할 점", body = report.cautionBodyForUi())
+        PlanPointRow(label = "목표", body = report.objectiveBodyForUi())
+        PlanPointRow(label = "다음 선택", body = report.nextMoveBodyForUi())
+        PlanPointRow(label = "지켜둘 선", body = report.cautionBodyForUi())
     }
 }
 
@@ -388,9 +388,9 @@ private fun AnalysisSectionPane(
 
 internal fun AnalysisReport.messageSectionTitle(): String {
     return when {
-        contactReadiness == "지금은 보류" -> "지금은 보류해도 괜찮아요"
-        contactReadiness == "정보 부족" -> "먼저 확인할 것"
-        isCheckOnlyResult() -> "먼저 확인할 것"
+        contactReadiness == "지금은 보류" -> "오늘은 쉬어가도 괜찮아요"
+        contactReadiness == "정보 부족" -> "먼저 확인할 점"
+        isCheckOnlyResult() -> "먼저 확인할 점"
         nextStep.contains("상대의 마지막 메시지") || reunionObjective.contains("상대가 남긴 말") -> "짧은 답장 참고"
         else -> "필요할 때 참고할 문장"
     }
@@ -422,7 +422,7 @@ internal fun AnalysisReport.conclusionHeadline(): String {
 
 internal fun AnalysisReport.alternativeSectionTitle(): String {
     return when {
-        contactReadiness == "지금은 보류" || contactReadiness == "정보 부족" || isCheckOnlyResult() -> "다음 선택지"
+        contactReadiness == "지금은 보류" || contactReadiness == "정보 부족" || isCheckOnlyResult() -> "다음 선택"
         messageSectionTitle() == "짧은 답장 참고" -> "다른 답장 후보"
         else -> "다른 문장 후보"
     }
@@ -468,7 +468,7 @@ internal fun AnalysisReport.cautionBodyForUi(): String {
 internal fun AnalysisReport.messageBodyForUi(): String {
     return when {
         canCopyMessageDraft() -> messageDraft.softenedForPlanUi().limitForUi(maxLength = 140)
-        contactReadiness == "지금은 보류" -> "지금은 보낼 문장보다 거리 조절이 먼저예요."
+        contactReadiness == "지금은 보류" -> "지금은 연락 문장보다 거리 조절이 먼저예요."
         contactReadiness == "정보 부족" || isCheckOnlyResult() -> "대화가 맞는지 확인하면 더 정확한 플랜을 만들 수 있어요."
         else -> messageDraft.softenedForPlanUi().limitForUi(maxLength = 140)
     }
@@ -570,7 +570,7 @@ internal fun AnalysisReport.evidenceBody(): String {
 
 internal fun AnalysisReport.alternativeDraftsBody(): String {
     val mainDraft = messageDraft.trim()
-    val maxItems = if (alternativeSectionTitle() == "다음 선택지") 3 else 2
+    val maxItems = if (alternativeSectionTitle() == "다음 선택") 3 else 2
     return alternativeDrafts.lineSequence()
         .map { line -> line.trim() }
         .filter { line -> line.isNotBlank() && line != mainDraft }
@@ -651,13 +651,16 @@ private fun String.limitForUi(maxLength: Int): String {
 private fun String.softenedForPlanUi(): String {
     return replace("상대의 마지막 메시지에 바로 답하세요.", "상대의 마지막 메시지에 짧게 답해볼 수 있어요.")
         .replace("오늘은 보내지 않기", "오늘은 거리 두기")
+        .replace("오늘은 연락을 쉬기", "오늘은 연락 쉬기")
         .replace("오늘은 보내지 말고,", "오늘은 거리를 두고,")
         .replace("오늘은 보내지 말고", "오늘은 거리를 두고")
         .replace("오늘은 보내지 않습니다.", "오늘은 거리를 두는 쪽이 안정적이에요.")
+        .replace("오늘은 연락을 쉬는 쪽이 안정적입니다.", "오늘은 연락을 쉬는 쪽이 안정적이에요.")
         .replace("바로 답하세요.", "짧게 열어둘 수 있어요.")
         .replace("답장하세요.", "답장해볼 수 있어요.")
         .replace("바로 답하되", "짧게 이어가되")
         .replace("전하세요.", "남겨볼 수 있어요.")
+        .replace("정리하세요.", "정리해보면 좋아요.")
         .replace("확인하세요.", "확인해보면 좋아요.")
         .replace("준비하세요.", "준비해볼 수 있어요.")
         .replace("읽으세요.", "읽어보면 좋아요.")

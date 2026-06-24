@@ -20,10 +20,10 @@ class FakeAnalysisProviderTest {
             ),
         )
 
-        assertTrue(result.headline.contains("보내지 않기"))
+        assertTrue(result.headline.contains("연락 쉬기"))
         assertTrue(result.contactReadiness.contains("보류"))
         assertTrue(result.evidence.contains("마지막 메시지"))
-        assertTrue(result.messageDraft.contains("보내지 않습니다"))
+        assertTrue(result.messageDraft.contains("연락을 쉬는 쪽"))
         assertTrue(result.caution.contains("경계"))
     }
 
@@ -55,8 +55,8 @@ class FakeAnalysisProviderTest {
 
         assertTrue(result.contactReadiness.contains("보류"))
         assertTrue(result.evidence.contains("연속 발화"))
-        assertTrue(result.messageDraft.contains("보내지 않습니다"))
-        assertTrue(result.alternativeDrafts.contains("오늘은 보내지 않기"))
+        assertTrue(result.messageDraft.contains("연락을 쉬는 쪽"))
+        assertTrue(result.alternativeDrafts.contains("오늘은 연락 쉬기"))
     }
 
     @Test
@@ -90,7 +90,7 @@ class FakeAnalysisProviderTest {
         )
 
         assertTrue(result.contactReadiness.contains("보류"))
-        assertTrue(result.messageDraft.contains("보내지 않습니다"))
+        assertTrue(result.messageDraft.contains("연락을 쉬는 쪽"))
     }
 
     @Test
@@ -105,7 +105,7 @@ class FakeAnalysisProviderTest {
         )
 
         assertTrue(result.contactReadiness.contains("보류"))
-        assertTrue(result.messageDraft.contains("보내지 않습니다"))
+        assertTrue(result.messageDraft.contains("연락을 쉬는 쪽"))
         assertFalse(result.messageDraft.contains("안부"))
     }
 

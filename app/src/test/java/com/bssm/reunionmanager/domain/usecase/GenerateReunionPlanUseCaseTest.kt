@@ -147,7 +147,7 @@ class GenerateReunionPlanUseCaseTest {
         val report = requireNotNull(detail.latestAnalysis)
         assertEquals("지금은 보류", report.contactReadiness)
         assertTrue(report.evidence.contains("연속 발화"))
-        assertTrue(report.messageDraft.contains("보내지 않습니다"))
+        assertTrue(report.messageDraft.contains("연락을 쉬는 쪽"))
     }
 
     @Test
@@ -328,8 +328,8 @@ class GenerateReunionPlanUseCaseTest {
         val report = requireNotNull(detail.latestAnalysis)
         assertEquals("지금은 보류", report.contactReadiness)
         assertTrue(report.evidence.contains("규칙 보정"))
-        assertTrue(report.messageDraft.contains("보내지 않습니다"))
-        assertTrue(report.alternativeDrafts.contains("오늘은 보내지 않기"))
+        assertTrue(report.messageDraft.contains("연락을 쉬는 쪽"))
+        assertTrue(report.alternativeDrafts.contains("오늘은 연락 쉬기"))
         assertFalse(report.messageDraft.contains("오랜만이야"))
         assertFalse(report.nextStep.contains("Mock Gemma next step"))
     }
@@ -461,7 +461,7 @@ class GenerateReunionPlanUseCaseTest {
         assertEquals("지금은 보류", report.contactReadiness)
         assertTrue(report.evidence.contains("규칙 보정"))
         assertTrue(report.evidence.contains("연락하지"))
-        assertTrue(report.messageDraft.contains("보내지 않습니다"))
+        assertTrue(report.messageDraft.contains("연락을 쉬는 쪽"))
         assertFalse(report.nextStep.contains("바로"))
     }
 
@@ -505,7 +505,7 @@ class GenerateReunionPlanUseCaseTest {
         assertEquals("지금은 보류", report.contactReadiness)
         assertTrue(report.evidence.contains("규칙 보정"))
         assertTrue(report.evidence.contains("새로 만나는 사람"))
-        assertTrue(report.messageDraft.contains("보내지 않습니다"))
+        assertTrue(report.messageDraft.contains("연락을 쉬는 쪽"))
         assertFalse(report.messageDraft.contains("안부"))
     }
 
@@ -636,7 +636,7 @@ class GenerateReunionPlanUseCaseTest {
         val report = requireNotNull(detail.latestAnalysis)
         assertEquals("오랜만이야. 잘 지내?", report.messageDraft)
         assertFalse(report.messageDraft.contains("\n"))
-        assertEquals("답을 재촉하지 말고 상대의 속도를 존중하세요.", report.caution)
+        assertEquals("답을 재촉하지 않고 상대의 속도를 존중해요.", report.caution)
     }
 
     @Test
@@ -677,7 +677,7 @@ class GenerateReunionPlanUseCaseTest {
         requireNotNull(detail)
         val report = requireNotNull(detail.latestAnalysis)
         assertEquals("정보 부족", report.contactReadiness)
-        assertTrue(report.nextStep.contains("오늘은 보내지 말고"))
+        assertTrue(report.nextStep.contains("오늘은 연락을 쉬고"))
         assertTrue(report.messageDraft.contains("보낼 문장을 만들지 않습니다"))
         assertTrue(report.alternativeDrafts.contains("더 관련 있는 최근 대화"))
     }

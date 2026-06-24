@@ -198,16 +198,19 @@ class ReunionManagerAppTest {
         clickText("샘플 채팅방")
         clickText("플랜 만들기")
         waitForText("플랜 만들기")
-        clickText("플랜 만들기")
+        tapAnalysisPrimaryAction()
         val timeoutMillis = if (openRouterConfigured()) 70_000L else 20_000L
-        waitForText("재회 회복 맵", timeoutMillis = timeoutMillis)
-        waitForText("대화 열기", timeoutMillis = timeoutMillis)
-        waitForText("상대 반응", timeoutMillis = timeoutMillis)
-        waitForText("내 상황 플랜", timeoutMillis = timeoutMillis)
+        waitForText("내 플랜", timeoutMillis = timeoutMillis)
+        waitForText("목표", timeoutMillis = timeoutMillis)
+        waitForText("다음 선택", timeoutMillis = timeoutMillis)
+        waitForText("지켜둘 선", timeoutMillis = timeoutMillis)
         if (!openRouterConfigured()) {
             waitForText("대화를 다시 열 수 있는 구간이에요.", timeoutMillis = timeoutMillis)
             waitForText("보내기 전 한 번 더 쉬어가도 괜찮아요.", timeoutMillis = timeoutMillis)
         }
+        findTextWithScroll("재회 회복 맵")
+        findTextWithScroll("대화 열기")
+        findTextWithScroll("상대 반응")
     }
 
     @Test
@@ -274,9 +277,11 @@ class ReunionManagerAppTest {
     }
 
     private fun clickText(text: String, timeoutMillis: Long = 10_000) {
-        repeat(3) {
+        repeat(6) {
+            device.waitForIdle()
             val target = waitForText(text, timeoutMillis)
             if (clickObject(target)) return
+            Thread.sleep(250)
             device.waitForIdle()
         }
         throw AssertionError("Could not click text: $text")
@@ -297,6 +302,14 @@ class ReunionManagerAppTest {
             device.waitForIdle()
         }
         throw AssertionError("Could not click text after scrolling: $text")
+    }
+
+    private fun tapAnalysisPrimaryAction() {
+        device.click(
+            device.displayWidth / 2,
+            (device.displayHeight * 0.203f).toInt(),
+        )
+        device.waitForIdle()
     }
 
     private fun clickObject(target: UiObject2): Boolean {

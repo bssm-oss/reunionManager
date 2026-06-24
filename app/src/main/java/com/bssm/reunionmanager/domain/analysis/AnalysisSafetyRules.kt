@@ -734,10 +734,10 @@ object AnalysisSafetyRules {
                 contactReadiness = HOLD,
                 evidence = appendEvidence(decision.evidence, report.evidence),
                 reunionObjective = "상대에게 다시 부담을 주지 않는 것이 우선입니다.",
-                nextStep = "오늘은 보내지 말고, 경계 표현이나 내가 반복해서 보낸 메시지를 먼저 다시 확인하세요.",
-                messageDraft = "오늘은 보내지 않습니다. 상대가 먼저 답하거나 시간이 충분히 지난 뒤 다시 판단하세요.",
-                alternativeDrafts = "오늘은 보내지 않기\n상대가 먼저 답하면 그때 짧게 답하기\n다시 보내기 전 최근 대화와 경계 표현 확인하기",
-                caution = "경계 표현이나 무응답 신호가 있으면 다시 연락하지 않는 선택도 계획에 포함해야 합니다.",
+                nextStep = "오늘은 연락을 쉬고, 경계 표현이나 내가 반복해서 보낸 메시지를 먼저 확인해보세요.",
+                messageDraft = "오늘은 연락을 쉬는 쪽이 안정적입니다. 상대가 먼저 답하거나 시간이 충분히 지난 뒤 다시 판단해도 괜찮아요.",
+                alternativeDrafts = "오늘은 연락 쉬기\n상대가 먼저 답하면 그때 짧게 답하기\n다시 보내기 전 최근 대화와 경계 표현 확인하기",
+                caution = "경계 표현이나 무응답 신호가 있으면 연락을 멈추는 선택도 계획에 포함해요.",
             )
 
             AnalysisAction.CheckContext -> report.copy(
@@ -746,7 +746,7 @@ object AnalysisSafetyRules {
                 evidence = appendEvidence(decision.evidence, report.evidence),
                 relationshipSummary = "이 대화만으로는 재회 판단에 필요한 1:1 개인 관계 맥락이 충분하지 않습니다.",
                 reunionObjective = "보낼 문장을 만들기보다 분석 대상 대화가 맞는지 먼저 확인하는 것이 목표입니다.",
-                nextStep = "오늘은 보내지 말고, 1:1 개인 관계 대화인지 또는 더 관련 있는 대화 파일이 있는지 먼저 확인하세요.",
+                nextStep = "오늘은 연락을 쉬고, 1:1 개인 관계 대화인지 또는 더 관련 있는 대화 파일이 있는지 먼저 확인해보세요.",
                 messageDraft = "지금은 보낼 문장을 만들지 않습니다. 재회와 직접 관련 있는 대화를 먼저 확인하세요.",
                 alternativeDrafts = "대화가 1:1 개인 관계인지 확인하기\n내 카톡 이름 저장하기\n더 관련 있는 대화 파일로 다시 분석하기",
                 caution = "업무, 단체, 기술 대화는 재회 가능성 판단 근거로 부족할 수 있습니다.",
@@ -866,9 +866,9 @@ object AnalysisSafetyRules {
 
     private fun defaultNextStep(readiness: String, input: AnalysisInput?): String {
         return when (readiness) {
-            HOLD -> "오늘은 보내지 말고 최근 대화의 경계 표현과 무응답 흐름을 먼저 확인하세요."
+            HOLD -> "오늘은 연락을 쉬고 최근 대화의 경계 표현과 무응답 흐름을 먼저 확인해보세요."
             APOLOGY -> "변명 없이 인정할 부분을 한 문장으로 정리하고 답장을 요구하지 마세요."
-            UNKNOWN -> "오늘은 보내지 말고, 이 대화가 재회 판단에 충분한지 먼저 확인하세요."
+            UNKNOWN -> "오늘은 연락을 쉬고, 이 대화가 재회 판단에 충분한지 먼저 확인해보세요."
             else -> if (input != null && hasVeryLongLastGap(input)) {
                 "오래 끊긴 대화이므로 지난 일을 꺼내기보다 안부 한 문장만 준비하세요."
             } else if (input != null && hasLongLastGap(input)) {
@@ -881,7 +881,7 @@ object AnalysisSafetyRules {
 
     private fun defaultDraft(readiness: String, input: AnalysisInput?): String {
         return when (readiness) {
-            HOLD -> "오늘은 보내지 않습니다. 상대가 먼저 답하거나 시간이 충분히 지난 뒤 다시 판단하세요."
+            HOLD -> "오늘은 연락을 쉬는 쪽이 안정적입니다. 상대가 먼저 답하거나 시간이 충분히 지난 뒤 다시 판단해도 괜찮아요."
             APOLOGY -> "오랜만이야. 그때 내가 부담스럽게 했다면 미안해. 답은 천천히 해도 괜찮아."
             UNKNOWN -> "지금은 보낼 문장을 만들지 않습니다. 최근 대화와 관계 맥락을 먼저 확인하세요."
             else -> if (input != null && hasVeryLongLastGap(input)) {
@@ -896,16 +896,16 @@ object AnalysisSafetyRules {
 
     private fun defaultCaution(readiness: String): String {
         return when (readiness) {
-            HOLD -> "경계 표현이나 무응답 신호가 있으면 다시 연락하지 않는 선택도 포함하세요."
-            UNKNOWN -> "확신이 부족할 때는 보내지 않고 대화 맥락을 먼저 확인하세요."
-            else -> "답을 재촉하지 말고 상대의 속도를 존중하세요."
+            HOLD -> "경계 표현이나 무응답 신호가 있으면 연락을 멈추는 선택도 포함해요."
+            UNKNOWN -> "확신이 부족할 때는 보내지 않고 대화 맥락을 먼저 확인해도 괜찮아요."
+            else -> "답을 재촉하지 않고 상대의 속도를 존중해요."
         }
     }
 
     private fun defaultAlternatives(readiness: String): List<String> {
         return when (readiness) {
             HOLD -> listOf(
-                "오늘은 보내지 않기",
+                "오늘은 연락 쉬기",
                 "상대가 먼저 답하면 그때 짧게 답하기",
                 "다시 보내기 전 최근 대화와 경계 표현 확인하기",
             )

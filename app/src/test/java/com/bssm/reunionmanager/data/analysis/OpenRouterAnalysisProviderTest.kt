@@ -56,7 +56,7 @@ class OpenRouterAnalysisProviderTest {
         val finalReport = AnalysisSafetyRules.finalizeReport(rawReport, dramaticBoundaryInput())
 
         assertEquals("지금은 보류", finalReport.contactReadiness)
-        assertTrue(finalReport.messageDraft.contains("보내지 않습니다"))
+        assertTrue(finalReport.messageDraft.contains("연락을 쉬는 쪽"))
         assertFalse(finalReport.messageDraft.contains("집 앞"))
         assertFalse(finalReport.messageDraft.contains("한 번만"))
         assertTrue(AnalysisSafetyRules.isAllowedReadiness(rawReport.contactReadiness))

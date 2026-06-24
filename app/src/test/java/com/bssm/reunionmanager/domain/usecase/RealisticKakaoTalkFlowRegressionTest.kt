@@ -95,7 +95,7 @@ class RealisticKakaoTalkFlowRegressionTest {
                 userDisplayName = "현우",
                 expectedTitle = "민지",
                 expectedReadiness = "지금은 보류",
-                messageMustContain = "보내지 않습니다",
+                messageMustContain = "연락을 쉬는 쪽",
                 messageMustNotContain = "안부",
             ),
             flowCase(
@@ -164,7 +164,7 @@ class RealisticKakaoTalkFlowRegressionTest {
                 userDisplayName = "현우",
                 expectedTitle = "민지",
                 expectedReadiness = "지금은 보류",
-                messageMustContain = "보내지 않습니다",
+                messageMustContain = "연락을 쉬는 쪽",
                 messageMustNotContain = "안부",
             ),
             flowCase(
@@ -183,7 +183,7 @@ class RealisticKakaoTalkFlowRegressionTest {
                 userDisplayName = "현우",
                 expectedTitle = "민지",
                 expectedReadiness = "지금은 보류",
-                messageMustContain = "보내지 않습니다",
+                messageMustContain = "연락을 쉬는 쪽",
                 messageMustNotContain = "한 번만",
             ),
         )

@@ -13,43 +13,43 @@ class AnalysisQualityRegressionTest {
         val cases = listOf(
             qualityCase("name missing", missingPerspective(), "정보 부족", "내 카톡 이름", "오랜만이야"),
             qualityCase("configured name does not match participants", mismatchedPerspective(), "정보 부족", "내 카톡 이름", "오랜만이야"),
-            qualityCase("user sent three unanswered messages", userUnansweredRun(), "지금은 보류", "보내지 않습니다", "오랜만이야"),
-            qualityCase("user sent two unanswered messages", userUnansweredRun(count = 2), "지금은 보류", "보내지 않습니다", "오랜만이야"),
-            qualityCase("counterpart says do not contact", counterpartBoundary("이제 연락하지 말아줘"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart asks no more contact", counterpartBoundary("연락 안 했으면 좋겠어"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart says stop", counterpartBoundary("그만 보내줘"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart asks to delete phone number", counterpartBoundary("내 번호 지워줘"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart asks to delete contact", counterpartBoundary("연락처 삭제해줘"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart says leaving kakao room", counterpartBoundary("카톡방 나갈게"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart says chat room is left", counterpartBoundary("채팅방 나왔어"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart threatens report", counterpartBoundary("계속 이러면 신고할 거야"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart feels afraid", counterpartBoundary("네 연락 오는 거 무서워"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart says contact is exhausting", counterpartBoundary("네 연락 때문에 힘들어"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart says kakao messages are tiring", counterpartBoundary("이런 카톡 이제 지쳐"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart calls it stalking", counterpartBoundary("이건 스토킹처럼 느껴져"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart asks to be left alone", counterpartBoundary("제발 나 좀 놔줘"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart says uncomfortable", counterpartBoundary("이런 연락은 불편해"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart says contact is unpleasant", counterpartBoundary("이런 연락은 불쾌해"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart says not okay", counterpartBoundary("지금은 괜찮지 않아"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart moved on", counterpartBoundary("나 새로 만나는 사람 있어"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart has new partner", counterpartBoundary("나 남자친구 생겼어"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart is seeing someone else", counterpartBoundary("다른 사람 만나고 있어"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart says each move on", counterpartBoundary("우리 이제 각자 잘 지내자"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart asks friend only", counterpartBoundary("친구로 지내는 게 좋겠어"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart says no romantic feeling", counterpartBoundary("연애 감정은 없어"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart says no feelings", counterpartBoundary("이제 마음이 없어"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart says no lingering feeling", counterpartBoundary("미련 없어"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart will contact later", counterpartBoundary("나중에 내가 연락할게"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart asks time", counterpartBoundary("생각할 시간이 필요해"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart asks to wait", counterpartBoundary("조금 기다려줘"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("relationship cleanup", counterpartBoundary("우리 관계는 정리하자"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("breakup", counterpartBoundary("이제 헤어지자"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("final end", counterpartBoundary("우리 끝이야"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart moved on emotionally", counterpartBoundary("나 이제 마음 정리했어"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart rejects reunion", counterpartBoundary("우리 다시 만나는 일은 없을 것 같아"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart has no plan to meet", counterpartBoundary("다시 볼 생각 없어"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart does not want contact", counterpartBoundary("너랑 연락하고 싶지 않아"), "지금은 보류", "보내지 않습니다", "안부"),
-            qualityCase("counterpart does not want conversation", counterpartBoundary("지금은 얘기하고 싶지 않아"), "지금은 보류", "보내지 않습니다", "안부"),
+            qualityCase("user sent three unanswered messages", userUnansweredRun(), "지금은 보류", "연락을 쉬는 쪽", "오랜만이야"),
+            qualityCase("user sent two unanswered messages", userUnansweredRun(count = 2), "지금은 보류", "연락을 쉬는 쪽", "오랜만이야"),
+            qualityCase("counterpart says do not contact", counterpartBoundary("이제 연락하지 말아줘"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart asks no more contact", counterpartBoundary("연락 안 했으면 좋겠어"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart says stop", counterpartBoundary("그만 보내줘"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart asks to delete phone number", counterpartBoundary("내 번호 지워줘"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart asks to delete contact", counterpartBoundary("연락처 삭제해줘"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart says leaving kakao room", counterpartBoundary("카톡방 나갈게"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart says chat room is left", counterpartBoundary("채팅방 나왔어"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart threatens report", counterpartBoundary("계속 이러면 신고할 거야"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart feels afraid", counterpartBoundary("네 연락 오는 거 무서워"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart says contact is exhausting", counterpartBoundary("네 연락 때문에 힘들어"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart says kakao messages are tiring", counterpartBoundary("이런 카톡 이제 지쳐"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart calls it stalking", counterpartBoundary("이건 스토킹처럼 느껴져"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart asks to be left alone", counterpartBoundary("제발 나 좀 놔줘"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart says uncomfortable", counterpartBoundary("이런 연락은 불편해"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart says contact is unpleasant", counterpartBoundary("이런 연락은 불쾌해"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart says not okay", counterpartBoundary("지금은 괜찮지 않아"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart moved on", counterpartBoundary("나 새로 만나는 사람 있어"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart has new partner", counterpartBoundary("나 남자친구 생겼어"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart is seeing someone else", counterpartBoundary("다른 사람 만나고 있어"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart says each move on", counterpartBoundary("우리 이제 각자 잘 지내자"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart asks friend only", counterpartBoundary("친구로 지내는 게 좋겠어"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart says no romantic feeling", counterpartBoundary("연애 감정은 없어"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart says no feelings", counterpartBoundary("이제 마음이 없어"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart says no lingering feeling", counterpartBoundary("미련 없어"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart will contact later", counterpartBoundary("나중에 내가 연락할게"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart asks time", counterpartBoundary("생각할 시간이 필요해"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart asks to wait", counterpartBoundary("조금 기다려줘"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("relationship cleanup", counterpartBoundary("우리 관계는 정리하자"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("breakup", counterpartBoundary("이제 헤어지자"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("final end", counterpartBoundary("우리 끝이야"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart moved on emotionally", counterpartBoundary("나 이제 마음 정리했어"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart rejects reunion", counterpartBoundary("우리 다시 만나는 일은 없을 것 같아"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart has no plan to meet", counterpartBoundary("다시 볼 생각 없어"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart does not want contact", counterpartBoundary("너랑 연락하고 싶지 않아"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
+            qualityCase("counterpart does not want conversation", counterpartBoundary("지금은 얘기하고 싶지 않아"), "지금은 보류", "연락을 쉬는 쪽", "안부"),
             qualityCase("no pressure phrase", counterpartReply("부담 없으면 천천히 답해도 돼"), "아주 가볍게 가능", "메시지 봤어", "오랜만이야"),
             qualityCase("not trying to pressure", counterpartReply("부담 주려는 건 아니고 잘 지내는지만 궁금했어"), "아주 가볍게 가능", "메시지 봤어", "오랜만이야"),
             qualityCase("well-being reply", counterpartReply("잘 지내?"), "아주 가볍게 가능", "나는 잘 지내고 있어", "오랜만이야"),
@@ -59,7 +59,7 @@ class AnalysisQualityRegressionTest {
             qualityCase("counterpart asks meal check", counterpartReply("밥 먹었어?"), "아주 가볍게 가능", "챙겨 먹었어", "안부"),
             qualityCase("schedule question", counterpartReply("토요일 저녁에 시간 돼?"), "아주 가볍게 가능", "가능한지 확인", "약속한 시간"),
             qualityCase("concrete meeting", counterpartReply("내일 7시에 카페에서 보자"), "아주 가볍게 가능", "약속한 시간", "안부부터"),
-            qualityCase("counterpart says contact was not unpleasant", counterpartReply("연락이 불쾌하지는 않았어"), "아주 가볍게 가능", "메시지 봤어", "보내지 않습니다"),
+            qualityCase("counterpart says contact was not unpleasant", counterpartReply("연락이 불쾌하지는 않았어"), "아주 가볍게 가능", "메시지 봤어", "연락을 쉬는 쪽"),
             qualityCase("counterpart explicitly allows contact", counterpartReply("연락해도 돼"), "아주 가볍게 가능", "고마워", "오랜만이야"),
             qualityCase("counterpart explicitly allows a reply", counterpartReply("답장해도 돼"), "아주 가볍게 가능", "천천히 안부", "오랜만이야"),
             qualityCase("counterpart invites comfortable contact", counterpartReply("필요하면 편하게 연락 줘"), "아주 가볍게 가능", "부담 없이", "오랜만이야"),
@@ -67,16 +67,16 @@ class AnalysisQualityRegressionTest {
             qualityCase("counterpart questions sudden contact", counterpartReply("갑자기 왜 연락해?"), "먼저 사과 필요", "미안", "안부"),
             qualityCase("counterpart asks who this is", counterpartReply("누구세요?"), "정보 부족", "보낼 문장을 만들지 않습니다", "오랜만이야"),
             qualityCase("counterpart says wrong message", counterpartReply("잘못 보내신 것 같아요"), "정보 부족", "보낼 문장을 만들지 않습니다", "오랜만이야"),
-            qualityCase("user drunk late night message", userImpairedTiming("술 마셔서 그런지 보고 싶어"), "지금은 보류", "보내지 않습니다", "오랜만이야"),
-            qualityCase("user midnight impulse", userImpairedTiming("새벽에 잠이 안 와서 연락했어"), "지금은 보류", "보내지 않습니다", "오랜만이야"),
-            qualityCase("user promised no more contact", userSelfStop("이제 연락 안 할게"), "지금은 보류", "보내지 않습니다", "오랜만이야"),
-            qualityCase("user promised to stop sending", userSelfStop("더는 안 보낼게. 미안해"), "지금은 보류", "보내지 않습니다", "오랜만이야"),
-            qualityCase("user asks why no reply", userUnansweredPressure("왜 답이 없어?"), "지금은 보류", "보내지 않습니다", "오랜만이야"),
-            qualityCase("user calls read ignored", userUnansweredPressure("읽씹이야?"), "지금은 보류", "보내지 않습니다", "오랜만이야"),
+            qualityCase("user drunk late night message", userImpairedTiming("술 마셔서 그런지 보고 싶어"), "지금은 보류", "연락을 쉬는 쪽", "오랜만이야"),
+            qualityCase("user midnight impulse", userImpairedTiming("새벽에 잠이 안 와서 연락했어"), "지금은 보류", "연락을 쉬는 쪽", "오랜만이야"),
+            qualityCase("user promised no more contact", userSelfStop("이제 연락 안 할게"), "지금은 보류", "연락을 쉬는 쪽", "오랜만이야"),
+            qualityCase("user promised to stop sending", userSelfStop("더는 안 보낼게. 미안해"), "지금은 보류", "연락을 쉬는 쪽", "오랜만이야"),
+            qualityCase("user asks why no reply", userUnansweredPressure("왜 답이 없어?"), "지금은 보류", "연락을 쉬는 쪽", "오랜만이야"),
+            qualityCase("user calls read ignored", userUnansweredPressure("읽씹이야?"), "지금은 보류", "연락을 쉬는 쪽", "오랜만이야"),
             qualityCase("personal signals in group chat", personalGroup(), "정보 부족", "보낼 문장을 만들지 않습니다", "오랜만이야"),
             qualityCase("technical group chat", technicalGroup(), "정보 부족", "보낼 문장을 만들지 않습니다", "오랜만이야"),
             qualityCase("two-person work chat", technicalTwoPerson(), "정보 부족", "보낼 문장을 만들지 않습니다", "오랜만이야"),
-            qualityCase("light positive signal", lightPositive(), "아주 가볍게 가능", "짧게", "보내지 않습니다"),
+            qualityCase("light positive signal", lightPositive(), "아주 가볍게 가능", "짧게", "연락을 쉬는 쪽"),
         )
 
         assertEquals(66, cases.size)
@@ -108,7 +108,7 @@ class AnalysisQualityRegressionTest {
 
         assertEquals("오랜만이야. 잘 지내?", report.messageDraft)
         assertFalse(report.messageDraft.contains("\n"))
-        assertEquals("답을 재촉하지 말고 상대의 속도를 존중하세요.", report.caution)
+        assertEquals("답을 재촉하지 않고 상대의 속도를 존중해요.", report.caution)
     }
 
     @Test
@@ -132,7 +132,7 @@ class AnalysisQualityRegressionTest {
         assertEquals("가벼운 안부 한 문장으로 상대의 현재 온도를 확인하는 것이 목표입니다.", report.reunionObjective)
         assertEquals("긴 설명을 보내지 말고 최근 대화를 한 번 읽은 뒤 짧은 한 문장만 준비하세요.", report.nextStep)
         assertEquals("오랜만이야. 갑자기 부담 주려는 건 아니고, 괜찮다면 짧게 안부만 묻고 싶어.", report.messageDraft)
-        assertEquals("답을 재촉하지 말고 상대의 속도를 존중하세요.", report.caution)
+        assertEquals("답을 재촉하지 않고 상대의 속도를 존중해요.", report.caution)
         assertFalse(report.alternativeDrafts.contains("사랑"))
         assertFalse(report.alternativeDrafts.contains("집 앞"))
         assertFalse(report.alternativeDrafts.contains("기회"))
@@ -159,7 +159,7 @@ class AnalysisQualityRegressionTest {
         assertEquals("가벼운 안부 한 문장으로 상대의 현재 온도를 확인하는 것이 목표입니다.", report.reunionObjective)
         assertEquals("긴 설명을 보내지 말고 최근 대화를 한 번 읽은 뒤 짧은 한 문장만 준비하세요.", report.nextStep)
         assertEquals("오랜만이야. 갑자기 부담 주려는 건 아니고, 괜찮다면 짧게 안부만 묻고 싶어.", report.messageDraft)
-        assertEquals("답을 재촉하지 말고 상대의 속도를 존중하세요.", report.caution)
+        assertEquals("답을 재촉하지 않고 상대의 속도를 존중해요.", report.caution)
         assertFalse(report.alternativeDrafts.contains("왜 답"))
         assertFalse(report.alternativeDrafts.contains("읽씹"))
     }

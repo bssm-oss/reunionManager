@@ -21,7 +21,7 @@ class FakeAnalysisProvider : AnalysisProvider {
         val counterpartRecentMessage = input.perspectiveValue("상대 최근 메시지:")
         return AnalysisReport(
             headline = when (readiness) {
-                "지금은 보류" -> "오늘은 보내지 않기"
+                "지금은 보류" -> "오늘은 연락 쉬기"
                 "먼저 사과 필요" -> "짧은 사과 먼저"
                 "아주 가볍게 가능" -> when {
                     counterpartIsWaiting -> "상대 답장에 짧게 응답"
@@ -49,7 +49,7 @@ class FakeAnalysisProvider : AnalysisProvider {
                 "총 ${input.messageCount}개의 메시지와 최근 흐름을 보면 $participantLabel 사이의 온도를 단정하기보다 마지막 발신자, 긴 공백, 경계 표현을 먼저 확인해야 합니다."
             },
             reunionObjective = when (readiness) {
-                "지금은 보류" -> "상대에게 다시 부담을 주지 않는 것이 우선입니다. 바로 연락하기보다 상황을 정리하세요."
+                "지금은 보류" -> "상대에게 다시 부담을 주지 않는 것이 우선입니다. 바로 연락하기보다 상황을 정리해보면 좋아요."
                 "먼저 사과 필요" -> "관계 회복 요구보다 짧은 인정과 사과로 상대가 답할 여지를 남기는 것이 목표입니다."
                 "아주 가볍게 가능" -> if (counterpartIsWaiting) {
                     "새 연락을 시작하기보다 상대가 남긴 말에 짧고 낮은 압박으로 답하는 것이 목표입니다."
@@ -67,7 +67,7 @@ class FakeAnalysisProvider : AnalysisProvider {
                 }
             },
             nextStep = when (readiness) {
-                "지금은 보류" -> "오늘은 보내지 말고, 상대가 부담을 표현한 부분과 내가 반복해서 보낸 메시지를 먼저 다시 읽으세요."
+                "지금은 보류" -> "오늘은 연락을 쉬고, 상대가 부담을 표현한 부분과 내가 반복해서 보낸 메시지를 먼저 다시 읽어보세요."
                 "먼저 사과 필요" -> "변명 없이 한 문장으로 인정할 부분을 정리한 뒤, 답장을 요구하지 않는 문장만 준비하세요."
                 "아주 가볍게 가능" -> if (counterpartIsWaiting) {
                     "상대의 마지막 메시지에 바로 답하되, 재회 이야기보다 짧은 안부와 확인만 남기세요."
@@ -79,17 +79,17 @@ class FakeAnalysisProvider : AnalysisProvider {
                     "긴 설명을 보내지 말고, 최근 대화를 한 번 읽은 뒤 부담 없는 한 문장만 준비하세요."
                 }
                 else -> if (weakContext) {
-                    "오늘은 보내지 말고, 1:1 개인 관계 대화인지 또는 더 관련 있는 대화 파일이 있는지 먼저 확인하세요."
+                    "오늘은 연락을 쉬고, 1:1 개인 관계 대화인지 또는 더 관련 있는 대화 파일이 있는지 먼저 확인해보세요."
                 } else if (needsPerspectiveSetup) {
                     "설정에서 내 카톡 이름을 저장한 뒤 같은 대화를 다시 분석하세요."
                 } else if (longGap) {
-                    "공백이 있으므로 바로 보내지 말고 최근 대화가 더 있는지 먼저 확인하세요."
+                    "공백이 있으므로 바로 보내기보다 최근 대화가 더 있는지 먼저 확인해보세요."
                 } else {
-                    "오늘은 보내지 말고, 최근 대화가 재회 판단에 충분한지 먼저 확인하세요."
+                    "오늘은 연락을 쉬고, 최근 대화가 재회 판단에 충분한지 먼저 확인해보세요."
                 }
             },
             messageDraft = when (readiness) {
-                "지금은 보류" -> "오늘은 보내지 않습니다. 상대가 먼저 답하거나 시간이 충분히 지난 뒤 다시 판단하세요."
+                "지금은 보류" -> "오늘은 연락을 쉬는 쪽이 안정적입니다. 상대가 먼저 답하거나 시간이 충분히 지난 뒤 다시 판단해도 괜찮아요."
                 "먼저 사과 필요" -> "오랜만이야. 그때 내가 부담스럽게 했다면 미안해. 답은 천천히 해도 괜찮아."
                 "아주 가볍게 가능" -> if (counterpartIsWaiting) {
                     AnalysisSafetyRules.counterpartReplyDraft(input)
@@ -110,7 +110,7 @@ class FakeAnalysisProvider : AnalysisProvider {
             },
             alternativeDrafts = input.buildAlternativeDrafts(readiness),
             caution = when (readiness) {
-                "지금은 보류" -> "상대가 경계나 거절을 표현했다면 다시 연락하지 않는 선택도 계획에 포함해야 합니다."
+                "지금은 보류" -> "상대가 경계나 거절을 표현했다면 연락을 멈추는 선택도 계획에 포함해요."
                 "정보 부족" -> if (weakContext) {
                     "업무, 단체, 기술 대화는 재회 가능성 판단 근거로 부족할 수 있습니다."
                 } else if (needsPerspectiveSetup) {
@@ -176,7 +176,7 @@ class FakeAnalysisProvider : AnalysisProvider {
     private fun AnalysisInput.buildAlternativeDrafts(readiness: String): String {
         return when (readiness) {
             "지금은 보류" -> listOf(
-                "오늘은 보내지 않기",
+                "오늘은 연락 쉬기",
                 "상대가 먼저 답하면 그때 짧게 답하기",
                 "다시 보내기 전 최근 대화와 경계 표현 다시 확인하기",
             )
