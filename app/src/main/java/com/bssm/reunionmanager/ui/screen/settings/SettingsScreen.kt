@@ -61,7 +61,7 @@ fun SettingsScreen(
         else -> ReunionBadgeTone.Accent
     }
     val modelStatusDescription = when {
-        !providerSettings.isConfigured -> "모델 없이도 오늘의 다음 행동을 안전하게 정리할 수 있어요."
+        !providerSettings.isConfigured -> "모델 없이도 안전 정리로 시작합니다."
         providerSettings.isModelVerified -> "AI 모델을 이 기기에서 실행 확인했습니다."
         else -> "파일은 저장됐지만, 점검 전에는 안전 정리로 진행합니다."
     }
@@ -86,7 +86,7 @@ fun SettingsScreen(
         verticalArrangement = Arrangement.spacedBy(ScreenSectionSpacing),
     ) {
         Text(
-            text = "내 카톡 이름을 먼저 저장하면 답장인지 첫 연락인지 더 정확히 구분합니다.",
+            text = "내 카톡 이름을 저장하면 답장인지 첫 연락인지 더 정확히 구분합니다.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

@@ -42,12 +42,12 @@ fun HomeScreen(
             style = MaterialTheme.typography.headlineMedium,
         )
         Text(
-            text = "대화는 기기 안에 두고, 오늘 보낼지 말지만 먼저 봅니다.",
+            text = "대화는 기기 안에 두고, 오늘 보낼지 말지만 봅니다.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         ReunionPane(
-            title = if (hasConversations) "이어볼 대화가 있어요" else "대화 파일부터 가져오세요",
+            title = if (hasConversations) "이어서 정리하기" else "대화 파일을 가져오세요",
             supportingText = homeStateDescription(
                 conversationCount = conversationCount,
                 modelConfigured = modelConfigured,
@@ -83,9 +83,9 @@ private fun homeStateDescription(
     modelVerified: Boolean,
 ): String {
     val conversationText = if (conversationCount > 0) {
-        "${conversationCount}개 대화에서 바로 다음 행동을 정리할 수 있어요."
+        "저장한 대화 ${conversationCount}개에서 바로 정리할 수 있어요."
     } else {
-        "카카오톡 내보내기 파일 하나면 시작할 수 있어요."
+        "카카오톡 내보내기 파일 하나면 됩니다."
     }
     return "$conversationText ${modelModeDescription(modelConfigured, modelVerified)}"
 }
@@ -94,7 +94,7 @@ private fun modelModeDescription(modelConfigured: Boolean, modelVerified: Boolea
     return when {
         modelVerified -> "AI는 이 기기에서 실행됩니다."
         modelConfigured -> "점검 전에는 안전 정리로 진행합니다."
-        else -> "모델이 없어도 안전 정리로 확인할 수 있어요."
+        else -> "모델이 없어도 안전 정리로 시작합니다."
     }
 }
 

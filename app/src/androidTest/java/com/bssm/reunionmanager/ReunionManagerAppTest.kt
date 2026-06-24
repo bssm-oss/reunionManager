@@ -35,7 +35,7 @@ class ReunionManagerAppTest {
     fun homeScreen_showsCoreTrustSignals() {
         waitForText("재회 매니저")
         assertNotNull(device.findObject(By.text("내 기기에서 보관")))
-        assertNotNull(device.findObject(By.text("대화 파일부터 가져오세요")))
+        assertNotNull(device.findObject(By.text("대화 파일을 가져오세요")))
         assertNotNull(device.findObject(By.text("카카오톡 대화 가져오기")))
     }
 
@@ -43,7 +43,7 @@ class ReunionManagerAppTest {
     fun homeScreen_navigatesToImportScreen() {
         clickText("카카오톡 대화 가져오기")
 
-        waitForText("카카오톡에서 내보낸 대화 파일을 선택하세요. 대화는 이 기기에만 저장됩니다.")
+        waitForText("카카오톡 내보내기 파일을 선택하세요. 대화는 기기에만 저장됩니다.")
         assertNotNull(device.findObject(By.text("대화 파일 선택")))
     }
 
@@ -58,7 +58,7 @@ class ReunionManagerAppTest {
 
         launchMainActivity()
 
-        waitForText("이어볼 대화가 있어요")
+        waitForText("이어서 정리하기")
         clickText("저장한 대화 보기")
         waitForText("샘플 채팅방")
     }
